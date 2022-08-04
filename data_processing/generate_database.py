@@ -5,9 +5,12 @@ import chess.pgn
 import tqdm as tqdm
 
 
+
 class SinglePGNFileToData():
     def __init__(self, pgn_file):
         self.pgn_database = open(pgn_file)
+
+
 
     def next_game_to_data(self):
         self.current_game = chess.pgn.read_game(self.pgn_database)
@@ -35,7 +38,7 @@ class SinglePGNFileToData():
         return database, stats
 
     def prepare_data_for_training(data, k=1):
-        """ Using data creates quadruples for training. Those quadruples are (actual_board, next_move, board_after_k_moves, winner).
+        """ Using data creates triples for training. Those triples are (actual_board, next_move, board_after_k_moves).
             Actual board is always a board of the winner. """
         states = []
         actions = []
