@@ -45,16 +45,17 @@ class SinglePGNFileToData():
             winner = 1
         elif data[0].Result == "0-1":
             winner = 0
+        elif data[0].Result == "1/2-1/2":
+            return None
         else:
-            return []
+            raise ValueError("Unknown result: {}".format(data[0].Result))
         """ numer of winner moves for which there exists a state at position move_position + k """
         numer_of_winner_moves = (len(data[1]) - winner) // 2 - k // 2
         for i in range(numer_of_winner_moves):
-            actual_boards.append(data[i * 2 + winner][0])
-            moves.append(data[i * 2 + winner][1])
-            boards_after_k_moves.append(data[i * 2 + winner + k][0])
-        return actual_boards, moves, boards_after_k_moves
-
+            states.append(data[i * 2 + winner][0])
+            actions.append(data[i * 2 + winner][1])
+            states_plus_k.append(data[i * 2 + winner + k][0])
+        return states, actions, states_plus_k
 
 x = SinglePGNFileToData('/home/tomek/Research/subgoal_chess_data/chess_data_aa')
 data, stats = x.get_data_batch(1000)
