@@ -1,4 +1,5 @@
 
+
 class ChessTokenizer:
 
     dots = ['.' * i for i in range(1, 9)]
@@ -56,5 +57,7 @@ def chess_tokenizer_test():
     x = ChessTokenizer.encode('8/8/8/8/8/8/8/8 w KQkq - -')
     y = ChessTokenizer.decode(x)
     assert x == y, "Error in tokenizer"
+
+
 
 
