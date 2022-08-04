@@ -34,6 +34,27 @@ class SinglePGNFileToData():
 
         return database, stats
 
+    def prepare_data_for_training(data, k=1):
+        """ Using data creates quadruples for training. Those quadruples are (actual_board, next_move, board_after_k_moves, winner).
+            Actual board is always a board of the winner. """
+        actual_boards = []
+        moves = []
+        boards_after_k_moves = []
+        """ winner: white = 0, black = 1 """
+        if data[0].Result == "1-0":
+            winner = 1
+        elif data[0].Result == "0-1":
+            winner = 0
+        else:
+            return []
+        """ numer of winner moves for which there exists a state at position move_position + k """
+        numer_of_winner_moves = (len(data[1]) - winner) // 2 - k // 2
+        for i in range(numer_of_winner_moves):
+            actual_boards.append(data[i * 2 + winner][0])
+            moves.append(data[i * 2 + winner][1])
+            boards_after_k_moves.append(data[i * 2 + winner + k][0])
+        return actual_boards, moves, boards_after_k_moves
+
 
 x = SinglePGNFileToData('/home/tomek/Research/subgoal_chess_data/chess_data_aa')
 data, stats = x.get_data_batch(1000)
