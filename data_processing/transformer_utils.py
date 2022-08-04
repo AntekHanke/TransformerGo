@@ -50,11 +50,11 @@ class ChessTokenizer:
         for i in range(8):
             board = board.replace(cls.dots[7-i], f'{8-i}')
 
-        return ' '.join([board, player, casting, '-', '-'])
+        return ' '.join([board, player, casting, '-', '0', '0'])
 
 
 def chess_tokenizer_test():
-    x = ChessTokenizer.encode('8/8/8/8/8/8/8/8 w KQkq - -')
+    x = ChessTokenizer.encode('8/8/8/8/8/8/8/8 w KQkq - 0 0')
     y = ChessTokenizer.decode(x)
     assert x == y, "Error in tokenizer"
 
