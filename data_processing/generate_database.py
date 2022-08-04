@@ -37,9 +37,9 @@ class SinglePGNFileToData():
     def prepare_data_for_training(data, k=1):
         """ Using data creates quadruples for training. Those quadruples are (actual_board, next_move, board_after_k_moves, winner).
             Actual board is always a board of the winner. """
-        actual_boards = []
-        moves = []
-        boards_after_k_moves = []
+        states = []
+        actions = []
+        states_plus_k = []
         """ winner: white = 0, black = 1 """
         if data[0].Result == "1-0":
             winner = 1
