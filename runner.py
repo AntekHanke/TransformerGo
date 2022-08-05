@@ -2,41 +2,14 @@ import os
 import logging
 import platform
 import sys
-sys.path.append("./third_party/INT")
-sys.path.insert(0, "/additional_packages")
-# To import alpacka stuff do not use `import third_party.alpacka...`, but simply
-# `import alpacka...`. Otherwise __init__.py files will be called twice, which
-# will cause gin errors.
-sys.path.append("./third_party")
 
-# Copied from silence_tensorflow (https://pypi.org/project/silence-tensorflow/) to suppress warnings:
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
-os.environ["KMP_AFFINITY"] = "noverbose"
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
-tf.get_logger().setLevel('ERROR')
-tf.autograph.set_verbosity(3)
 
 import torch
-
-import argparse
-from third_party import dask
 
 
 import gin
 # This makes gin configurable classes picklable
 gin.config._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
-
-import envs
-import goal_builders
-import goal_generating_networks
-import goal_verificators
-import graph_tracer
-import jobs
-import policies
-import solvers
-import supervised
-import value_estimators
 
 import metric_logging
 
