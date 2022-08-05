@@ -37,7 +37,7 @@ class SinglePGNFileToData():
 
         return database, stats
 
-    def prepare_data_for_training(data, k=1):
+    def prepare_data_for_training(self, data, k=1):
         """ Using data creates triples for training. Those triples are (actual_board, next_move, board_after_k_moves).
             Actual board is always a board of the winner. """
         states = []
