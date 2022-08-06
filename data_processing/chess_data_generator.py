@@ -146,7 +146,6 @@ class ChessMovesDataGenerator(ChessDataGenerator):
             if random.random() <= self.p_sample:
                 self.data_queue[len(self.data_queue)] = {
                     'input_ids': ChessTokenizer.encode_board(transition.board),
-                    'attention_maks': [1] * TOKENIZED_BOARD_LENGTH,
                     'labels': ChessTokenizer.encode_move(transition.move)
                 }
 
