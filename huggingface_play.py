@@ -62,7 +62,7 @@ trainer.train()
 
 # uu = torch.IntTensor([[10,20,30]])
 
-# outputs = model.generate(torch.IntTensor([[10,20,30]]), num_beams=4, num_return_sequences=2)
+outputs = model.generate(torch.IntTensor([[10,20,30]]), num_beams=4, num_return_sequences=2)
 
 
 

@@ -19,3 +19,6 @@ def get_split(arg, train_eval_split):
         return "train"
     else:
         return "eval"
+
+def board_to_img():
+    pass
