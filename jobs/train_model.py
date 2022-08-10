@@ -29,8 +29,8 @@ class TrainModel(Job):
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
-            train_dataset=ChessMovesDataGenerator(pgn_file=pgn_file, n_data=n_data, mode="train"),
-            eval_dataset=ChessMovesDataGenerator(pgn_file=pgn_file, n_data=n_data//5, mode="eval"),
+            train_dataset=ChessMovesDataGenerator(pgn_file=pgn_file, p_sample=0.5, n_data=n_data, mode="train"),
+            eval_dataset=ChessMovesDataGenerator(pgn_file=pgn_file, p_sample=0.5, n_data=n_data//5, mode="eval"),
         )
 
         self.trainer.add_callback(NeptunePytorchCallback)

@@ -7,6 +7,8 @@ from collections import namedtuple
 
 from chess import Move, PIECE_SYMBOLS
 
+from data_processing.data_utils import get_split
+
 BoardState = namedtuple("BoardState", "board active_player castles")
 # ChessMove = namedtuple('ChessMove', 'from_square to_square promotion')
 Transition = namedtuple("Transition", "board move")
@@ -126,12 +128,26 @@ def fen_to_board_state(fen_str):
 
 
 class ChessDataGenerator(torch.utils.data.Dataset):
-    def __init__(self, pgn_file, p_sample=1.0, n_data=None, mode="train"):
-        self.pgn_database = open(pgn_file, errors='ignore')
+    def __init__(self, data):
+        self.data = data
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+
+class ChessDataConstructor:
+    def __init__(self, pgn_file, p_sample=1.0, n_data=None, train_eval_split=0.95):
+        self.pgn_database = open(pgn_file, errors="ignore")
         self.p_sample = p_sample
         self.n_data = n_data
-        self.mode = mode
+        self.train_eval_split = train_eval_split
         self.data_queue = {}
+        self.eval_data_queue = {}
+
+        self.n_games = 0
         self.create_data()
 
     def next_game_to_raw_data(self):
@@ -148,7 +164,9 @@ class ChessDataGenerator(torch.utils.data.Dataset):
             _, chess_move = move
             try:
                 board.push(chess_move)
-                transitions.append(Transition(fen_to_board_state(board.fen()), chess_move))
+                transitions.append(
+                    Transition(fen_to_board_state(board.fen()), chess_move)
+                )
             except:
                 break
 
@@ -156,48 +174,40 @@ class ChessDataGenerator(torch.utils.data.Dataset):
 
     def create_data(self):
         n_iterations = 0
-        while len(self.data_queue) < self.n_data:
+        while len(self.data_queue) + len(self.eval_data_queue) < self.n_data:
             n_iterations += 1
-            self.game_data_to_train_data(self.next_game_to_raw_data())
+            train_eval = get_split(n_iterations, self.train_eval_split)
+            self.game_to_dataset(self.next_game_to_raw_data(), train_eval)
+            self.n_games += 1
             if n_iterations % 1000 == 0:
                 print(
-                    f"Preparing dataset. Current len(self.data_queue) = {len(self.data_queue)} = {(10000*len(self.data_queue)/self.n_data)//100} %"
+                    f"Preparing dataset datapoints = {len(self.data_queue) + len(self.eval_data_queue)} = "
+                    f"{(10000*(len(self.data_queue)+len(self.eval_data_queue))/self.n_data)//100} % used {self.n_games} games"
                 )
-        print(
-            f"Final dataset {self.mode}. Current len(self.data_queue) = {len(self.data_queue)} = {(10000 * len(self.data_queue) / self.n_data) // 100} % \n \n"
-        )
 
-    def __getitem__(self, idx):
-        # if idx not in self.data_queue:
-        #     self.extend_data(idx)
-        return self.data_queue[idx]
+    def get_train_set_generator(self):
+        return ChessDataGenerator(self.data_queue)
 
-    # def extend_data(self, idx):
-    #     num_trials = 0
-    #     if idx not in self.data_queue:
-    #         num_trials += 1
-    #         if num_trials > self.length:
-    #             raise ValueError(
-    #                 f"Could not find new data from games, maybe there is too little games in the PGN dataset. len(self.data_queue = {len(self.data_queue)} idx = {idx}")
-    #         self.game_data_to_train_data(self.next_game_to_raw_data())
+    def get_eval_set_generator(self):
+        return ChessDataGenerator(self.eval_data_queue)
 
-    def game_data_to_train_data(self, game):
+    def game_to_dataset(self, game, train_eval):
         raise NotImplementedError
-
-    def __len__(self):
-        return self.n_data
 
 
 class ChessMovesDataGenerator(ChessDataGenerator):
-    def game_data_to_train_data(self, game):
+    def game_to_dataset(self, game, train_eval):
+        if train_eval == "train":
+            current_dataset = self.data_queue
+        elif train_eval == "eval":
+            current_dataset = self.eval_data_queue
+        else:
+            raise ValueError(
+                f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
+            )
         for transition in game.transitions:
             if random.random() <= self.p_sample:
-                self.data_queue[len(self.data_queue)] = {
+                current_dataset[len(self.data_queue)] = {
                     "input_ids": ChessTokenizer.encode_board(transition.board),
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }
-
-
-# x = ChessMovesDataGenerator("/home/tomek/Research/subgoal_chess_data/chess_micro_aa")
-# x.__getitem__(3000)
-# d = 4

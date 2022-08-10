@@ -24,43 +24,20 @@ small_config = BartConfig(
     max_position_embeddings=128,
     encoder_ffn_dim=512,
     decoder_ffn_dim=512,
-    decoder_layers=4,
-    encoder_layers=4,
+    decoder_layers=8,
+    encoder_layers=8,
     encoder_attention_heads=4,
     decoder_attention_heads=4,
     d_model=256,
 )
 
-medium_config = BartConfig(
-    vocab_size=128,
-    max_position_embeddings=128,
-    encoder_layers=10,
-    encoder_ffn_dim=1024,
-    decoder_layers=10,
-    decoder_ffn_dim=1024,
-    d_model=128,
-)
-
 
 small_training_args = TrainingArguments(
     output_dir=LOG_DIR + "/out2",  # output directory
-    num_train_epochs=5,  # total number of training epochs
-    per_device_train_batch_size=16,  # batch size per device during training
-    per_device_eval_batch_size=16,  # batch size for evaluation
+    num_train_epochs=2,  # total number of training epochs
+    per_device_train_batch_size=32,  # batch size per device during training
+    per_device_eval_batch_size=32,  # batch size for evaluation
     warmup_steps=500,  # number of warmup steps for learning rate scheduler
-    weight_decay=0.01,  # strength of weight decay
-    logging_dir=LOG_DIR + "/results2",  # directory for storing logs
-    logging_steps=1000,
-    evaluation_strategy="steps",
-    eval_steps=2000,
-)
-
-training_args = TrainingArguments(
-    output_dir=LOG_DIR + "/out2",  # output directory
-    num_train_epochs=3,  # total number of training epochs
-    per_device_train_batch_size=256,  # batch size per device during training
-    per_device_eval_batch_size=256,  # batch size for evaluation
-    warmup_steps=3000,  # number of warmup steps for learning rate scheduler
     weight_decay=0.01,  # strength of weight decay
     logging_dir=LOG_DIR + "/results2",  # directory for storing logs
     logging_steps=1000,
@@ -73,7 +50,7 @@ x = TrainModel(
     small_config,
     small_training_args,
     pgn_file="/home/tomek/Research/subgoal_chess_data/database.pgn",
-    n_data=10**6,
+    n_data=5*10**5,
     save_model_path="/home/tomek/Research/subgoal_chess_data/local_policy",
 )
 
