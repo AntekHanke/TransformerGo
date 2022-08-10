@@ -4,3 +4,4 @@ path = "/home/tomek/Research/subgoal_chess_data/policy/micro/"
 
 model = AutoModel.from_pretrained(path)
 
+

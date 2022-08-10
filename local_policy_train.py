@@ -46,12 +46,12 @@ small_training_args = TrainingArguments(
 )
 
 
+dataset = ChessMovesDataGenerator(pgn_file="/home/tomek/Research/subgoal_chess_data/database.pgn", n_data=5000)
 x = TrainModel(
     small_config,
     small_training_args,
-    pgn_file="/home/tomek/Research/subgoal_chess_data/database.pgn",
-    n_data=5*10**5,
-    save_model_path="/home/tomek/Research/subgoal_chess_data/local_policy",
+    chess_database=dataset,
+    save_model_path="/home/tomek/Research/subgoal_chess_data/local_policy_test",
 )
 
 # x = TrainModel(

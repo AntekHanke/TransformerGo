@@ -18,8 +18,7 @@ class TrainModel(Job):
         self,
         model_config=None,
         training_args=None,
-        pgn_file=None,
-        n_data=None,
+        chess_database=None,
         save_model_path=None
     ):
         self.model_config = model_config
@@ -29,8 +28,8 @@ class TrainModel(Job):
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
-            train_dataset=ChessMovesDataGenerator(pgn_file=pgn_file, p_sample=0.5, n_data=n_data, mode="train"),
-            eval_dataset=ChessMovesDataGenerator(pgn_file=pgn_file, p_sample=0.5, n_data=n_data//5, mode="eval"),
+            train_dataset=chess_database.get_train_set_generator(),
+            eval_dataset=chess_database.get_eval_set_generator(),
         )
 
         self.trainer.add_callback(NeptunePytorchCallback)
