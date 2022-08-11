@@ -19,15 +19,15 @@ class Policy:
         #     print(f'char = {ChessTokenizer.tokens_to_vocab[s]}')
         #
         # print(ChessTokenizer.decode_move(outputs[0][1:4]))
-        return ChessTokenizer.decode_move(outputs[1][1:4])
+        return ChessTokenizer.decode_move(outputs[0][1:4])
         # print(ChessTokenizer.decode_move(outputs[1][1:4]))
 
 
 
-ufik = Policy("/home/tomek/Research/subgoal_chess_data/local_policy")
-board = chess.Board()
-print(board.fen())
-
-
-
-ufik.get_best_moves(board)
+# ufik = Policy("/home/tomek/Research/subgoal_chess_data/local_policy")
+# board = chess.Board()
+# print(board.fen())
+#
+#
+#
+# ufik.get_best_moves(board)

@@ -9,8 +9,14 @@ from transformers import (
 from config.global_config import source_files_register
 from data_processing.chess_data_generator import ChessMovesDataGenerator
 from jobs.train_model import TrainModel
+from mrunner_utils.neptune_logger import NeptuneLogger
+import metric_logging
+
 
 source_files_register.register(__file__)
+neptune_logger = NeptuneLogger(name="eagle_policy_train", tags=["eagle", "policy"])
+metric_logging.register_logger(neptune_logger)
+
 
 LOCAL_LOG_DIR = "/home/tomek/Research/subgoal_chess_data"
 ENTROPY_LOG_DIR = "/home/todrzygozdz/subgoal_search_storage/large_data/"
@@ -46,12 +52,17 @@ small_training_args = TrainingArguments(
 )
 
 
-dataset = ChessMovesDataGenerator(pgn_file="/home/tomek/Research/subgoal_chess_data/database.pgn", n_data=5000)
+# neptune_callback = NeptunePytorchCallback(name="eagle_policy_train", tags=["eagle", "policy"])
+
+dataset = ChessMovesDataGenerator(
+    pgn_file="/home/tomek/Research/subgoal_chess_data/database.pgn", n_data=15000
+)
 x = TrainModel(
     small_config,
     small_training_args,
     chess_database=dataset,
     save_model_path="/home/tomek/Research/subgoal_chess_data/local_policy_test",
+    neptune_logger=neptune_logger,
 )
 
 # x = TrainModel(
@@ -63,4 +74,3 @@ x = TrainModel(
 # )
 
 x.execute()
-

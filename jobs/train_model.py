@@ -8,7 +8,7 @@ from transformers import (
     BartConfig,
 )
 
-from mrunner_utils.neptune_callback import NeptunePytorchCallback
+from mrunner_utils.neptune_logger import NeptunePytorchCallback
 
 source_files_register.register(__file__)
 
@@ -19,7 +19,8 @@ class TrainModel(Job):
         model_config=None,
         training_args=None,
         chess_database=None,
-        save_model_path=None
+        save_model_path=None,
+        neptune_logger=None
     ):
         self.model_config = model_config
         self.training_args = training_args
@@ -32,7 +33,7 @@ class TrainModel(Job):
             eval_dataset=chess_database.get_eval_set_generator(),
         )
 
-        self.trainer.add_callback(NeptunePytorchCallback)
+        self.trainer.add_callback(neptune_logger.get_pytorch_callback())
 
         assert save_model_path is not None
 

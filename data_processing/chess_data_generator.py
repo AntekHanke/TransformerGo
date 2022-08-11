@@ -5,6 +5,7 @@ from collections import namedtuple
 
 from data_processing.chess_tokenizer import fen_to_board_state, ChessTokenizer, board_to_board_state
 from data_processing.data_utils import get_split
+from metric_logging import log_value
 
 Transition = namedtuple("Transition", "board move")
 OneGameData = namedtuple("OneGameData", "metadata, transitions")
@@ -63,10 +64,11 @@ class ChessDataGenerator:
             self.game_to_dataset(self.next_game_to_raw_data(), train_eval)
             self.n_games += 1
             if n_iterations % 1000 == 0:
-                print(
-                    f"Preparing dataset datapoints = {len(self.data_queue) + len(self.eval_data_queue)} = "
-                    f"{(10000*(len(self.data_queue)+len(self.eval_data_queue))/self.n_data)//100} % used {self.n_games} games"
-                )
+                log_value('Train dataset points', n_iterations, len(self.data_queue))
+                log_value('Eval dataset points', n_iterations, len(self.eval_data_queue))
+                log_value('Dataset games', n_iterations, self.n_games)
+                log_value('Dataset size', n_iterations, len(self.data_queue) + len(self.eval_data_queue))
+                log_value('Dataset progress', n_iterations, (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data)
 
     def get_train_set_generator(self):
         return ChessDataset(self.data_queue)

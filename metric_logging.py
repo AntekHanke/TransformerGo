@@ -9,7 +9,7 @@ class StdoutLogger:
     """Logs to standard output."""
 
     @staticmethod
-    def log_scalar(name, step, value):
+    def log_value(name, step, value):
         """Logs a scalar to stdout."""
         # Format:
         #      1 | accuracy:                   0.789
@@ -21,24 +21,10 @@ class StdoutLogger:
             print('{:>6} | {:64}{:>9.3f}'.format(step, name + ':', value))
 
     @staticmethod
-    def log_property(name, value):
+    def log(name, value):
         # Not supported in this logger.
         pass
 
-    @staticmethod
-    def log_image(name, step, value):
-        # Not supported in this logger.
-        pass
-
-    @staticmethod
-    def log_python_file(name, path):
-        # Not supported in this logger.
-        pass
-
-    @staticmethod
-    def log_text(name, content, show_on_screen):
-        if show_on_screen:
-            print(f'{name} | {content}')
 
 _loggers = [StdoutLogger]
 
@@ -46,29 +32,15 @@ def register_logger(logger):
     """Adds a logger to log to."""
     _loggers.append(logger)
 
-def log_scalar(name, step, value):
+def log_value(name, step, value):
     """Logs a scalar to the loggers."""
     for logger in _loggers:
-        logger.log_scalar(name, step, value)
+        logger.log_value(name, step, value)
 
-def log_property(name, value):
-    """Logs a property to the loggers."""
+def log(name, object):
     for logger in _loggers:
-        logger.log_property(name, value)
+        logger.log(name, object)
 
-def log_image(name, step, value):
-    """Logs an image to the loggers."""
-    for logger in _loggers:
-        logger.log_image(name, step, value)
-
-def log_scalar_metrics(prefix, step, metrics):
-    for (name, value) in metrics.items():
-        log_scalar(prefix + '/' + name, step, value)
-
-def log_text(name, content, show_on_screen=False):
-    """Logs a property to the loggers."""
-    for logger in _loggers:
-        logger.log_text(name, content, show_on_screen)
 
 
 def compute_scalar_statistics(x, prefix=None, with_min_and_max=False):
@@ -116,13 +88,3 @@ class MetricsAccumulator:
 
     def get_value(self, name):
         return self._metrics[name]
-
-
-class ExperimentMetric:
-    """Calculates metric value across epochs."""
-
-    def update_state(self, epoch, episodes):
-        raise NotImplementedError
-
-    def result(self, epoch):
-        raise NotImplementedError
