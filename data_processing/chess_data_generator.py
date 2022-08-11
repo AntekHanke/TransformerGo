@@ -1,9 +1,15 @@
+import pickle
+
 import chess.pgn
 import random
 import torch
 from collections import namedtuple
 
-from data_processing.chess_tokenizer import fen_to_board_state, ChessTokenizer, board_to_board_state
+from data_processing.chess_tokenizer import (
+    fen_to_board_state,
+    ChessTokenizer,
+    board_to_board_state,
+)
 from data_processing.data_utils import get_split
 from metric_logging import log_value
 
@@ -48,9 +54,7 @@ class ChessDataGenerator:
             _, chess_move = move
             try:
                 board.push(chess_move)
-                transitions.append(
-                    Transition(board, chess_move)
-                )
+                transitions.append(Transition(board, chess_move))
             except:
                 break
 
@@ -64,11 +68,21 @@ class ChessDataGenerator:
             self.game_to_dataset(self.next_game_to_raw_data(), train_eval)
             self.n_games += 1
             if n_iterations % 1000 == 0:
-                log_value('Train dataset points', n_iterations, len(self.data_queue))
-                log_value('Eval dataset points', n_iterations, len(self.eval_data_queue))
-                log_value('Dataset games', n_iterations, self.n_games)
-                log_value('Dataset size', n_iterations, len(self.data_queue) + len(self.eval_data_queue))
-                log_value('Dataset progress', n_iterations, (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data)
+                log_value("Train dataset points", n_iterations, len(self.data_queue))
+                log_value(
+                    "Eval dataset points", n_iterations, len(self.eval_data_queue)
+                )
+                log_value("Dataset games", n_iterations, self.n_games)
+                log_value(
+                    "Dataset size",
+                    n_iterations,
+                    len(self.data_queue) + len(self.eval_data_queue),
+                )
+                log_value(
+                    "Dataset progress",
+                    n_iterations,
+                    (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
+                )
 
     def get_train_set_generator(self):
         return ChessDataset(self.data_queue)
@@ -81,6 +95,23 @@ class ChessDataGenerator:
 
 
 class ChessMovesDataGenerator(ChessDataGenerator):
+    def game_to_dataset(self, game, train_eval):
+        if train_eval == "train":
+            current_dataset = self.data_queue
+        elif train_eval == "eval":
+            current_dataset = self.eval_data_queue
+        else:
+            raise ValueError(
+                f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
+            )
+        for transition in game.transitions:
+            if random.random() <= self.p_sample:
+                current_dataset[len(current_dataset)] = {
+                    "input_ids": ChessTokenizer.encode_board(transition.board),
+                    "labels": ChessTokenizer.encode_move(transition.move),
+                }
+
+class ChessSubgoalDataGenerator(ChessDataGenerator):
     def game_to_dataset(self, game, train_eval):
         if train_eval == "train":
             current_dataset = self.data_queue
