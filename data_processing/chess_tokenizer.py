@@ -1,8 +1,9 @@
 from collections import namedtuple
 
+import chess
 from chess import Move, PIECE_SYMBOLS
 
-BoardState = namedtuple("BoardState", "board active_player castles")
+ImmutableBoard = namedtuple("ImmutableBoard", "board active_player castles")
 
 PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}
 INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
@@ -45,11 +46,10 @@ class ChessTokenizer:
 
 
     @classmethod
-    def encode_board(cls, board):
-        board_state = board_to_board_state(board)
+    def encode_board(cls, immutable_board):
         board_string = ""
         board_tokens = []
-        for c in board_state.board:
+        for c in immutable_board.board:
             if c.isdigit() in list(range(1, 9)):
                 board_string += "." * int(c)
             else:
@@ -58,8 +58,8 @@ class ChessTokenizer:
         for c in board_string:
             board_tokens.append(cls.vocab_to_tokens[c])
 
-        board_tokens.append(cls.vocab_to_tokens[board_state.active_player])
-        board_tokens.append(cls.vocab_to_tokens[board_state.castles])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.active_player])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.castles])
 
         assert (
             len(board_tokens) == 73
@@ -120,15 +120,21 @@ class ChessTokenizer:
             raise MoveDocodingException("Could not decode move")
 
 
-def fen_to_board_state(fen_str):
+def fen_to_immutable_board(fen_str):
     fen_components = fen_str.split()
-    return BoardState(
+    return ImmutableBoard(
         board=fen_components[0],
         active_player=fen_components[1],
         castles=fen_components[2],
     )
 
+def immutable_board_to_fen(immutable_board):
+    return immutable_board.board + " " + immutable_board.active_player + " " + immutable_board.castles
 
-def board_to_board_state(board):
-    return fen_to_board_state(board.fen())
+
+def board_to_immutable_board(board):
+    return fen_to_immutable_board(board.fen())
+
+# def immutable_board_to_board(immutable_board):
+#     return chess.Board(fen=)
 

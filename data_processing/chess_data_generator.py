@@ -6,9 +6,9 @@ import torch
 from collections import namedtuple
 
 from data_processing.chess_tokenizer import (
-    fen_to_board_state,
+    fen_to_immutable_board,
     ChessTokenizer,
-    board_to_board_state,
+    board_to_immutable_board,
 )
 from data_processing.data_utils import get_split, boards_to_img
 from metric_logging import log_value, log_object
@@ -57,7 +57,7 @@ class ChessDataGenerator:
             _, chess_move = move
             try:
                 board.push(chess_move)
-                transitions.append(Transition(board, chess_move))
+                transitions.append(Transition(board_to_immutable_board(board), chess_move))
             except:
                 break
 
@@ -70,22 +70,27 @@ class ChessDataGenerator:
             train_eval = get_split(n_iterations, self.train_eval_split)
             self.game_to_dataset(self.next_game_to_raw_data(), train_eval)
             self.n_games += 1
-            if n_iterations % 1000 == 0:
-                log_value("Train dataset points", n_iterations, len(self.data_queue))
-                log_value(
-                    "Eval dataset points", n_iterations, len(self.eval_data_queue)
-                )
-                log_value("Dataset games", n_iterations, self.n_games)
-                log_value(
-                    "Dataset size",
-                    n_iterations,
-                    len(self.data_queue) + len(self.eval_data_queue),
-                )
-                log_value(
-                    "Dataset progress",
-                    n_iterations,
-                    (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
-                )
+            self.log_progress(n_iterations)
+
+
+    def log_progress(self, n_iterations):
+        if n_iterations % 1000 == 0:
+            log_value("Train dataset points", n_iterations, len(self.data_queue))
+            log_value(
+                "Eval dataset points", n_iterations, len(self.eval_data_queue)
+            )
+            log_value("Dataset games", n_iterations, self.n_games)
+            log_value(
+                "Dataset size",
+                n_iterations,
+                len(self.data_queue) + len(self.eval_data_queue),
+            )
+            log_value(
+                "Dataset progress",
+                n_iterations,
+                (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
+            )
+
 
     def get_train_set_generator(self):
         return ChessDataset(self.data_queue)

@@ -54,7 +54,7 @@ fast_iter_training = TrainingArguments(
 )
 
 
-dataset = PolicyDataGenerator(pgn_file=LOCAL_PGN, p_sample=1, n_data=5 * 10 ** 4, log_samples_limit=10)
+dataset = PolicyDataGenerator(pgn_file=LOCAL_PGN, p_sample=1, n_data= 10 ** 3, log_samples_limit=25)
 
 # TrainModel(
 #     fast_iter_config,
