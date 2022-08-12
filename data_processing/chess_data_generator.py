@@ -10,8 +10,8 @@ from data_processing.chess_tokenizer import (
     ChessTokenizer,
     board_to_board_state,
 )
-from data_processing.data_utils import get_split
-from metric_logging import log_value
+from data_processing.data_utils import get_split, boards_to_img
+from metric_logging import log_value, log_object
 
 Transition = namedtuple("Transition", "board move")
 OneGameData = namedtuple("OneGameData", "metadata, transitions")
@@ -29,13 +29,16 @@ class ChessDataset(torch.utils.data.Dataset):
 
 
 class ChessDataGenerator:
-    def __init__(self, pgn_file, p_sample=1.0, n_data=None, train_eval_split=0.95):
+    def __init__(self, pgn_file, p_sample=1.0, n_data=None, train_eval_split=0.95, log_samples_limit=None):
         self.pgn_database = open(pgn_file, errors="ignore")
         self.p_sample = p_sample
         self.n_data = n_data
         self.train_eval_split = train_eval_split
+        self.log_samples_limit = log_samples_limit
         self.data_queue = {}
         self.eval_data_queue = {}
+        self.logged_samples = 0
+
 
         self.n_games = 0
         self.create_data()
@@ -110,6 +113,10 @@ class PolicyDataGenerator(ChessDataGenerator):
                     "input_ids": ChessTokenizer.encode_board(transition.board),
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }
+                if self.log_samples_limit is not None:
+                    if self.logged_samples < self.log_samples_limit:
+                        log_object('Data sample', boards_to_img([transition.board], str(transition.move)))
+                        self.logged_samples += 1
 
 class ChessSubgoalDataGenerator(ChessDataGenerator):
     def game_to_dataset(self, game, train_eval):

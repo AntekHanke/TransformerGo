@@ -9,6 +9,8 @@ INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
 TOKENIZED_BOARD_LENGTH = 73
 NON_SPECIAL_TOKENS_START = 11
 
+class MoveDocodingException(Exception):
+    pass
 
 class ChessTokenizer:
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
@@ -98,21 +100,24 @@ class ChessTokenizer:
         else:
             move_tokens.append(cls.vocab_to_tokens["-"])
 
-        move_tokens.append(cls.vocab_to_tokens["<EOS>"])
+        # move_tokens.append(cls.vocab_to_tokens["<EOS>"])
         return move_tokens
 
     @classmethod
     def decode_move(cls, move_tokens):
-        promotion_str = cls.tokens_to_vocab[move_tokens[-1]]
-        if promotion_str == "-":
-            promotion = None
-        else:
-            promotion = PIECE_SYMBOL_TO_INT[promotion_str]
-        return Move(
-            cls.tokens_to_vocab[move_tokens[0]],
-            cls.tokens_to_vocab[move_tokens[1]],
-            promotion,
-        )
+        try:
+            promotion_str = cls.tokens_to_vocab[move_tokens[-1]]
+            if promotion_str == "-":
+                promotion = None
+            else:
+                promotion = PIECE_SYMBOL_TO_INT[promotion_str]
+            return Move(
+                cls.tokens_to_vocab[move_tokens[0]],
+                cls.tokens_to_vocab[move_tokens[1]],
+                promotion,
+            )
+        except:
+            raise MoveDocodingException("Could not decode move")
 
 
 def fen_to_board_state(fen_str):

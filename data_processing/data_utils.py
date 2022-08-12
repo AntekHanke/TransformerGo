@@ -39,7 +39,6 @@ def boards_to_img(boards, boards_descriptions, size=5):
     fig = plt.figure(figsize=(size * len(boards), size))
 
     for board, title, num in zip(boards, boards_descriptions, range(len(boards))):
-        plt.clf()
         fig.add_subplot(1, len(boards), num + 1)
         board = chess.svg.board(board=board)
         img_png = cairosvg.svg2png(board)
@@ -49,6 +48,7 @@ def boards_to_img(boards, boards_descriptions, size=5):
         ax.get_yaxis().set_visible(False)
         ax.set_title(title)
         plt.imshow(img)
+        plt.close(fig)
         return fig
     # plt.show()
 

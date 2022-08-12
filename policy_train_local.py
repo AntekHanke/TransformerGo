@@ -23,7 +23,7 @@ LOCAL_PGN = "/home/tomek/Research/subgoal_chess_data/database.pgn"
 
 LOG_DIR = LOCAL_LOG_DIR
 
-neptune_logger = NeptuneLogger(name=f"policy_train fast local", tags=["eagle", "policy"])
+neptune_logger = NeptuneLogger(name=f"policy_train fast local", tags=["local", "policy"])
 metric_logging.register_logger(neptune_logger)
 
 fast_iter_config = BartConfig(
@@ -54,14 +54,14 @@ fast_iter_training = TrainingArguments(
 )
 
 
-dataset = PolicyDataGenerator(pgn_file=LOCAL_PGN, p_sample=1, n_data=5 * 10 ** 4)
+dataset = PolicyDataGenerator(pgn_file=LOCAL_PGN, p_sample=1, n_data=5 * 10 ** 4, log_samples_limit=10)
 
-TrainModel(
-    fast_iter_config,
-    fast_iter_training,
-    chess_database=dataset,
-    save_model_path=LOG_DIR + "/fast_iter_policy_model",
-    neptune_logger=neptune_logger,
-).execute()
+# TrainModel(
+#     fast_iter_config,
+#     fast_iter_training,
+#     chess_database=dataset,
+#     save_model_path=LOG_DIR + "/fast_iter_policy_model",
+#     neptune_logger=neptune_logger,
+# ).execute()
 
 

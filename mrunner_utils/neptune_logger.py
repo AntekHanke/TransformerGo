@@ -35,7 +35,7 @@ class NeptuneLogger:
     def log_value_without_step(self, name, value):
         self.run[name].log(value=value)
 
-    def log(self, name, object):
+    def log_object(self, name, object):
         """Logs an image to Neptune."""
         self.run[name].log(object)
 

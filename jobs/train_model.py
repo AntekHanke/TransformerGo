@@ -35,7 +35,7 @@ class TrainModel(Job):
         )
 
         self.trainer.add_callback(neptune_logger.get_pytorch_callback())
-        self.trainer.add_callback(PolicyEvalCallback)
+        # self.trainer.add_callback(PolicyEvalCallback)
 
         assert save_model_path is not None
 
