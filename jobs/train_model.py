@@ -1,5 +1,6 @@
 from config.global_config import source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator
+from data_processing.model_eval_callbacks import PolicyEvalCallback
 from jobs.core import Job
 from transformers import (
     TrainingArguments,
@@ -34,6 +35,7 @@ class TrainModel(Job):
         )
 
         self.trainer.add_callback(neptune_logger.get_pytorch_callback())
+        self.trainer.add_callback(PolicyEvalCallback)
 
         assert save_model_path is not None
 

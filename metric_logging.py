@@ -21,7 +21,14 @@ class StdoutLogger:
             print('{:>6} | {:64}{:>9.3f}'.format(step, name + ':', value))
 
     @staticmethod
-    def log(name, value):
+    def log_value_without_step(name, value):
+        if 0 < value < 1e-2:
+            print('{:64}{:>9.1e}'.format(name + ':', value))
+        else:
+            print('{:64}{:>9.3f}'.format(name + ':', value))
+
+    @staticmethod
+    def log_object(name, value):
         # Not supported in this logger.
         pass
 
@@ -37,9 +44,14 @@ def log_value(name, step, value):
     for logger in _loggers:
         logger.log_value(name, step, value)
 
-def log(name, object):
+def log_value_without_step(name, value):
+    """Logs a scalar to the loggers."""
     for logger in _loggers:
-        logger.log(name, object)
+        logger.log_value_without_step(name, value)
+
+def log_object(name, object):
+    for logger in _loggers:
+        logger.log_object(name, object)
 
 
 

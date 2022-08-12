@@ -6,12 +6,15 @@ from data_processing.chess_tokenizer import ChessTokenizer, board_to_board_state
 
 
 class Policy:
-    def __init__(self, model_checkpoint_path):
-        self.model =  BartForConditionalGeneration.from_pretrained(model_checkpoint_path)
+    def __init__(self, checkpoint_path_or_model):
+        if isinstance(checkpoint_path_or_model, str):
+            self.model =  BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
+        else:
+            self.model = checkpoint_path_or_model
 
     def get_best_move(self, board):
         encoded_board = ChessTokenizer.encode_board(board)
-        input_tensor = torch.IntTensor([encoded_board])
+        input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
         outputs = self.model.generate(input_tensor).tolist()
         return ChessTokenizer.decode_move(outputs[0][1:4])
 
