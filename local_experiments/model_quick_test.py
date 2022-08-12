@@ -1,3 +1,5 @@
+import random
+
 import chess
 import neptune.new as neptune
 
@@ -22,17 +24,24 @@ if USE_NEPTUNE:
 board = chess.Board()
 weak_policy = Policy("/home/tomek/Research/subgoal_chess_data/policy_eagle_big_data")
 
+
+
 move_number = 1
 
 while not board.is_game_over():
+    legal_moves = board.generate_legal_moves()
     print(f"Board to generate move: \n {board}")
-    move = weak_policy.get_best_move(board)
-    print(f"Move: {move}")
-    print('************************')
-    if USE_NEPTUNE:
-        image = boards_to_img([board], [f"Move: {move}"])
-        run["gameplay"].log(image)
-
-    # print(f"Board: {board} \n move: {move}")
+    move = random.choice([move for move in legal_moves])
     board.push(move)
+    policy_move = weak_policy.get_best_move(board)
+    print(f"Policy move: {policy_move}")
+
+    # print(f"Move: {move}")
+    print('************************')
+    # if USE_NEPTUNE:
+    #     image = boards_to_img([board], [f"Move: {move}"])
+    #     run["gameplay"].log(image)
+    #
+    # # print(f"Board: {board} \n move: {move}")
+    # board.push(move)
 

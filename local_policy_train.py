@@ -7,7 +7,7 @@ from transformers import (
 )
 
 from config.global_config import source_files_register
-from data_processing.chess_data_generator import ChessMovesDataGenerator
+from data_processing.chess_data_generator import PolicyDataGenerator
 from jobs.train_model import TrainModel
 from mrunner_utils.neptune_logger import NeptuneLogger
 import metric_logging
@@ -54,7 +54,7 @@ small_training_args = TrainingArguments(
 
 # neptune_callback = NeptunePytorchCallback(name="eagle_policy_train", tags=["eagle", "policy"])
 
-dataset = ChessMovesDataGenerator(
+dataset = PolicyDataGenerator(
     pgn_file="/home/tomek/Research/subgoal_chess_data/database.pgn", n_data=15000
 )
 x = TrainModel(

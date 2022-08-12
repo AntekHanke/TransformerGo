@@ -1,5 +1,5 @@
 from config.global_config import source_files_register
-from data_processing.chess_data_generator import ChessMovesDataGenerator
+from data_processing.chess_data_generator import PolicyDataGenerator
 from jobs.core import Job
 from transformers import (
     TrainingArguments,

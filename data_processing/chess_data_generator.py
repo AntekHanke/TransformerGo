@@ -94,7 +94,7 @@ class ChessDataGenerator:
         raise NotImplementedError
 
 
-class ChessMovesDataGenerator(ChessDataGenerator):
+class PolicyDataGenerator(ChessDataGenerator):
     def game_to_dataset(self, game, train_eval):
         if train_eval == "train":
             current_dataset = self.data_queue

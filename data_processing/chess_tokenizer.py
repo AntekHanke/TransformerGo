@@ -7,6 +7,7 @@ BoardState = namedtuple("BoardState", "board active_player castles")
 PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}
 INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
 TOKENIZED_BOARD_LENGTH = 73
+NON_SPECIAL_TOKENS_START = 11
 
 
 class ChessTokenizer:
@@ -31,10 +32,15 @@ class ChessTokenizer:
         "-",
     ]
     players = ["w", "b"]
-    special_tokes = ["<SEP>", "<EOS>"]
-    vocab = special_tokes + pieces + squares + players + castlings
-    vocab_to_tokens = {symbol: i for i, symbol in enumerate(vocab)}
-    tokens_to_vocab = {i: symbol for i, symbol in enumerate(vocab)}
+    non_special_vocab = pieces + squares + players + castlings
+    special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
+    vocab_to_tokens = {
+        symbol: i + NON_SPECIAL_TOKENS_START
+        for i, symbol in enumerate(non_special_vocab)
+    }
+    vocab_to_tokens.update(special_vocab_to_tokens)
+    tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
+
 
     @classmethod
     def encode_board(cls, board):
@@ -117,5 +123,7 @@ def fen_to_board_state(fen_str):
         castles=fen_components[2],
     )
 
+
 def board_to_board_state(board):
     return fen_to_board_state(board.fen())
+
