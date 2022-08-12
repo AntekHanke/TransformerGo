@@ -16,6 +16,3 @@ class ImmutableBoard(ImmutableBoardData):
 
     def to_board(self):
         return chess.Board(fen=" ".join(self))
-
-
-x

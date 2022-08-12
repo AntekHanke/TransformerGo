@@ -3,6 +3,7 @@ from collections import namedtuple
 import chess
 from chess import Move, PIECE_SYMBOLS
 
+from data_processing.data_structures import ImmutableBoard
 
 PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}
 INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
@@ -76,7 +77,8 @@ class ChessTokenizer:
     def decode_board(cls, board_tokens):
         board_string_with_dots = ""
         for i, token in enumerate(board_tokens):
-            if i == 71 or i == 72:
+            # if i in  [71, 72, 73, 74, 75]:
+            if i >= 71:
                 board_string_with_dots += " "
             board_string_with_dots += cls.tokens_to_vocab[token]
 
@@ -91,7 +93,7 @@ class ChessTokenizer:
                     board_string += str(dots_counter)
                     dots_counter = 0
                 board_string += c
-        return board_string
+        return ImmutableBoard(*board_string.split())
 
     @classmethod
     def encode_move(cls, chess_move):

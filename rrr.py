@@ -18,4 +18,9 @@ class ImmutableBoard(ImmutableBoardData):
 x = chess.Board()
 y1 = ImmutableBoard.from_board(x)
 
-ChessTokenizer.encode_immutable_board(y1)
+eim = ChessTokenizer.encode_immutable_board(y1)
+dim = ChessTokenizer.decode_board(eim)
+
+new_board = dim.to_board()
+
+print(new_board)
