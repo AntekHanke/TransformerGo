@@ -59,10 +59,10 @@ class ChessDataGenerator:
         for move in enumerate(self.current_game.mainline_moves()):
             _, chess_move = move
             try:
-                board.push(chess_move)
                 transitions.append(
                     Transition(ImmutableBoard.from_board(board), chess_move)
                 )
+                board.push(chess_move)
             except:
                 break
 
