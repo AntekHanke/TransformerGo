@@ -115,7 +115,7 @@ class PolicyDataGenerator(ChessDataGenerator):
         for transition in game.transitions:
             if random.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
-                    "input_ids": ChessTokenizer.encode_board(transition.board),
+                    "input_ids": ChessTokenizer.encode_immutable_board(transition.board),
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }
                 if self.log_samples_limit is not None:
@@ -136,6 +136,6 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
         for transition in game.transitions:
             if random.random() <= self.p_sample:
                 current_dataset[len(self.data_queue)] = {
-                    "input_ids": ChessTokenizer.encode_board(transition.board),
+                    "input_ids": ChessTokenizer.encode_immutable_board(transition.board),
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }

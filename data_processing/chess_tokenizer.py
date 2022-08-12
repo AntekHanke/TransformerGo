@@ -3,19 +3,23 @@ from collections import namedtuple
 import chess
 from chess import Move, PIECE_SYMBOLS
 
-ImmutableBoard = namedtuple("ImmutableBoard", "board active_player castles")
 
 PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}
 INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
 TOKENIZED_BOARD_LENGTH = 73
 NON_SPECIAL_TOKENS_START = 11
 
+
 class MoveDocodingException(Exception):
     pass
 
+
 class ChessTokenizer:
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
-    squares = list(range(0, 64))
+    integers = [str(i) for i in range(0, 256)]
+    algebraic_fields = [f"{i}{j}" for i in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] for j in range(1, 9)]
+    moves_counter = []
+
     castlings = [
         "KQkq",
         "KQk",
@@ -35,7 +39,7 @@ class ChessTokenizer:
         "-",
     ]
     players = ["w", "b"]
-    non_special_vocab = pieces + squares + players + castlings
+    non_special_vocab = pieces + integers + algebraic_fields + players + castlings
     special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
     vocab_to_tokens = {
         symbol: i + NON_SPECIAL_TOKENS_START
@@ -44,9 +48,8 @@ class ChessTokenizer:
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
 
-
     @classmethod
-    def encode_board(cls, immutable_board):
+    def encode_immutable_board(cls, immutable_board):
         board_string = ""
         board_tokens = []
         for c in immutable_board.board:
@@ -60,9 +63,12 @@ class ChessTokenizer:
 
         board_tokens.append(cls.vocab_to_tokens[immutable_board.active_player])
         board_tokens.append(cls.vocab_to_tokens[immutable_board.castles])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.en_passant_target])
+        board_tokens.append(cls.vocab_to_tokens[str(immutable_board.halfmove_clock)])
+        board_tokens.append(cls.vocab_to_tokens[str(immutable_board.fullmove_clock)])
 
         assert (
-            len(board_tokens) == 73
+            len(board_tokens) == 76
         ), f"The number of tokens encoding the board must be 71, got len(board_tokens) = {len(board_tokens)}"
         return board_tokens
 
@@ -118,23 +124,3 @@ class ChessTokenizer:
             )
         except:
             raise MoveDocodingException("Could not decode move")
-
-
-def fen_to_immutable_board(fen_str):
-    fen_components = fen_str.split()
-    return ImmutableBoard(
-        board=fen_components[0],
-        active_player=fen_components[1],
-        castles=fen_components[2],
-    )
-
-def immutable_board_to_fen(immutable_board):
-    return immutable_board.board + " " + immutable_board.active_player + " " + immutable_board.castles
-
-
-def board_to_immutable_board(board):
-    return fen_to_immutable_board(board.fen())
-
-# def immutable_board_to_board(immutable_board):
-#     return chess.Board(fen=)
-

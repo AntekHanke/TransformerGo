@@ -13,7 +13,7 @@ class Policy:
             self.model = checkpoint_path_or_model
 
     def get_best_move(self, board):
-        encoded_board = ChessTokenizer.encode_board(board)
+        encoded_board = ChessTokenizer.encode_immutable_board(board)
         input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
         outputs = self.model.generate(input_tensor).tolist()
         return ChessTokenizer.decode_move(outputs[0][1:4])
