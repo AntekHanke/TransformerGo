@@ -98,8 +98,8 @@ class ChessTokenizer:
     @classmethod
     def encode_move(cls, chess_move):
         move_tokens = [
-            cls.vocab_to_tokens[chess_move.from_square],
-            cls.vocab_to_tokens[chess_move.to_square],
+            cls.vocab_to_tokens[str(chess_move.from_square)],
+            cls.vocab_to_tokens[str(chess_move.to_square)],
         ]
         if chess_move.promotion is not None:
             move_tokens.append(

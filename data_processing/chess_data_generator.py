@@ -5,15 +5,12 @@ import random
 import torch
 from collections import namedtuple
 
-from data_processing.chess_tokenizer import (
-    fen_to_immutable_board,
-    ChessTokenizer,
-    board_to_immutable_board,
-)
-from data_processing.data_utils import get_split, boards_to_img
+from data_processing.chess_tokenizer import ChessTokenizer
+from data_processing.data_structures import ImmutableBoard
+from data_processing.data_utils import get_split, immutable_boards_to_img
 from metric_logging import log_value, log_object
 
-Transition = namedtuple("Transition", "board move")
+Transition = namedtuple("Transition", "immutable_board move")
 OneGameData = namedtuple("OneGameData", "metadata, transitions")
 
 
@@ -29,7 +26,14 @@ class ChessDataset(torch.utils.data.Dataset):
 
 
 class ChessDataGenerator:
-    def __init__(self, pgn_file, p_sample=1.0, n_data=None, train_eval_split=0.95, log_samples_limit=None):
+    def __init__(
+        self,
+        pgn_file,
+        p_sample=1.0,
+        n_data=None,
+        train_eval_split=0.95,
+        log_samples_limit=None,
+    ):
         self.pgn_database = open(pgn_file, errors="ignore")
         self.p_sample = p_sample
         self.n_data = n_data
@@ -38,7 +42,6 @@ class ChessDataGenerator:
         self.data_queue = {}
         self.eval_data_queue = {}
         self.logged_samples = 0
-
 
         self.n_games = 0
         self.create_data()
@@ -57,7 +60,9 @@ class ChessDataGenerator:
             _, chess_move = move
             try:
                 board.push(chess_move)
-                transitions.append(Transition(board_to_immutable_board(board), chess_move))
+                transitions.append(
+                    Transition(ImmutableBoard.from_board(board), chess_move)
+                )
             except:
                 break
 
@@ -72,13 +77,10 @@ class ChessDataGenerator:
             self.n_games += 1
             self.log_progress(n_iterations)
 
-
     def log_progress(self, n_iterations):
         if n_iterations % 1000 == 0:
             log_value("Train dataset points", n_iterations, len(self.data_queue))
-            log_value(
-                "Eval dataset points", n_iterations, len(self.eval_data_queue)
-            )
+            log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
             log_value("Dataset games", n_iterations, self.n_games)
             log_value(
                 "Dataset size",
@@ -90,7 +92,6 @@ class ChessDataGenerator:
                 n_iterations,
                 (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
             )
-
 
     def get_train_set_generator(self):
         return ChessDataset(self.data_queue)
@@ -115,13 +116,19 @@ class PolicyDataGenerator(ChessDataGenerator):
         for transition in game.transitions:
             if random.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(transition.board),
+                    "input_ids": ChessTokenizer.encode_immutable_board(
+                        transition.immutable_board
+                    ),
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }
                 if self.log_samples_limit is not None:
                     if self.logged_samples < self.log_samples_limit:
-                        log_object('Data sample', boards_to_img([transition.board], str(transition.move)))
+                        log_object(
+                            "Data sample",
+                            immutable_boards_to_img([transition.immutable_board], [transition.move.uci()]),
+                        )
                         self.logged_samples += 1
+
 
 class ChessSubgoalDataGenerator(ChessDataGenerator):
     def game_to_dataset(self, game, train_eval):
@@ -136,6 +143,8 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
         for transition in game.transitions:
             if random.random() <= self.p_sample:
                 current_dataset[len(self.data_queue)] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(transition.board),
+                    "input_ids": ChessTokenizer.encode_immutable_board(
+                        transition.board
+                    ),
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }

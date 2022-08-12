@@ -34,14 +34,16 @@ from PIL import Image
 from io import BytesIO
 
 
-def boards_to_img(boards, boards_descriptions, size=5):
+def immutable_boards_to_img(immutable_boards, descriptions, size=5):
 
-    fig = plt.figure(figsize=(size * len(boards), size))
+    fig = plt.figure(figsize=(size * len(immutable_boards), size))
 
-    for board, title, num in zip(boards, boards_descriptions, range(len(boards))):
-        fig.add_subplot(1, len(boards), num + 1)
-        board = chess.svg.board(board=board)
-        img_png = cairosvg.svg2png(board)
+    for immutable_board, title, num in zip(
+        immutable_boards, descriptions, range(len(immutable_boards))
+    ):
+        fig.add_subplot(1, len(immutable_boards), num + 1)
+        immutable_board = chess.svg.board(board=immutable_board.to_board())
+        img_png = cairosvg.svg2png(immutable_board)
         img = Image.open(BytesIO(img_png))
         ax = plt.gca()
         ax.get_xaxis().set_visible(False)
@@ -50,7 +52,3 @@ def boards_to_img(boards, boards_descriptions, size=5):
         plt.imshow(img)
         plt.close(fig)
         return fig
-    # plt.show()
-
-
-# boards_to_img([x,x], ["a", "b"])

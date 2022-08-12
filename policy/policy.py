@@ -2,7 +2,7 @@ import chess
 import torch
 from transformers import AutoModel, BartForConditionalGeneration, BartModel
 
-from data_processing.chess_tokenizer import ChessTokenizer, board_to_immutable_board
+from data_processing.chess_tokenizer import ChessTokenizer
 
 
 class Policy:
