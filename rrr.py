@@ -1,3 +1,15 @@
+import inspect
+import sys
+
+import jobs.any_job
+
+def print_classes():
+    for name, obj in inspect.getmembers(sys.modules[__name__]):
+        print(name)
+        if inspect.isclass(obj):
+            print(obj)
+
+
 # from collections import namedtuple
 #
 # import chess

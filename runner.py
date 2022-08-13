@@ -1,42 +1,42 @@
 import argparse
-import os
-import logging
 import platform
-import sys
 
 import torch
 
 
 import gin
 # This makes gin configurable classes picklable
-# gin.config._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
+# gin.configs._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
 
 import metric_logging
+
+# This imports are needed for gin-config:
+import jobs
 
 
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--config_file', action='append', default=[],
-        help='Gin config files.'
+        help='Gin configs files.'
     )
     parser.add_argument(
         '--config', action='append', default=[],
-        help='Gin config overrides.'
+        help='Gin configs overrides.'
     )
     parser.add_argument(
         '--mrunner', action='store_true',
-        help='Add mrunner spec to gin-config overrides and Neptune to loggers.'
-        '\nNOTE: It assumes that the last config override (--config argument) '
-        'is a path to a pickled experiment config created by the mrunner CLI or'
+        help='Add mrunner spec to gin-configs overrides and Neptune to loggers.'
+        '\nNOTE: It assumes that the last configs override (--configs argument) '
+        'is a path to a pickled experiment configs created by the mrunner CLI or'
         'a mrunner specification file.'
     )
     return parser.parse_args()
 
 @gin.configurable()
 def run(job_class):
-    metric_logging.log_text('host_name', platform.node())
-    metric_logging.log_text('n_gpus', str(torch.cuda.device_count()))
+    metric_logging.log_object('host_name', platform.node())
+    metric_logging.log_object('n_gpus', str(torch.cuda.device_count()))
 
     job = job_class()
     return job.execute()

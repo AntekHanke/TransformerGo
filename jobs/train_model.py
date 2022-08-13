@@ -1,4 +1,4 @@
-from config.global_config import source_files_register
+from configs.global_config import source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator
 from data_processing.model_eval_callbacks import PolicyEvalCallback
 from jobs.core import Job

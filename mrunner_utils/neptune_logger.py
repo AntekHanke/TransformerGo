@@ -1,7 +1,7 @@
 from transformers import TrainerCallback
 import neptune.new as neptune
 
-from config.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
+from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
 
 class NeptunePytorchCallback(TrainerCallback):
     def __init__(self, run):

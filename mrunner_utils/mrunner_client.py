@@ -1,4 +1,4 @@
-"""Parse and return mrunner gin-config and set-up Neptune.
+"""Parse and return mrunner gin-configs and set-up Neptune.
 
 This is copied from alpacka (with removed ray setup).
 """
@@ -13,7 +13,7 @@ import neptune
 
 
 def get_configuration(spec_path):
-    """Get mrunner experiment specification and gin-config overrides."""
+    """Get mrunner experiment specification and gin-configs overrides."""
     try:
         with open(spec_path, 'rb') as f:
             specification = cloudpickle.load(f)
