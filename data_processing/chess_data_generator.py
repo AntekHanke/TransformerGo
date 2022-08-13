@@ -73,7 +73,8 @@ class ChessDataGenerator:
         while len(self.data_queue) + len(self.eval_data_queue) < self.n_data:
             n_iterations += 1
             train_eval = get_split(n_iterations, self.train_eval_split)
-            self.game_to_dataset(self.next_game_to_raw_data(), train_eval)
+            current_dataset = self.select_dataset(train_eval)
+            self.game_to_dataset(self.next_game_to_raw_data(), current_dataset)
             self.n_games += 1
             self.log_progress(n_iterations)
 
@@ -99,12 +100,7 @@ class ChessDataGenerator:
     def get_eval_set_generator(self):
         return ChessDataset(self.eval_data_queue)
 
-    def game_to_dataset(self, game, train_eval):
-        raise NotImplementedError
-
-
-class PolicyDataGenerator(ChessDataGenerator):
-    def game_to_dataset(self, game, train_eval):
+    def select_dataset(self, train_eval):
         if train_eval == "train":
             current_dataset = self.data_queue
         elif train_eval == "eval":
@@ -113,14 +109,25 @@ class PolicyDataGenerator(ChessDataGenerator):
             raise ValueError(
                 f"Unknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
             )
+        return current_dataset
+
+    def game_to_dataset(self, game, train_eval):
+        raise NotImplementedError
+
+
+class PolicyDataGenerator(ChessDataGenerator):
+    def game_to_dataset(self, game, current_dataset):
         for transition in game.transitions:
             if random.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(
-                        transition.immutable_board + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
-                    ),
-                    "labels": ChessTokenizer.encode_move(transition.move) + [ChessTokenizer.vocab_to_tokens["<EOS>"]],
+                        transition.immutable_board
+                    )
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    "labels": ChessTokenizer.encode_move(transition.move)
+                    # + [ChessTokenizer.vocab_to_tokens["<EOS>"]],
                 }
+
                 if self.log_samples_limit is not None:
                     if self.logged_samples < self.log_samples_limit:
                         log_object(
@@ -132,21 +139,21 @@ class PolicyDataGenerator(ChessDataGenerator):
                         self.logged_samples += 1
 
 
-# class ChessSubgoalDataGenerator(ChessDataGenerator):
-#     def game_to_dataset(self, game, train_eval):
-#         if train_eval == "train":
-#             current_dataset = self.data_queue
-#         elif train_eval == "eval":
-#             current_dataset = self.eval_data_queue
-#         else:
-#             raise ValueError(
-#                 f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
-#             )
-#         for transition in game.transitions:
-#             if random.random() <= self.p_sample:
-#                 current_dataset[len(self.data_queue)] = {
-#                     "input_ids": ChessTokenizer.encode_immutable_board(
-#                         transition.board
-#                     ),
-#                     "labels": ChessTokenizer.encode_move(transition.move),
-#                 }
+class ChessSubgoalDataGenerator(ChessDataGenerator):
+    def game_to_dataset(self, game, train_eval):
+        if train_eval == "train":
+            current_dataset = self.data_queue
+        elif train_eval == "eval":
+            current_dataset = self.eval_data_queue
+        else:
+            raise ValueError(
+                f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
+            )
+        for transition in game.transitions:
+            if random.random() <= self.p_sample:
+                current_dataset[len(self.data_queue)] = {
+                    "input_ids": ChessTokenizer.encode_immutable_board(
+                        transition.board
+                    ),
+                    "labels": ChessTokenizer.encode_move(transition.move),
+                }

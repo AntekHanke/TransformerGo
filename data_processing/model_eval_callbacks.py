@@ -5,13 +5,13 @@ from transformers import TrainerCallback
 
 from data_processing.chess_tokenizer import MoveDocodingException
 from metric_logging import log_value, log_value_without_step
-from policy.policy import Policy
+from policy.chess_policy import ChessPolicy
 
 
 
 class PolicyEvalCallback(TrainerCallback):
     def on_evaluate(self, args, state, control, model=None, **kwargs):
-        policy = Policy(model)
+        policy = ChessPolicy(model)
         board = chess.Board()
         decoded_moves = 0
         legal_moves = 0

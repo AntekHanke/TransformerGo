@@ -112,17 +112,19 @@ class ChessTokenizer:
         return move_tokens
 
     @classmethod
-    def decode_move(cls, move_tokens):
-        try:
-            promotion_str = cls.tokens_to_vocab[move_tokens[-1]]
-            if promotion_str == "-":
-                promotion = None
-            else:
-                promotion = PIECE_SYMBOL_TO_INT[promotion_str]
-            return Move(
-                cls.tokens_to_vocab[move_tokens[0]],
-                cls.tokens_to_vocab[move_tokens[1]],
-                promotion,
-            )
-        except:
-            raise MoveDocodingException("Could not decode move")
+    def decode_move(cls, output_tokens):
+
+        # move_string = " ".join(ChessTokenizer.tokens_to_vocab[x] for x in output_tokens)
+
+        # return move_string
+        #
+        promotion_str = cls.tokens_to_vocab[output_tokens[3]]
+        if promotion_str == "-":
+            promotion = None
+        else:
+            promotion = PIECE_SYMBOL_TO_INT[promotion_str]
+        return Move(
+            int(cls.tokens_to_vocab[output_tokens[1]]),
+            int(cls.tokens_to_vocab[output_tokens[2]]),
+            promotion,
+        )

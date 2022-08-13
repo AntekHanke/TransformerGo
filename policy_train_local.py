@@ -7,7 +7,7 @@ from transformers import (
 )
 
 import metric_logging
-from config.global_config import source_files_register
+from configs.global_config import source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator
 from jobs.train_model import TrainModel
 from mrunner_utils.neptune_logger import NeptuneLogger
@@ -27,41 +27,41 @@ neptune_logger = NeptuneLogger(name=f"policy_train fast local", tags=["local", "
 metric_logging.register_logger(neptune_logger)
 
 fast_iter_config = BartConfig(
-    vocab_size=128,
+    vocab_size=512,
     max_position_embeddings=128,
-    encoder_layers=3,
-    decoder_layers=3,
-    encoder_attention_heads=4,
-    decoder_attention_heads=4,
+    encoder_layers=8,
+    decoder_layers=8,
+    encoder_attention_heads=8,
+    decoder_attention_heads=8,
     decoder_ffn_dim=512,
     encoder_ffn_dim=512,
-    d_model=128,
+    d_model=256,
     dropout=0.
 )
 
 fast_iter_training = TrainingArguments(
     output_dir=LOG_DIR + "/out",  # output directory
     num_train_epochs=1,  # total number of training epochs
-    per_device_train_batch_size=256,  # batch size per device during training
-    per_device_eval_batch_size=256,  # batch size for evaluation
-    warmup_steps=1000,  # number of warmup steps for learning rate scheduler
+    per_device_train_batch_size=64,  # batch size per device during training
+    per_device_eval_batch_size=64,  # batch size for evaluation
+    warmup_steps=400,  # number of warmup steps for learning rate scheduler
     weight_decay=0.01,  # strength of weight decay
     logging_dir=LOG_DIR + "/results",  # directory for storing logs
     logging_steps=5,
     evaluation_strategy="steps",
     eval_steps=10,
-    learning_rate=1e-4,
+    learning_rate=3e-4,
 )
 
 
-dataset = PolicyDataGenerator(pgn_file=LOCAL_PGN, p_sample=0.5, n_data= 10 ** 2, log_samples_limit=10)
+dataset = PolicyDataGenerator(pgn_file=LOCAL_PGN, p_sample=0.2, n_data=10 ** 5, log_samples_limit=10)
 
-# TrainModel(
-#     fast_iter_config,
-#     fast_iter_training,
-#     chess_database=dataset,
-#     save_model_path=LOG_DIR + "/fast_iter_policy_model",
-#     neptune_logger=neptune_logger,
-# ).execute()
+TrainModel(
+    fast_iter_config,
+    fast_iter_training,
+    chess_database=dataset,
+    save_model_path=LOG_DIR + "/policy_model",
+    neptune_logger=neptune_logger,
+).execute()
 
 
