@@ -18,7 +18,9 @@ class MoveDocodingException(Exception):
 class ChessTokenizer:
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [f"{i}{j}" for i in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] for j in range(1, 9)]
+    algebraic_fields = [
+        f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)
+    ]
     moves_counter = []
 
     castlings = [
@@ -107,8 +109,6 @@ class ChessTokenizer:
             )
         else:
             move_tokens.append(cls.vocab_to_tokens["-"])
-
-        # move_tokens.append(cls.vocab_to_tokens["<EOS>"])
         return move_tokens
 
     @classmethod

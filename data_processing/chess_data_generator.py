@@ -111,40 +111,42 @@ class PolicyDataGenerator(ChessDataGenerator):
             current_dataset = self.eval_data_queue
         else:
             raise ValueError(
-                f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
+                f"Unknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
             )
         for transition in game.transitions:
             if random.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(
-                        transition.immutable_board
+                        transition.immutable_board + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
                     ),
-                    "labels": ChessTokenizer.encode_move(transition.move),
+                    "labels": ChessTokenizer.encode_move(transition.move) + [ChessTokenizer.vocab_to_tokens["<EOS>"]],
                 }
                 if self.log_samples_limit is not None:
                     if self.logged_samples < self.log_samples_limit:
                         log_object(
                             "Data sample",
-                            immutable_boards_to_img([transition.immutable_board], [transition.move.uci()]),
+                            immutable_boards_to_img(
+                                [transition.immutable_board], [transition.move.uci()]
+                            ),
                         )
                         self.logged_samples += 1
 
 
-class ChessSubgoalDataGenerator(ChessDataGenerator):
-    def game_to_dataset(self, game, train_eval):
-        if train_eval == "train":
-            current_dataset = self.data_queue
-        elif train_eval == "eval":
-            current_dataset = self.eval_data_queue
-        else:
-            raise ValueError(
-                f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
-            )
-        for transition in game.transitions:
-            if random.random() <= self.p_sample:
-                current_dataset[len(self.data_queue)] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(
-                        transition.board
-                    ),
-                    "labels": ChessTokenizer.encode_move(transition.move),
-                }
+# class ChessSubgoalDataGenerator(ChessDataGenerator):
+#     def game_to_dataset(self, game, train_eval):
+#         if train_eval == "train":
+#             current_dataset = self.data_queue
+#         elif train_eval == "eval":
+#             current_dataset = self.eval_data_queue
+#         else:
+#             raise ValueError(
+#                 f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
+#             )
+#         for transition in game.transitions:
+#             if random.random() <= self.p_sample:
+#                 current_dataset[len(self.data_queue)] = {
+#                     "input_ids": ChessTokenizer.encode_immutable_board(
+#                         transition.board
+#                     ),
+#                     "labels": ChessTokenizer.encode_move(transition.move),
+#                 }
