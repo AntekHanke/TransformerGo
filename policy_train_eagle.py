@@ -33,46 +33,20 @@ def train_policy_eagle(learning_rate):
 
     metric_logging.log_object("learning_rate", f"{learning_rate}")
 
-    fast_iter_config = BartConfig(
-        vocab_size=128,
+    eagle_config = BartConfig(
+        vocab_size=512,
         max_position_embeddings=128,
-        encoder_layers=3,
-        decoder_layers=3,
-        encoder_attention_heads=4,
-        decoder_attention_heads=4,
-        decoder_ffn_dim=512,
-        encoder_ffn_dim=512,
-        d_model=128,
-        dropout=0.0,
+        encoder_layers=10,
+        decoder_layers=10,
+        encoder_attention_heads=8,
+        decoder_attention_heads=8,
+        decoder_ffn_dim=1024,
+        encoder_ffn_dim=1024,
+        d_model=256,
+        dropout=0.
     )
 
-    # eagle_config = BartConfig(
-    #     vocab_size=128,
-    #     max_position_embeddings=128,
-    #     # encoder_layers=10,
-    #     # decoder_layers=10,
-    #     decoder_ffn_dim=2048,
-    #     encoder_ffn_dim=2048,
-    #     d_model=1024,
-    #     num_labels=None,
-    # )
-    #
-    #
-    # training_args = TrainingArguments(
-    #     output_dir=LOG_DIR + "/out",  # output directory
-    #     num_train_epochs=1,  # total number of training epochs
-    #     per_device_train_batch_size=256,  # batch size per device during training
-    #     per_device_eval_batch_size=256,  # batch size for evaluation
-    #     warmup_steps=1000,  # number of warmup steps for learning rate scheduler
-    #     weight_decay=0.01,  # strength of weight decay
-    #     logging_dir=LOG_DIR + "/results",  # directory for storing logs
-    #     logging_steps=50,
-    #     evaluation_strategy="steps",
-    #     eval_steps=100,
-    #     learning_rate=learning_rate,
-    # )
-
-    fast_iter_training = TrainingArguments(
+    eagle_training = TrainingArguments(
         output_dir=LOG_DIR + "/out",  # output directory
         num_train_epochs=1,  # total number of training epochs
         per_device_train_batch_size=2048,  # batch size per device during training

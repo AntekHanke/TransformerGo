@@ -1,5 +1,12 @@
-from mpmath import mp, mpf, fmod
 import hashlib
+import chess.svg
+import matplotlib.pyplot as plt
+import cairosvg
+
+from mpmath import mp, mpf, fmod
+from PIL import Image
+from io import BytesIO
+
 
 mp.dps = 50
 TRAIN_TEST_SPLIT_SEED = 11
@@ -22,16 +29,6 @@ def get_split(arg, train_eval_split):
         return "train"
     else:
         return "eval"
-
-
-import chess.svg
-import matplotlib.pyplot as plt
-
-x = chess.svg.board(board=chess.Board())
-
-import cairosvg
-from PIL import Image
-from io import BytesIO
 
 
 def immutable_boards_to_img(immutable_boards, descriptions, size=5):

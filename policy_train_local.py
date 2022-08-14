@@ -14,7 +14,7 @@ from mrunner_utils.neptune_logger import NeptuneLogger
 
 source_files_register.register(__file__)
 
-LOCAL_LOG_DIR = "/home/tomek/Research/subgoal_chess_data/fast_iter/"
+LOCAL_LOG_DIR = "/home/tomek/Research/subgoal_chess_data/fast_iter_dupa/"
 ENTROPY_LOG_DIR = "/home/todrzygozdz/subgoal_search_storage/"
 
 EAGLE_PGN = "/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn"
