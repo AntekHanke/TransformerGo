@@ -3,6 +3,7 @@ import neptune.new as neptune
 
 from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
 
+
 class NeptunePytorchCallback(TrainerCallback):
     def __init__(self, run):
         self.run = run
@@ -13,7 +14,12 @@ class NeptunePytorchCallback(TrainerCallback):
             step = logs["epoch"]
             for metric_name, value in logs.items():
                 if metric_name != "epoch":
-                    self.run[metric_name].log(value=value, step=step)
+                    try:
+                        self.run[metric_name].log(value=float(value), step=step)
+                    except Exception as e:
+                        print(f"Exception while logging metric {metric_name} value {value} step {step}")
+                        print(f"Exception: {e}")
+
 
 class NeptuneLogger:
     """Logs to Neptune."""
@@ -25,7 +31,7 @@ class NeptuneLogger:
             tags=tags,
             project=NEPTUNE_PROJECT,
             api_token=NEPTUNE_API_TOKEN,
-            source_files=source_files_register.get()
+            source_files=source_files_register.get(),
         )
 
     def log_value(self, name, step, value):
@@ -41,7 +47,6 @@ class NeptuneLogger:
 
     def log_param(self, name, value):
         self.run[name] = value
-
 
     def get_pytorch_callback(self):
         return NeptunePytorchCallback(self.run)

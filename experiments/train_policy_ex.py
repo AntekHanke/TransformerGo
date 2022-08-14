@@ -4,7 +4,7 @@ base_config = {"run.job_class": "@jobs.AnyJob"}
 
 params_grid = {
     "idx": [0],
-    "AnyJob.learning_rate": [1e-6, 3e-6, 5e-6, 1e-5, 3e-5, 5e-5, 1e-4][0:1],
+    "AnyJob.learning_rate": [1e-6, 3e-6, 5e-6, 1e-5, 3e-5, 5e-5, 1e-4],
 }
 
 experiments_list = create_experiments_helper(

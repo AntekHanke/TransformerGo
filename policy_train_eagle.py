@@ -15,6 +15,9 @@ source_files_register.register(__file__)
 
 def train_policy_eagle(learning_rate):
 
+    n_datapoints = 10 ** 7
+    p_sample = 0.2
+
     print(f"learning_rate: {learning_rate}")
 
     LOG_DIR = f"/home/plgrid/plgtodrzygozdz/chess_models/policy-lr_{learning_rate}/"
@@ -26,6 +29,8 @@ def train_policy_eagle(learning_rate):
     register_logger(neptune_logger)
     log_param("learning_rate", learning_rate)
     log_param("log_dir", LOG_DIR)
+    log_param("n_datapoints", n_datapoints)
+    log_param("p_samples", p_sample)
 
 
     eagle_config = BartConfig(
@@ -44,21 +49,21 @@ def train_policy_eagle(learning_rate):
     eagle_training = TrainingArguments(
         output_dir=LOG_DIR + "/out",  # output directory
         num_train_epochs=1,  # total number of training epochs
-        per_device_train_batch_size=2048,  # batch size per device during training
-        per_device_eval_batch_size=2048,  # batch size for evaluation
+        per_device_train_batch_size=1024,  # batch size per device during training
+        per_device_eval_batch_size=1024,  # batch size for evaluation
         warmup_steps=500,  # number of warmup steps for learning rate scheduler
         weight_decay=0.01,  # strength of weight decay
         logging_dir=LOG_DIR + "/results",  # directory for storing logs
-        logging_steps=100,
+        logging_steps=50,
         evaluation_strategy="steps",
-        eval_steps=400,
+        eval_steps=200,
         learning_rate=learning_rate,
     )
 
     dataset = PolicyDataGenerator(
         pgn_file="/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn",
-        p_sample=0.2,
-        n_data=10**5,
+        p_sample=p_sample,
+        n_data=n_datapoints,
         log_samples_limit=10,
     )
 

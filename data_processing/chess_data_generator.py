@@ -14,6 +14,43 @@ Transition = namedtuple("Transition", "immutable_board move")
 OneGameData = namedtuple("OneGameData", "metadata, transitions")
 
 
+class ChessFiler:
+    @staticmethod
+    def use_game(game_metadata):
+        raise NotImplementedError
+
+    @staticmethod
+    def use_transition(transition, one_game_data):
+        raise NotImplementedError
+
+
+class NoFilter(ChessFiler):
+    @staticmethod
+    def use_game(game_metadata):
+        return True
+
+    @staticmethod
+    def use_transition(transition, one_game_data):
+        return True
+
+
+class ResultFilter(ChessFiler):
+    def __init__(self, winner_or_looser):
+        assert winner_or_looser in ["winner", "loser"]
+        self.winner_or_looser = winner_or_looser
+        self.result_to_winner = {"1-0": "w", "0-1": "b"}
+
+    @staticmethod
+    def use_game(game_metadata):
+        return game_metadata.Result in ["1-0", "0-1"]
+
+    def use_transition(self, transition, one_game_data):
+        if self.winner_or_looser == "winner":
+            return transition.immutable_board.active_player == self.result_to_winner[one_game_data.metadata.Result]
+        elif self.winner_or_looser == "loser":
+            return transition.immutable_board.active_player != self.result_to_winner[one_game_data.metadata.Result]
+
+
 class ChessDataset(torch.utils.data.Dataset):
     def __init__(self, data):
         self.data = data
@@ -29,16 +66,22 @@ class ChessDataGenerator:
     def __init__(
         self,
         pgn_file,
+        chess_filter=None,
         p_sample=1.0,
         n_data=None,
         train_eval_split=0.95,
         log_samples_limit=None,
+        p_log_sample=0.01,
     ):
         self.pgn_database = open(pgn_file, errors="ignore")
+        assert chess_filter is not None, "Chess filter must be specified"
+        self.chess_filter = chess_filter
         self.p_sample = p_sample
         self.n_data = n_data
         self.train_eval_split = train_eval_split
         self.log_samples_limit = log_samples_limit
+        self.p_log_sample = p_log_sample
+
         self.data_queue = {}
         self.eval_data_queue = {}
         self.logged_samples = 0
@@ -53,18 +96,18 @@ class ChessDataGenerator:
         chess_metadata = namedtuple("chess_metadata", self.current_game.headers.keys())(
             *self.current_game.headers.values()
         )
-        transitions = []
-        board = chess.Board()
 
-        for move in enumerate(self.current_game.mainline_moves()):
-            _, chess_move = move
-            try:
-                transitions.append(
-                    Transition(ImmutableBoard.from_board(board), chess_move)
-                )
-                board.push(chess_move)
-            except:
-                break
+        transitions = []
+
+        if self.chess_filter.use_game(chess_metadata):
+            board = chess.Board()
+            for move in enumerate(self.current_game.mainline_moves()):
+                _, chess_move = move
+                try:
+                    transitions.append(Transition(ImmutableBoard.from_board(board), chess_move))
+                    board.push(chess_move)
+                except:
+                    break
 
         return OneGameData(chess_metadata, transitions)
 
@@ -106,54 +149,69 @@ class ChessDataGenerator:
         elif train_eval == "eval":
             current_dataset = self.eval_data_queue
         else:
-            raise ValueError(
-                f"Unknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
-            )
+            raise ValueError(f"Unknown train_eval value. Expected 'train' or 'eval', got {train_eval}")
         return current_dataset
 
-    def game_to_dataset(self, game, train_eval):
+    def game_to_dataset(self, one_game_data, train_eval):
+        raise NotImplementedError
+
+    def log_sample(self, sample, game_metadata):
+        if self.log_samples_limit is not None and random.random() <= self.p_log_sample:
+            if self.logged_samples < self.log_samples_limit:
+                log_object("Data sample", self.log_sample_specific(sample, game_metadata))
+                self.logged_samples += 1
+
+    def log_sample_specific(self, sample, game_metadata):
         raise NotImplementedError
 
 
 class PolicyDataGenerator(ChessDataGenerator):
-    def game_to_dataset(self, game, current_dataset):
-        for transition in game.transitions:
-            if random.random() <= self.p_sample:
+    def game_to_dataset(self, one_game_data, current_dataset):
+        for num, transition in enumerate(one_game_data.transitions):
+            if random.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
                 current_dataset[len(current_dataset)] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(
-                        transition.immutable_board
-                    )
+                    "input_ids": ChessTokenizer.encode_immutable_board(transition.immutable_board)
                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-                    "labels": ChessTokenizer.encode_move(transition.move)
-                    # + [ChessTokenizer.vocab_to_tokens["<EOS>"]],
+                    "labels": ChessTokenizer.encode_move(transition.move),
                 }
+                sample = {
+                    "input_board": transition.immutable_board,
+                    "move": transition.move.uci(),
+                    "num": num,
+                    "metadata": one_game_data.metadata,
+                }
+                self.log_sample(sample)
 
-                if self.log_samples_limit is not None:
-                    if self.logged_samples < self.log_samples_limit:
-                        log_object(
-                            "Data sample",
-                            immutable_boards_to_img(
-                                [transition.immutable_board], [transition.move.uci()]
-                            ),
-                        )
-                        self.logged_samples += 1
+    def log_sample_specific(self, sample):
+        return immutable_boards_to_img(
+            [sample["input_board"]],
+            [f"{sample['num']} : {sample['move']}, result: {sample['metadata'].Result}"],
+        )
 
 
 class ChessSubgoalDataGenerator(ChessDataGenerator):
-    def game_to_dataset(self, game, train_eval):
-        if train_eval == "train":
-            current_dataset = self.data_queue
-        elif train_eval == "eval":
-            current_dataset = self.eval_data_queue
-        else:
-            raise ValueError(
-                f"Uknown train_eval value. Expected 'train' or 'eval', got {train_eval}"
-            )
-        for transition in game.transitions:
+    def __init__(self, k, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k = k
+
+    def game_to_dataset(self, one_game_data, current_dataset):
+        game_length = len(one_game_data.transitions)
+
+        for num in range(game_length):
+
+            input_board = one_game_data.transitions[num].immutable_board
+            target_board_num = min(game_length - 1, num + self.k)
+            target_board = one_game_data.transitions[target_board_num].immutable_board
+
             if random.random() <= self.p_sample:
                 current_dataset[len(self.data_queue)] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(
-                        transition.board
-                    ),
-                    "labels": ChessTokenizer.encode_move(transition.move),
+                    "input_ids": ChessTokenizer.encode_immutable_board(input_board)
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    "labels": ChessTokenizer.encode_immutable_board(target_board),
                 }
+
+            sample = {"imput_board": input_board, "target_board": target_board, "num": num, "metadata": one_game_data.metadata.Result, }
+            self.log_sample()
+
+    def log_sample_specific(self, sample):
+        pass
