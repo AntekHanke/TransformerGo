@@ -21,7 +21,7 @@ class TrainModel(Job):
         training_args=None,
         chess_database=None,
         save_model_path=None,
-        neptune_logger=None
+        neptune_logger=None,
     ):
         self.model_config = model_config
         self.training_args = training_args
@@ -35,7 +35,6 @@ class TrainModel(Job):
         )
 
         self.trainer.add_callback(neptune_logger.get_pytorch_callback())
-        # self.trainer.add_callback(PolicyEvalCallback)
 
         assert save_model_path is not None
 
@@ -43,5 +42,5 @@ class TrainModel(Job):
 
     def execute(self):
         self.trainer.train()
-        print(f'Saving model')
+        print(f"Saving model at {self.save_model_path}")
         self.trainer.save_model(self.save_model_path)

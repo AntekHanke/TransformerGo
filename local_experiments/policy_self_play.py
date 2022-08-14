@@ -9,7 +9,7 @@ from policy.chess_policy import ChessPolicy
 
 source_files_register.register(__file__)
 
-USE_NEPTUNE = 1
+USE_NEPTUNE = 0
 
 if USE_NEPTUNE:
     run = neptune.init(
@@ -32,7 +32,7 @@ while not board.is_game_over():
     print('************************')
 
     if USE_NEPTUNE:
-        image = immutable_boards_to_img([ImmutableBoard.from_board(board)], [f"Move: {move}"])
+        image = immutable_boards_to_img([ImmutableBoard.from_board(board)], [f"Move {move_number}: {move}"])
         run["gameplay"].log(image)
 
     print(f"Board: {board} \n move: {move}")

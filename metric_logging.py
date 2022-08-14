@@ -16,16 +16,16 @@ class StdoutLogger:
         #   1234 | loss:                      12.345
         #   2137 | loss:                      1.0e-5
         if 0 < value < 1e-2:
-            print('{:>6} | {:64}{:>9.1e}'.format(step, name + ':', value))
+            print("{:>6} | {:64}{:>9.1e}".format(step, name + ":", value))
         else:
-            print('{:>6} | {:64}{:>9.3f}'.format(step, name + ':', value))
+            print("{:>6} | {:64}{:>9.3f}".format(step, name + ":", value))
 
     @staticmethod
     def log_value_without_step(name, value):
         if 0 < value < 1e-2:
-            print('{:64}{:>9.1e}'.format(name + ':', value))
+            print("{:64}{:>9.1e}".format(name + ":", value))
         else:
-            print('{:64}{:>9.3f}'.format(name + ':', value))
+            print("{:64}{:>9.3f}".format(name + ":", value))
 
     @staticmethod
     def log_object(name, value):
@@ -35,24 +35,27 @@ class StdoutLogger:
 
 _loggers = [StdoutLogger]
 
+
 def register_logger(logger):
     """Adds a logger to log to."""
     _loggers.append(logger)
+
 
 def log_value(name, step, value):
     """Logs a scalar to the loggers."""
     for logger in _loggers:
         logger.log_value(name, step, value)
 
+
 def log_value_without_step(name, value):
     """Logs a scalar to the loggers."""
     for logger in _loggers:
         logger.log_value_without_step(name, value)
 
+
 def log_object(name, object):
     for logger in _loggers:
         logger.log_object(name, object)
-
 
 
 def compute_scalar_statistics(x, prefix=None, with_min_and_max=False):
@@ -69,14 +72,14 @@ def compute_scalar_statistics(x, prefix=None, with_min_and_max=False):
         Dictionary with statistic names as keys (can be prefixed, see the prefix
         argument) and statistic values.
     """
-    prefix = prefix + '_' if prefix else ''
+    prefix = prefix + "_" if prefix else ""
     stats = {}
 
-    stats[prefix + 'mean'] = np.mean(x)
-    stats[prefix + 'std'] = np.std(x)
+    stats[prefix + "mean"] = np.mean(x)
+    stats[prefix + "std"] = np.std(x)
     if with_min_and_max:
-        stats[prefix + 'min'] = np.min(x)
-        stats[prefix + 'max'] = np.max(x)
+        stats[prefix + "min"] = np.min(x)
+        stats[prefix + "max"] = np.max(x)
 
     return stats
 
