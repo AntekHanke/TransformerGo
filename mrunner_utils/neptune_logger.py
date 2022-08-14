@@ -39,6 +39,9 @@ class NeptuneLogger:
         """Logs an image to Neptune."""
         self.run[name].log(object)
 
+    def log_param(self, name, value):
+        self.run[name] = value
+
 
     def get_pytorch_callback(self):
         return NeptunePytorchCallback(self.run)

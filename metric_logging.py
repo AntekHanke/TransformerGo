@@ -32,6 +32,10 @@ class StdoutLogger:
         # Not supported in this logger.
         pass
 
+    @staticmethod
+    def log_param(name, value):
+        print(f"{name} = {value}")
+
 
 _loggers = [StdoutLogger]
 
@@ -56,6 +60,11 @@ def log_value_without_step(name, value):
 def log_object(name, object):
     for logger in _loggers:
         logger.log_object(name, object)
+
+
+def log_param(name, value):
+    for logger in _loggers:
+        logger.log_param(name, value)
 
 
 def compute_scalar_statistics(x, prefix=None, with_min_and_max=False):
