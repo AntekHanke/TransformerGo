@@ -121,22 +121,6 @@ class ChessDataGenerator:
             self.n_games += 1
             self.log_progress(n_iterations)
 
-    def log_progress(self, n_iterations):
-        if n_iterations % 1000 == 0:
-            log_value("Train dataset points", n_iterations, len(self.data_queue))
-            log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
-            log_value("Dataset games", n_iterations, self.n_games)
-            log_value(
-                "Dataset size",
-                n_iterations,
-                len(self.data_queue) + len(self.eval_data_queue),
-            )
-            log_value(
-                "Dataset progress",
-                n_iterations,
-                (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
-            )
-
     def get_train_set_generator(self):
         return ChessDataset(self.data_queue)
 
@@ -164,6 +148,22 @@ class ChessDataGenerator:
     def log_sample_specific(self, sample, game_metadata):
         raise NotImplementedError
 
+    def log_progress(self, n_iterations):
+        if n_iterations % 1000 == 0:
+            log_value("Train dataset points", n_iterations, len(self.data_queue))
+            log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
+            log_value("Dataset games", n_iterations, self.n_games)
+            log_value(
+                "Dataset size",
+                n_iterations,
+                len(self.data_queue) + len(self.eval_data_queue),
+            )
+            log_value(
+                "Dataset progress",
+                n_iterations,
+                (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
+            )
+
 
 class PolicyDataGenerator(ChessDataGenerator):
     def game_to_dataset(self, one_game_data, current_dataset):
@@ -177,15 +177,14 @@ class PolicyDataGenerator(ChessDataGenerator):
                 sample = {
                     "input_board": transition.immutable_board,
                     "move": transition.move.uci(),
-                    "num": num,
-                    "metadata": one_game_data.metadata,
+                    "num": num
                 }
-                self.log_sample(sample)
+                self.log_sample(sample, one_game_data.metadata)
 
-    def log_sample_specific(self, sample):
+    def log_sample_specific(self, sample, metadata):
         return immutable_boards_to_img(
             [sample["input_board"]],
-            [f"{sample['num']} : {sample['move']}, result: {sample['metadata'].Result}"],
+            [f"{sample['num']} : {sample['move']}, result: {metadata.Result}"],
         )
 
 
@@ -210,8 +209,16 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
                     "labels": ChessTokenizer.encode_immutable_board(target_board),
                 }
 
-            sample = {"imput_board": input_board, "target_board": target_board, "num": num, "metadata": one_game_data.metadata.Result, }
-            self.log_sample()
+            sample = {
+                "imput_board": input_board,
+                "target_board": target_board,
+                "num": num,
+                "move": one_game_data.transitions[num].move.uci(),
+            }
+            self.log_sample(sample, one_game_data.metadata)
 
-    def log_sample_specific(self, sample):
-        pass
+    def log_sample_specific(self, sample, metadata):
+        return immutable_boards_to_img(
+            [sample["input_board"], sample["target_board"]],
+            [f"{sample['num']} : {sample['move']}, result: {metadata.Result}", ""],
+        )
