@@ -55,8 +55,8 @@ fast_iter_training = TrainingArguments(
 )
 
 
-# chess_filter = ResultFilter("winner")
-chess_filter = NoFilter()
+chess_filter = ResultFilter("winner")
+# chess_filter = NoFilter()
 
 dataset = ChessSubgoalDataGenerator(
     k=k,
@@ -70,10 +70,10 @@ dataset = ChessSubgoalDataGenerator(
 
 dataset.create_data()
 
-TrainModel(
-    fast_iter_config,
-    fast_iter_training,
-    chess_database=dataset,
-    save_model_path=LOG_DIR + "/generator_model",
-    neptune_logger=neptune_logger,
-).execute()
+# TrainModel(
+#     fast_iter_config,
+#     fast_iter_training,
+#     chess_database=dataset,
+#     save_model_path=LOG_DIR + "/generator_model",
+#     neptune_logger=neptune_logger,
+# ).execute()
