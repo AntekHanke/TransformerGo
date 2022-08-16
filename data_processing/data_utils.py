@@ -1,4 +1,6 @@
 import hashlib
+from typing import Union, List
+
 import chess.svg
 import matplotlib.pyplot as plt
 import cairosvg
@@ -8,23 +10,24 @@ from PIL import Image
 from io import BytesIO
 
 from configs.global_config import TRAIN_TEST_SPLIT_SEED
+from data_structures.data_structures import ImmutableBoard
 from metric_logging import log_object
 
 mp.dps = 50
 
 
-def hash_string_to_int(arg):
+def hash_string_to_int(arg: Union[str, int]) -> int:
     arg = str(arg) + str(TRAIN_TEST_SPLIT_SEED)
     return int(hashlib.sha256(arg.encode("utf-8")).hexdigest(), 16) % 10**30
 
 
-def hash_string_to_float(arg):
+def hash_string_to_float(arg: Union[str, int]) -> float:
     assert mp.dps >= 50
     x = mpf(hash_string_to_int(arg))
     return fmod(x * mp.pi, 1)
 
 
-def get_split(arg, train_eval_split):
+def get_split(arg: Union[str, int], train_eval_split: float) -> str:
     float_hash = hash_string_to_float(arg)
     if float_hash < train_eval_split:
         return "train"
@@ -32,7 +35,7 @@ def get_split(arg, train_eval_split):
         return "eval"
 
 
-def immutable_boards_to_img(immutable_boards, descriptions, size=5):
+def immutable_boards_to_img(immutable_boards: List[ImmutableBoard], descriptions: List[str], size: int=5) -> plt.Figure:
 
     fig = plt.figure(figsize=(size * len(immutable_boards), size))
     for immutable_board, title, num in zip(immutable_boards, descriptions, range(len(immutable_boards))):
@@ -47,7 +50,7 @@ def immutable_boards_to_img(immutable_boards, descriptions, size=5):
         plt.imshow(img)
     return fig
 
-def log_immutable_boards(name, immutable_boards, descriptions, size=5):
-    fig = immutable_boards_to_img(immutable_boards, descriptions, size)
-    log_object(name, fig)
-    plt.close(fig)
+# def log_immutable_boards(name, immutable_boards, descriptions, size=5):
+#     fig = immutable_boards_to_img(immutable_boards, descriptions, size)
+#     log_object(name, fig)
+#     plt.close(fig)
