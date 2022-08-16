@@ -47,5 +47,5 @@ def immutable_boards_to_img(immutable_boards, descriptions, size=5):
         ax.get_yaxis().set_visible(False)
         ax.set_title(title)
         plt.imshow(img)
-        plt.close(fig)
-        return fig
+    # plt.close(fig)
+    return fig

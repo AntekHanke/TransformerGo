@@ -15,6 +15,8 @@ OneGameData = namedtuple("OneGameData", "metadata, transitions")
 
 
 class ChessFiler:
+    """Filters games and transitions to use in training."""
+
     @staticmethod
     def use_game(game_metadata):
         raise NotImplementedError
@@ -25,6 +27,8 @@ class ChessFiler:
 
 
 class NoFilter(ChessFiler):
+    """Accepts every game and transition"""
+
     @staticmethod
     def use_game(game_metadata):
         return True
@@ -85,9 +89,7 @@ class ChessDataGenerator:
         self.data_queue = {}
         self.eval_data_queue = {}
         self.logged_samples = 0
-
         self.n_games = 0
-        self.create_data()
 
     def next_game_to_raw_data(self):
         self.current_game = chess.pgn.read_game(self.pgn_database)
@@ -174,11 +176,7 @@ class PolicyDataGenerator(ChessDataGenerator):
                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }
-                sample = {
-                    "input_board": transition.immutable_board,
-                    "move": transition.move.uci(),
-                    "num": num
-                }
+                sample = {"input_board": transition.immutable_board, "move": transition.move.uci(), "num": num}
                 self.log_sample(sample, one_game_data.metadata)
 
     def log_sample_specific(self, sample, metadata):
@@ -196,7 +194,7 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
     def game_to_dataset(self, one_game_data, current_dataset):
         game_length = len(one_game_data.transitions)
 
-        for num in range(game_length):
+        for num in range(game_length - self.k):
 
             input_board = one_game_data.transitions[num].immutable_board
             target_board_num = min(game_length - 1, num + self.k)
@@ -210,7 +208,7 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
                 }
 
             sample = {
-                "imput_board": input_board,
+                "input_board": input_board,
                 "target_board": target_board,
                 "num": num,
                 "move": one_game_data.transitions[num].move.uci(),
@@ -220,5 +218,5 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
     def log_sample_specific(self, sample, metadata):
         return immutable_boards_to_img(
             [sample["input_board"], sample["target_board"]],
-            [f"{sample['num']} : {sample['move']}, result: {metadata.Result}", ""],
+            [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
         )
