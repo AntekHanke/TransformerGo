@@ -61,7 +61,7 @@ dataset = ChessSubgoalDataGenerator(
     k=1,
     pgn_file=LOCAL_PGN,
     chess_filter=chess_filter,
-    p_sample=1.0,
+    p_sample=0.5,
     n_data=10**5,
     log_samples_limit=25,
     p_log_sample=1.0,
@@ -69,10 +69,10 @@ dataset = ChessSubgoalDataGenerator(
 
 dataset.create_data()
 
-# TrainModel(
-#     fast_iter_config,
-#     fast_iter_training,
-#     chess_database=dataset,
-#     save_model_path=LOG_DIR + "/policy_model",
-#     neptune_logger=neptune_logger,
-# ).execute()
+TrainModel(
+    fast_iter_config,
+    fast_iter_training,
+    chess_database=dataset,
+    save_model_path=LOG_DIR + "/generator_model",
+    neptune_logger=neptune_logger,
+).execute()

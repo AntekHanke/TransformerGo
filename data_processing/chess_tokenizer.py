@@ -114,10 +114,6 @@ class ChessTokenizer:
     @classmethod
     def decode_move(cls, output_tokens):
 
-        # move_string = " ".join(ChessTokenizer.tokens_to_vocab[x] for x in output_tokens)
-
-        # return move_string
-        #
         promotion_str = cls.tokens_to_vocab[output_tokens[3]]
         if promotion_str == "-":
             promotion = None

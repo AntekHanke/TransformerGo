@@ -9,6 +9,7 @@ from transformers import (
     BartConfig,
 )
 
+from metric_logging import log_param
 from mrunner_utils.neptune_logger import NeptunePytorchCallback
 
 source_files_register.register(__file__)
@@ -35,10 +36,9 @@ class TrainModel(Job):
         )
 
         self.trainer.add_callback(neptune_logger.get_pytorch_callback())
-
         assert save_model_path is not None
-
         self.save_model_path = save_model_path
+        log_param("Save model path", self.save_model_path)
 
     def execute(self):
         self.trainer.train()
