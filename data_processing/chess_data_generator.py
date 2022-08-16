@@ -88,6 +88,7 @@ class ChessDataGenerator:
         self.eval_data_queue = {}
         self.logged_samples = 0
         self.n_games = 0
+        self.data_constructed = False
 
     def next_game_to_raw_data(self):
         self.current_game = chess.pgn.read_game(self.pgn_database)
@@ -120,11 +121,14 @@ class ChessDataGenerator:
             self.game_to_datapoints(self.next_game_to_raw_data(), current_dataset)
             self.n_games += 1
             self.log_progress(n_iterations)
+        self.data_constructed = True
 
     def get_train_set_generator(self):
+        assert self.data_constructed, "Data not constructed, call .create_data() first"
         return ChessDataset(self.data_queue)
 
     def get_eval_set_generator(self):
+        assert self.data_constructed, "Data not constructed, call .create_data() first"
         return ChessDataset(self.eval_data_queue)
 
     def select_dataset(self, train_eval):

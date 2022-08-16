@@ -15,8 +15,8 @@ source_files_register.register(__file__)
 
 def train_generator_eagle(learning_rate, k):
 
-    n_datapoints = 5 * 10 ** 5
-    p_sample = 1.
+    n_datapoints = 2*10 ** 7
+    p_sample = 0.3
 
     print(f"learning_rate: {learning_rate}")
 
@@ -50,8 +50,8 @@ def train_generator_eagle(learning_rate, k):
     eagle_training = TrainingArguments(
         output_dir=LOG_DIR + "/out",  # output directory
         num_train_epochs=1,  # total number of training epochs
-        per_device_train_batch_size=1024,  # batch size per device during training
-        per_device_eval_batch_size=1024,  # batch size for evaluation
+        per_device_train_batch_size=256,  # batch size per device during training
+        per_device_eval_batch_size=256,  # batch size for evaluation
         warmup_steps=500,  # number of warmup steps for learning rate scheduler
         weight_decay=0.01,  # strength of weight decay
         logging_dir=LOG_DIR + "/results",  # directory for storing logs
@@ -73,6 +73,8 @@ def train_generator_eagle(learning_rate, k):
         log_samples_limit=50,
         p_log_sample=0.05,
     )
+
+    dataset.create_data()
 
     log_param("save_model_path", LOG_DIR + "/eagle_policy_model")
 
