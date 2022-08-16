@@ -1,9 +1,6 @@
-from collections import namedtuple
-
-import chess
 from chess import Move, PIECE_SYMBOLS
 
-from data_processing.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard
 
 PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}
 INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
@@ -16,12 +13,12 @@ class MoveDocodingException(Exception):
 
 
 class ChessTokenizer:
+    """Custom tokenizer for chess data."""
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
     integers = [str(i) for i in range(0, 256)]
     algebraic_fields = [
         f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)
     ]
-    moves_counter = []
 
     castlings = [
         "KQkq",
@@ -51,6 +48,8 @@ class ChessTokenizer:
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
 
+    TOKENIZED_BOARD_LENGTH = 76
+
     @classmethod
     def encode_immutable_board(cls, immutable_board):
         board_string = ""
@@ -71,15 +70,16 @@ class ChessTokenizer:
         board_tokens.append(cls.vocab_to_tokens[str(immutable_board.fullmove_clock)])
 
         assert (
-            len(board_tokens) == 76
-        ), f"The number of tokens encoding the board must be 71, got len(board_tokens) = {len(board_tokens)}"
+            len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
+        ), f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, got len(board_tokens) = {len(board_tokens)}"
         return board_tokens
 
     @classmethod
     def decode_board(cls, board_tokens):
         board_string_with_dots = ""
+        board_tokens = [token for token in board_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()]
+        board_tokens = board_tokens[:cls.TOKENIZED_BOARD_LENGTH]
         for i, token in enumerate(board_tokens):
-            # if i in  [71, 72, 73, 74, 75]:
             if i >= 71:
                 board_string_with_dots += " "
             board_string_with_dots += cls.tokens_to_vocab[token]

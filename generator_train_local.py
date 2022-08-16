@@ -13,8 +13,9 @@ from jobs.train_model import TrainModel
 from mrunner_utils.neptune_logger import NeptuneLogger
 
 source_files_register.register(__file__)
+k = 2
 
-LOCAL_LOG_DIR = "/home/tomek/Research/subgoal_chess_data/generator/"
+LOCAL_LOG_DIR = f"/home/tomek/Research/subgoal_chess_data/generator_k_{k}/"
 ENTROPY_LOG_DIR = "/home/todrzygozdz/subgoal_search_storage/"
 
 EAGLE_PGN = "/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn"
@@ -23,7 +24,7 @@ LOCAL_PGN = "/home/tomek/Research/subgoal_chess_data/database.pgn"
 
 LOG_DIR = LOCAL_LOG_DIR
 
-neptune_logger = NeptuneLogger(name=f"generator train fast local", tags=["local", "generator"])
+neptune_logger = NeptuneLogger(name=f"generator_k_1 train fast local", tags=["local", "generator_k_1"])
 metric_logging.register_logger(neptune_logger)
 
 fast_iter_config = BartConfig(
@@ -58,13 +59,13 @@ fast_iter_training = TrainingArguments(
 chess_filter = NoFilter()
 
 dataset = ChessSubgoalDataGenerator(
-    k=1,
+    k=k,
     pgn_file=LOCAL_PGN,
     chess_filter=chess_filter,
     p_sample=0.5,
-    n_data=10**5,
+    n_data=2*10**5,
     log_samples_limit=25,
-    p_log_sample=1.0,
+    p_log_sample=0.05,
 )
 
 dataset.create_data()

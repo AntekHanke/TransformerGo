@@ -1,12 +1,10 @@
-import pickle
-
 import chess.pgn
 import random
 import torch
 from collections import namedtuple
 
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard
 from data_processing.data_utils import get_split, immutable_boards_to_img
 from metric_logging import log_value, log_object
 

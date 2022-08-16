@@ -2,10 +2,9 @@ import chess
 import neptune.new as neptune
 
 from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
-from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard
 from data_processing.data_utils import immutable_boards_to_img
-from policy.chess_policy import ChessPolicy
+from policy.chess_policy import BasicPolicy
 
 source_files_register.register(__file__)
 
@@ -21,7 +20,7 @@ if USE_NEPTUNE:
 
 
 board = chess.Board()
-chess_policy = ChessPolicy("/home/tomek/Research/subgoal_chess_data/fast_iter/policy_model")
+chess_policy = BasicPolicy("/home/tomek/Research/subgoal_chess_data/fast_iter/policy_model")
 
 move_number = 1
 

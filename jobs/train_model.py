@@ -1,17 +1,11 @@
 from configs.global_config import source_files_register
-from data_processing.chess_data_generator import PolicyDataGenerator
-from data_processing.model_eval_callbacks import PolicyEvalCallback
 from jobs.core import Job
 from transformers import (
-    TrainingArguments,
     Trainer,
     BartForConditionalGeneration,
-    BartConfig,
 )
 
 from metric_logging import log_param
-from mrunner_utils.neptune_logger import NeptunePytorchCallback
-
 source_files_register.register(__file__)
 
 
