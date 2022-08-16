@@ -1,52 +1,59 @@
+from typing import Dict, Any
+
 import chess.pgn
 import random
 import torch
 from collections import namedtuple
 
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_structures.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
 from data_processing.data_utils import get_split, immutable_boards_to_img
 from metric_logging import log_value, log_object
 
-Transition = namedtuple("Transition", "immutable_board move")
-OneGameData = namedtuple("OneGameData", "metadata, transitions")
+
+# TODO: fill in fields
+GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
 
 
-class ChessFiler:
+class ChessFilter:
     """Filters games and transitions to use in training."""
 
     @staticmethod
-    def use_game(game_metadata):
+    def use_game(game_metadata: ChessMetadata) -> bool:
+        """Decides whether a game is useful."""
         raise NotImplementedError
 
     @staticmethod
-    def use_transition(transition, one_game_data):
+    def use_transition(transition: Transition, one_game_data: OneGameData) -> bool:
+        """Decides whether a transition is useful."""
         raise NotImplementedError
 
 
-class NoFilter(ChessFiler):
+class NoFilter(ChessFilter):
     """Accepts every game and transition"""
 
     @staticmethod
-    def use_game(game_metadata):
+    def use_game(game_metadata: ChessMetadata) -> bool:
         return True
 
     @staticmethod
-    def use_transition(transition, one_game_data):
+    def use_transition(transition: Transition, one_game_data: OneGameData) -> bool:
         return True
 
 
-class ResultFilter(ChessFiler):
-    def __init__(self, winner_or_looser):
-        assert winner_or_looser in ["winner", "loser"]
+class ResultFilter(ChessFilter):
+    """Filters games that have a winner or looser. Filters transitions that were played by the winner or looser."""
+
+    def __init__(self, winner_or_looser: str):
+        assert winner_or_looser in ["winner", "loser"], "winner_or_looser must be 'winner' or 'loser'"
         self.winner_or_looser = winner_or_looser
         self.result_to_winner = {"1-0": "w", "0-1": "b"}
 
     @staticmethod
-    def use_game(game_metadata):
+    def use_game(game_metadata: ChessMetadata) -> bool:
         return game_metadata.Result in ["1-0", "0-1"]
 
-    def use_transition(self, transition, one_game_data):
+    def use_transition(self, transition: Transition, one_game_data: OneGameData) -> bool:
         if self.winner_or_looser == "winner":
             return transition.immutable_board.active_player == self.result_to_winner[one_game_data.metadata.Result]
         elif self.winner_or_looser == "loser":
@@ -54,10 +61,11 @@ class ResultFilter(ChessFiler):
 
 
 class ChessDataset(torch.utils.data.Dataset):
-    def __init__(self, data):
+    """Used by Pytorch DataLoader to get batches of data."""
+    def __init__(self, data: Dict):
         self.data = data
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int):
         return self.data[idx]
 
     def __len__(self):
@@ -65,17 +73,18 @@ class ChessDataset(torch.utils.data.Dataset):
 
 
 class ChessDataGenerator:
+    """Reads PGN file and creates data."""
     def __init__(
         self,
-        pgn_file,
-        chess_filter=None,
-        p_sample=1.0,
-        n_data=None,
-        train_eval_split=0.95,
-        log_samples_limit=None,
-        p_log_sample=0.01,
+        pgn_file_path: str,
+        chess_filter: ChessFilter = None,
+        p_sample: float = 1.0,
+        n_data: int = None,
+        train_eval_split: float = 0.95,
+        log_samples_limit: int = None,
+        p_log_sample: float = 0.01,
     ):
-        self.pgn_database = open(pgn_file, errors="ignore")
+        self.pgn_database = open(pgn_file_path, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
         self.chess_filter = chess_filter
         self.p_sample = p_sample
@@ -93,10 +102,8 @@ class ChessDataGenerator:
     def next_game_to_raw_data(self):
         self.current_game = chess.pgn.read_game(self.pgn_database)
         self.current_game.mainline_moves()
-
-        chess_metadata = namedtuple("chess_metadata", self.current_game.headers.keys())(
-            *self.current_game.headers.values()
-        )
+        #
+        chess_metadata = ChessMetadata(**self.current_game.headers)
 
         transitions = []
 
@@ -123,15 +130,15 @@ class ChessDataGenerator:
             self.log_progress(n_iterations)
         self.data_constructed = True
 
-    def get_train_set_generator(self):
+    def get_train_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
         return ChessDataset(self.data_queue)
 
-    def get_eval_set_generator(self):
+    def get_eval_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
         return ChessDataset(self.eval_data_queue)
 
-    def select_dataset(self, train_eval):
+    def select_dataset(self, train_eval) -> Dict:
         if train_eval == "train":
             current_dataset = self.data_queue
         elif train_eval == "eval":
@@ -140,19 +147,20 @@ class ChessDataGenerator:
             raise ValueError(f"Unknown train_eval value. Expected 'train' or 'eval', got {train_eval}")
         return current_dataset
 
-    def game_to_datapoints(self, one_game_data, train_eval):
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
+        """Converts a game to datapoints added to the current_dataset (train or eval)."""
         raise NotImplementedError
 
-    def log_sample(self, sample, game_metadata):
+    def log_sample(self, sample: Any, game_metadata: ChessMetadata):
         if self.log_samples_limit is not None and random.random() <= self.p_log_sample:
             if self.logged_samples < self.log_samples_limit:
                 log_object("Data sample", self.sample_to_log_object(sample, game_metadata))
                 self.logged_samples += 1
 
-    def sample_to_log_object(self, sample, game_metadata):
+    def sample_to_log_object(self, sample: Any, game_metadata: ChessMetadata) -> Any:
         raise NotImplementedError
 
-    def log_progress(self, n_iterations):
+    def log_progress(self, n_iterations: int):
         if n_iterations % 1000 == 0:
             log_value("Train dataset points", n_iterations, len(self.data_queue))
             log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
@@ -170,7 +178,7 @@ class ChessDataGenerator:
 
 
 class PolicyDataGenerator(ChessDataGenerator):
-    def game_to_datapoints(self, one_game_data, current_dataset):
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         for num, transition in enumerate(one_game_data.transitions):
             if random.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
                 current_dataset[len(current_dataset)] = {
@@ -181,7 +189,7 @@ class PolicyDataGenerator(ChessDataGenerator):
                 sample = {"input_board": transition.immutable_board, "move": transition.move.uci(), "num": num}
                 self.log_sample(sample, one_game_data.metadata)
 
-    def sample_to_log_object(self, sample, metadata):
+    def sample_to_log_object(self, sample: Any, metadata: ChessMetadata):
         return immutable_boards_to_img(
             [sample["input_board"]],
             [f"{sample['num']} : {sample['move']}, result: {metadata.Result}"],
@@ -193,7 +201,7 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
         super().__init__(*args, **kwargs)
         self.k = k
 
-    def game_to_datapoints(self, one_game_data, current_dataset):
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         game_length = len(one_game_data.transitions)
 
         for num in range(game_length - self.k):
@@ -217,7 +225,7 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
             }
             self.log_sample(sample, one_game_data.metadata)
 
-    def sample_to_log_object(self, sample, metadata):
+    def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata):
         return immutable_boards_to_img(
             [sample["input_board"], sample["target_board"]],
             [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],

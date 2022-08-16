@@ -27,12 +27,12 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         print("".join([ChessTokenizer.tokens_to_vocab[token] for token in outputs[0]]))
         return ChessTokenizer.decode_board(outputs[0])
 
-x = BasicChessSubgoalGenerator("/home/tomek/Research/subgoal_chess_data/generator_k_1/generator_model")
+x = BasicChessSubgoalGenerator("/home/tomek/Research/subgoal_chess_data/generator_k_2/out/checkpoint-2000")
 b = chess.Board()
 b.push(chess.Move.from_uci("g1h3"))
 
 
-subgoal = x.generate_subgoals(ImmutableBoard.from_board(chess.Board()))
+subgoal = x.generate_subgoals(ImmutableBoard.from_board(b))
 
 import matplotlib.pyplot as plt
 fig = immutable_boards_to_img([ImmutableBoard.from_board(b), subgoal], ['input', 'target'])

@@ -1,7 +1,11 @@
 from collections import namedtuple
+from dataclasses import dataclass
 from typing import Optional
 
 import chess
+
+Transition = namedtuple("Transition", "immutable_board move")
+OneGameData = namedtuple("OneGameData", "metadata, transitions")
 
 ImmutableBoardData = namedtuple(
     "ImmutableBoard",
@@ -10,6 +14,11 @@ ImmutableBoardData = namedtuple(
 
 SubgoalsFromModel = namedtuple("SubgoalFromModel", "input_immutable_board target_immutable_board")
 
+@dataclass
+class ChessMetadata:
+    """Stores arbitrary metadata about a single game. Different games have different metadata fields."""
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 class ImmutableBoard(ImmutableBoardData):
     @classmethod
