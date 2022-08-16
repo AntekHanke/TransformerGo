@@ -1,3 +1,5 @@
+from typing import List
+
 from chess import Move, PIECE_SYMBOLS
 
 from data_structures.data_structures import ImmutableBoard
@@ -51,7 +53,7 @@ class ChessTokenizer:
     TOKENIZED_BOARD_LENGTH = 76
 
     @classmethod
-    def encode_immutable_board(cls, immutable_board):
+    def encode_immutable_board(cls, immutable_board: ImmutableBoard) -> List[int]:
         board_string = ""
         board_tokens = []
         for c in immutable_board.board:
@@ -75,7 +77,7 @@ class ChessTokenizer:
         return board_tokens
 
     @classmethod
-    def decode_board(cls, board_tokens):
+    def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
         board_string_with_dots = ""
         board_tokens = [token for token in board_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()]
         board_tokens = board_tokens[:cls.TOKENIZED_BOARD_LENGTH]
@@ -98,7 +100,7 @@ class ChessTokenizer:
         return ImmutableBoard(*board_string.split())
 
     @classmethod
-    def encode_move(cls, chess_move):
+    def encode_move(cls, chess_move: Move) -> List[int]:
         move_tokens = [
             cls.vocab_to_tokens[str(chess_move.from_square)],
             cls.vocab_to_tokens[str(chess_move.to_square)],
@@ -112,7 +114,7 @@ class ChessTokenizer:
         return move_tokens
 
     @classmethod
-    def decode_move(cls, output_tokens):
+    def decode_move(cls, output_tokens: List[int]) -> Move:
 
         promotion_str = cls.tokens_to_vocab[output_tokens[3]]
         if promotion_str == "-":
