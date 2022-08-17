@@ -8,13 +8,14 @@ from transformers import (
 
 import metric_logging
 from configs.global_config import source_files_register
-from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter
+from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter, ChessSubgoalDataGenerator, NoFilter
 from jobs.train_model import TrainModel
 from mrunner_utils.neptune_logger import NeptuneLogger
 
 source_files_register.register(__file__)
+k = 2
 
-LOCAL_LOG_DIR = "/home/tomek/Research/subgoal_chess_data/fast_iter_dupa/"
+LOCAL_LOG_DIR = f"/home/tomek/Research/subgoal_chess_data/generator_k_{k}/"
 ENTROPY_LOG_DIR = "/home/todrzygozdz/subgoal_search_storage/"
 
 EAGLE_PGN = "/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn"
@@ -23,7 +24,7 @@ LOCAL_PGN = "/home/tomek/Research/subgoal_chess_data/database.pgn"
 
 LOG_DIR = LOCAL_LOG_DIR
 
-neptune_logger = NeptuneLogger(name=f"policy_train fast local", tags=["local", "policy"])
+neptune_logger = NeptuneLogger(name=f"generator_k_1 train fast local", tags=["local", "generator_k_1"])
 metric_logging.register_logger(neptune_logger)
 
 fast_iter_config = BartConfig(
@@ -55,15 +56,24 @@ fast_iter_training = TrainingArguments(
 
 
 chess_filter = ResultFilter("winner")
+# chess_filter = NoFilter()
 
-dataset = PolicyDataGenerator(
-    pgn_file=LOCAL_PGN, chess_filter=chess_filter, p_sample=1.0, n_data=10**4, log_samples_limit=100, p_log_sample=1.0
+dataset = ChessSubgoalDataGenerator(
+    k=k,
+    pgn_file=LOCAL_PGN,
+    chess_filter=chess_filter,
+    p_sample=0.5,
+    n_data=2*10**5,
+    log_samples_limit=25,
+    p_log_sample=0.05,
 )
+
+dataset.create_data()
 
 # TrainModel(
 #     fast_iter_config,
 #     fast_iter_training,
 #     chess_database=dataset,
-#     save_model_path=LOG_DIR + "/policy_model",
+#     save_model_path=LOG_DIR + "/generator_model",
 #     neptune_logger=neptune_logger,
 # ).execute()

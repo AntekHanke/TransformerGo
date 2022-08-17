@@ -1,15 +1,13 @@
 from configs.global_config import source_files_register
-from data_processing.chess_data_generator import PolicyDataGenerator
-from data_processing.model_eval_callbacks import PolicyEvalCallback
+from data_processing.chess_data_generator import ChessDataGenerator
 from jobs.core import Job
 from transformers import (
-    TrainingArguments,
     Trainer,
-    BartForConditionalGeneration,
-    BartConfig,
+    BartForConditionalGeneration, BartConfig, TrainingArguments,
 )
 
-from mrunner_utils.neptune_logger import NeptunePytorchCallback
+from metric_logging import log_param
+from mrunner_utils.neptune_logger import NeptuneLogger
 
 source_files_register.register(__file__)
 
@@ -17,11 +15,11 @@ source_files_register.register(__file__)
 class TrainModel(Job):
     def __init__(
         self,
-        model_config=None,
-        training_args=None,
-        chess_database=None,
-        save_model_path=None,
-        neptune_logger=None,
+        model_config: BartConfig=None,
+        training_args: TrainingArguments=None,
+        chess_database: ChessDataGenerator=None,
+        save_model_path: str=None,
+        neptune_logger: NeptuneLogger=None,
     ):
         self.model_config = model_config
         self.training_args = training_args
@@ -35,10 +33,9 @@ class TrainModel(Job):
         )
 
         self.trainer.add_callback(neptune_logger.get_pytorch_callback())
-
         assert save_model_path is not None
-
         self.save_model_path = save_model_path
+        log_param("Save model path", self.save_model_path)
 
     def execute(self):
         self.trainer.train()
