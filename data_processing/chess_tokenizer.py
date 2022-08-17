@@ -115,7 +115,6 @@ class ChessTokenizer:
 
     @classmethod
     def decode_move(cls, output_tokens: List[int]) -> Move:
-
         promotion_str = cls.tokens_to_vocab[output_tokens[3]]
         if promotion_str == "-":
             promotion = None

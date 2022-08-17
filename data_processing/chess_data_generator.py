@@ -76,7 +76,7 @@ class ChessDataGenerator:
     """Reads PGN file and creates data."""
     def __init__(
         self,
-        pgn_file_path: str,
+        pgn_file: str,
         chess_filter: ChessFilter = None,
         p_sample: float = 1.0,
         n_data: int = None,
@@ -84,7 +84,7 @@ class ChessDataGenerator:
         log_samples_limit: int = None,
         p_log_sample: float = 0.01,
     ):
-        self.pgn_database = open(pgn_file_path, errors="ignore")
+        self.pgn_database = open(pgn_file, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
         self.chess_filter = chess_filter
         self.p_sample = p_sample
