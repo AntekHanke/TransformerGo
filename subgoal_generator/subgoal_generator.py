@@ -1,15 +1,17 @@
+from typing import List
+
 import chess
 import torch
 from transformers import BartForConditionalGeneration
 
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
 
 
 class ChessSubgoalGenerator:
-    def generate_subgoals(self, immutable_board):
+    def generate_subgoals(self, immutable_board: ImmutableBoard, n_subgoals: int) -> List[ImmutableBoard]:
         raise NotImplementedError
+
 
 class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
     def __init__(self, checkpoint_path_or_model):
@@ -18,13 +20,15 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         else:
             self.model = checkpoint_path_or_model
 
-    def generate_subgoals(self, immutable_board):
+    def generate_subgoals(self, immutable_board: ImmutableBoard, n_subgoals: int):
         encoded_board = ChessTokenizer.encode_immutable_board(immutable_board) + [
             ChessTokenizer.vocab_to_tokens["<SEP>"]
         ]
         input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
-        outputs = self.model.generate(input_tensor, num_beams=16, max_new_tokens=80).tolist()
-        print("".join([ChessTokenizer.tokens_to_vocab[token] for token in outputs[0]]))
-        return ChessTokenizer.decode_board(outputs[0])
-
-
+        outputs = self.model.generate(
+            input_tensor, num_return_sequences=n_subgoals, num_beams=16, max_new_tokens=80
+        ).tolist()
+        subgoals = []
+        for output in outputs:
+            subgoals.append(ChessTokenizer.decode_board(output))
+        return subgoals

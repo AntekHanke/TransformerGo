@@ -1,4 +1,3 @@
-from configs.global_config import source_files_register
 from data_processing.chess_data_generator import ChessDataGenerator
 from jobs.core import Job
 from transformers import (
@@ -6,7 +5,7 @@ from transformers import (
     BartForConditionalGeneration, BartConfig, TrainingArguments,
 )
 
-from metric_logging import log_param
+from metric_logging import log_param, source_files_register
 from mrunner_utils.neptune_logger import NeptuneLogger
 
 source_files_register.register(__file__)

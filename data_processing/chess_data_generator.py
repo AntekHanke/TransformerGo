@@ -62,6 +62,7 @@ class ResultFilter(ChessFilter):
 
 class ChessDataset(torch.utils.data.Dataset):
     """Used by Pytorch DataLoader to get batches of data."""
+
     def __init__(self, data: Dict):
         self.data = data
 
@@ -74,6 +75,7 @@ class ChessDataset(torch.utils.data.Dataset):
 
 class ChessDataGenerator:
     """Reads PGN file and creates data."""
+
     def __init__(
         self,
         pgn_file: str,
@@ -83,6 +85,7 @@ class ChessDataGenerator:
         train_eval_split: float = 0.95,
         log_samples_limit: int = None,
         p_log_sample: float = 0.01,
+        only_eval: bool = False,
     ):
         self.pgn_database = open(pgn_file, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
@@ -92,6 +95,7 @@ class ChessDataGenerator:
         self.train_eval_split = train_eval_split
         self.log_samples_limit = log_samples_limit
         self.p_log_sample = p_log_sample
+        self.only_eval = only_eval
 
         self.data_queue = {}
         self.eval_data_queue = {}
@@ -124,10 +128,11 @@ class ChessDataGenerator:
         while len(self.data_queue) + len(self.eval_data_queue) < self.n_data:
             n_iterations += 1
             train_eval = get_split(n_iterations, self.train_eval_split)
-            current_dataset = self.select_dataset(train_eval)
-            self.game_to_datapoints(self.next_game_to_raw_data(), current_dataset)
-            self.n_games += 1
-            self.log_progress(n_iterations)
+            if not self.only_eval or train_eval == "eval":
+                current_dataset = self.select_dataset(train_eval)
+                self.game_to_datapoints(self.next_game_to_raw_data(), current_dataset)
+                self.n_games += 1
+                self.log_progress(n_iterations)
         self.data_constructed = True
 
     def get_train_set_generator(self) -> ChessDataset:
