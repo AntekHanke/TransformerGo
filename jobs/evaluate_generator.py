@@ -1,6 +1,6 @@
 import random
 
-from chess_engines.stockfish import stockfish_evaluate_immutable_board
+from chess_engines.stockfish import StockfishEngine
 from data_processing.chess_data_generator import ChessDataGenerator, NoFilter, ChessSubgoalDataGenerator
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
@@ -38,6 +38,7 @@ class EvaluateGenerator(Job):
         )
         self.n_eval_datapoints = n_eval_datapoints
         self.n_log_samples = n_log_samples
+        self.stockfish = StockfishEngine()
 
     def execute(self):
         self.chess_database.create_data()
@@ -46,12 +47,12 @@ class EvaluateGenerator(Job):
         idx_to_eval = random.choices(list(range(eval_data_len)), k=self.n_eval_datapoints)
         for idx in idx_to_eval:
             input_board = ChessTokenizer.decode_board(eval_data[idx]["input_ids"])
-            input_eval = stockfish_evaluate_immutable_board(input_board)
+            input_eval = self.stockfish.evaluate_immutable_board(input_board)
             data_target = ChessTokenizer.decode_board(eval_data[idx]["labels"])
-            target_eval = stockfish_evaluate_immutable_board(data_target)
+            target_eval = self.stockfish.evaluate_immutable_board(data_target)
             subgoals = self.subgoal_generator.generate_subgoals(input_board, self.n_subgoals)
             subgoals = [s for s in subgoals if s.board != input_board.board]
-            subgoals_values = [stockfish_evaluate_immutable_board(subgoal) for subgoal in subgoals]
+            subgoals_values = [self.stockfish.evaluate_immutable_board(subgoal) for subgoal in subgoals]
 
             fig = immutable_boards_to_img(
                 [input_board, data_target, *subgoals],
