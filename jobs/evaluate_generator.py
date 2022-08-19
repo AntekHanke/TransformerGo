@@ -1,5 +1,6 @@
 import random
 
+from chess_engines.stockfish import stockfish_evaluate_immutable_board
 from data_processing.chess_data_generator import ChessDataGenerator, NoFilter, ChessSubgoalDataGenerator
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
@@ -32,8 +33,8 @@ class EvaluateGenerator(Job):
         self.k = k
         self.n_subgoals = n_subgoals
         self.subgoal_generator = subgoal_generator
-        self.chess_database = ChessSubgoalDataGenerator(self.k,
-            pgn_file, NoFilter(), p_sample=0.5, n_data=100 * n_eval_datapoints, only_eval=True
+        self.chess_database = ChessSubgoalDataGenerator(
+            self.k, pgn_file, NoFilter(), p_sample=0.5, n_data=100 * n_eval_datapoints, only_eval=True
         )
         self.n_eval_datapoints = n_eval_datapoints
         self.n_log_samples = n_log_samples
@@ -45,10 +46,17 @@ class EvaluateGenerator(Job):
         idx_to_eval = random.choices(list(range(eval_data_len)), k=self.n_eval_datapoints)
         for idx in idx_to_eval:
             input_board = ChessTokenizer.decode_board(eval_data[idx]["input_ids"])
+            input_eval = stockfish_evaluate_immutable_board(input_board)
             data_target = ChessTokenizer.decode_board(eval_data[idx]["labels"])
+            target_eval = stockfish_evaluate_immutable_board(data_target)
             subgoals = self.subgoal_generator.generate_subgoals(input_board, self.n_subgoals)
+            subgoals = [s for s in subgoals if s.board != input_board.board]
+            subgoals_values = [stockfish_evaluate_immutable_board(subgoal) for subgoal in subgoals]
+
             fig = immutable_boards_to_img(
                 [input_board, data_target, *subgoals],
-                ["input", "data"] + ["subgoal_{}".format(i) for i in range(self.n_log_samples)],
+                [f"input v={input_eval} cp  active = {input_board.active_player}"]
+                + [f"subgoal v={v} cp" for v in subgoals_values]
+                + [f"target v={target_eval} cp"],
             )
             log_object("Subgoals", fig)
