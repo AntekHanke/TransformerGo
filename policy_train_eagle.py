@@ -4,8 +4,7 @@ from transformers import (
     BartConfig,
 )
 
-from metric_logging import log_param, register_logger, log_object
-from configs.global_config import source_files_register
+from metric_logging import log_param, register_logger, source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator
 from jobs.train_model import TrainModel
 from mrunner_utils.neptune_logger import NeptuneLogger
