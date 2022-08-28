@@ -92,7 +92,7 @@ class QualityOfSubgoals:
         0               33                                   15                                      6                12
 
         :param: path_to_save_statistics: Path to save chess dataset (.csv format). If path_to_save_statistics is None,
-        then the data is not saved (by defult is None), e.g. 'path/to/save/stats/name_of_document.csv.
+        then the data is not saved (by default is None), e.g. 'path/to/save/stats/name_of_document.csv.
         :return: Pandas frame which contains dataset statistic information
         """
         number_of_games: int = 0
@@ -122,7 +122,7 @@ class QualityOfSubgoals:
         database_statistic['Number of games won by black player: '] = [black_won]
         database_statistic['Nuber of draws: '] = [drawns]
 
-        df = pd.DataFrame(database_statistic)
+        df: pd.DataFrame = pd.DataFrame(database_statistic)
         database_of_chess_games_file.close()
 
         if path_to_save_statistics is not None:
@@ -138,7 +138,7 @@ class QualityOfSubgoals:
                                                        path_to_folder_to_save_graphics: Optional[str] = None
                                                        ) -> pd.DataFrame:
         """
-        This function returns Pandas frame which contains information about stockfish value estiamtion
+        This function returns Pandas dataframe which contains information about stockfish value estiamtion
         on the input board and n subgoals (form imput board) in n games.
 
         For example_1: For the 3 games (number_of_games = 3) that were won by white oponent (white_or_black = '1-0')
@@ -154,15 +154,16 @@ class QualityOfSubgoals:
         player is to make a move.
 
         For example_2:
-        We have a generator trained on the boards that the white opponents (1-0) won.Tthen we take the gameplay,
+        We have a generator trained on the boards that the white opponents (1-0) won.Then we take the gameplay,
         draw the number of moves and from the resulting state we generate the subgoals (the resulting state is the state
         in which the black player has move).
 
         :param: number_of_games: The number of games we want to evaluate (have in the table in the table).
         :param: white_or_black: Type of games on which the generator was trained (which we select from a chees dataset).
         :param: number_of_subgoals: Number of subgols from giveb state.
-        :param: path_to_folder_to_save_graphics: If
-        :return:
+        :param: path_to_folder_to_save_graphics: If path_to_folder_to_save_graphics is not None (default is None), then each row of
+         dataframe is saved with images of the boards.
+        :return: Dataframe with stats.
         """
 
         assert number_of_games > 0 and isinstance(number_of_games, int), "Number of games must be positive integer."
