@@ -38,7 +38,7 @@ def odd_even_random_move(moves_during_play: chess.pgn.Mainline, white_or_black: 
 def n_forwad_moves_chess_board(moves_during_play: chess.pgn.Mainline, number_of_forward_moves: int) -> chess.Board:
     """
     For example: Moves during playgame:  1. e4 c5 2. f4 d6 3. Nf3 Nc6 4. Bb5 Bd7 5. c3 a6 6.
-    Number of forward moves: 1
+    Number of forward moves: 1.
 
     r n b q k b n r         r n b q k b n r
     p p p p p p p p         p p p p p p p p
@@ -49,8 +49,8 @@ def n_forwad_moves_chess_board(moves_during_play: chess.pgn.Mainline, number_of_
     P P P P P P P P         P P P P . P P P
     R N B Q K B N R         R N B Q K B N R
 
-    :param: moves_during_play: These are all moves during current playgame
-    :param: number_of_forward_moves: The number of moves that players have made
+    :param: moves_during_play: These are all moves during current playgame.
+    :param: number_of_forward_moves: The number of moves that players have made.
     :return: Board after number_of_forward_moves.
     """
     beggining_board: chess.Board = chess.Board()
@@ -93,7 +93,7 @@ class QualityOfSubgoals:
 
         :param: path_to_save_statistics: Path to save chess dataset (.csv format). If path_to_save_statistics is None,
         then the data is not saved (by default is None), e.g. 'path/to/save/stats/name_of_document.csv.
-        :return: Pandas frame which contains dataset statistic information
+        :return: Pandas frame which contains dataset statistic information.
         """
         number_of_games: int = 0
         white_won: int = 0
