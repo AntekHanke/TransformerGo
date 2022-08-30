@@ -122,7 +122,7 @@ class ChessStatsDatasetCreator:
     def chess_dataset_stats(self) -> pd.DataFrame:
 
         """
-        A functions that counts the number of games, the number of games that white opponent has won,
+        A functions counts the number of games, the number of games that white opponent has won,
         the number of games that black opponent has won, the number of games ended in a draw and the and
         the number of games filtred by the filter used.
 
@@ -137,7 +137,7 @@ class ChessStatsDatasetCreator:
         number_of_games: int = 0
         white_won: int = 0
         black_won: int = 0
-        drawns: int = 0
+        draws: int = 0
         filtred_games: int = 0
         database_statistic: dict = {}
         database_of_chess_games_file = open(self.pgn_file)
@@ -159,14 +159,14 @@ class ChessStatsDatasetCreator:
                 elif game_result == '0-1':
                     black_won += 1
                 else:
-                    drawns += 1
+                    draws += 1
 
         assert number_of_games == white_won + black_won + drawns, 'number_of_games = white_won + black_won + draws'
 
         database_statistic['Number of games: '] = [number_of_games]
         database_statistic['Number of games won by white player: '] = [white_won]
         database_statistic['Number of games won by black player: '] = [black_won]
-        database_statistic['Nuber of draws: '] = [drawns]
+        database_statistic['Nuber of draws: '] = [draws]
         database_statistic['Nuber of filtred gamse: '] = [filtred_games]
 
         df_chess_games_dataset_stats = pd.DataFrame(database_statistic)
@@ -300,24 +300,3 @@ class StatisticOfSubgoals:
 
         stats_df: pd.DataFrame = pd.DataFrame(data_stockfish_estimation_state)
         return stats_df
-
-
-if __name__ == '__main__':
-    path_to_chess_dataset = '/home/gracjan/subgoal/subgoal_search_chess/assets/cas_small.pgn'
-    path_to_subgoal_generator = '/home/gracjan/subgoal/subgoal_search_chess/generator_checkpoints/k_2/checkpoint-2000'
-    path_to_save_stockfish_image_evaluations = '/home/gracjan/subgoal/subgoal_search_chess/example_of_stats/'
-
-    dataset = ChessStatsDatasetCreator(pgn_file=path_to_chess_dataset, n_games=3, train_eval_split=0.5)
-    dataset.create_data()
-    print('Chess dataset statistic')
-    print(dataset.chess_dataset_stats().to_string())
-    print('\n')
-
-    one_game = dataset.dataset_containig_games_to_eval_statistics[0]
-    stats = StatisticOfSubgoals(dataset, path_to_subgoal_generator)
-    print('Stockfish evaluation on each game (one game) state (and on each subgoal from the respective state')
-    print(stats.diff_value_input_state_vs_subgolas_one_game(game=one_game, number_of_subgoals=2).to_string())
-    
-    print('\n')
-    print('Stockfish evaluation on states (boards) form diffrent games (and on each subgoal from the respective state')
-    print(stats.diff_value_input_state_vs_subgolas_multi_games(3).to_string())
