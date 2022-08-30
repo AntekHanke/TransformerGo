@@ -5,37 +5,19 @@ import chess.engine
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from typing import Optional, List
+from typing import Optional, List, Dict, Tuple
 from os import makedirs
 import random
 
-from data_processing.data_utils import immutable_boards_to_img
-from data_structures.data_structures import ImmutableBoard
+from data_processing.data_utils import immutable_boards_to_img, get_split
+from data_structures.data_structures import ImmutableBoard, OneGameData, ChessMetadata, Transition
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 from chess_engines.stockfish import evaluate_immutable_board_by_stockfish_with_resret_machine
+from data_processing.chess_data_generator import NoFilter, ChessFilter
 
 
-def odd_even_random_move(moves_during_play: chess.pgn.Mainline, white_or_black: str) -> int:
-    """
-    For example: if we choose '1-0' and the current moves are =
-    1. e4 c5 2. f4 d6 3. Nf3 Nc6 4. Bb5 Bd7 5. c3 a6 6. Ba4 b5 7. Bc2 c4 8. d4 cxd3 9. Qxd3 g6 10. Be3 Bg7 11. O-O Nf6,
-    then we randomly choose odd number from 1 to 11 (all moves), e.g. 5.
-
-    :param: white_or_black: '1-0' if white player won, '0-1' if black player won.
-    :param: moves_during_play: These are all moves during current playgame.
-    :return: Number of moves ahed from starting board.
-    """
-    number_of_moves: int = 0
-    moves: List[chess.Move] = [move for move in moves_during_play]
-
-    if white_or_black == '1-0':
-        number_of_moves = random.randrange(1, len(moves), 2)
-    elif white_or_black == '0-1':
-        number_of_moves = random.randrange(2, len(moves), 2)
-    return number_of_moves
-
-
-def n_forwad_moves_chess_board(moves_during_play: chess.pgn.Mainline, number_of_forward_moves: int) -> chess.Board:
+def n_forwad_moves_chess_board(moves_during_play: List[Tuple[str, chess.Move]],
+                               number_of_forward_moves: int) -> Tuple[chess.Board, str]:
     """
     For example: Moves during playgame:  1. e4 c5 2. f4 d6 3. Nf3 Nc6 4. Bb5 Bd7 5. c3 a6 6.
     Number of forward moves: 1.
@@ -53,19 +35,86 @@ def n_forwad_moves_chess_board(moves_during_play: chess.pgn.Mainline, number_of_
     :param: number_of_forward_moves: The number of moves that players have made.
     :return: Board after number_of_forward_moves.
     """
+
+    active_player: Optional[str] = None
     beggining_board: chess.Board = chess.Board()
-    moves: List[chess.Move] = [move for move in moves_during_play]
-    number_of_forward_moves: int = min(number_of_forward_moves, len(moves))
+    number_of_forward_moves: int = min(number_of_forward_moves, len(moves_during_play))
 
     for i in range(number_of_forward_moves):
-        beggining_board.push(moves[i])
+        beggining_board.push(moves_during_play[i][1])
+        active_player = moves_during_play[i][0]
 
-    return beggining_board
+    return beggining_board, active_player
 
 
-class QualityOfSubgoals:
+class ChessStatsEvalDatasetCreator:
+
     def __init__(self,
-                 database_of_chess_games_path: str,
+                 pgn_file: str,
+                 n_games: int,
+                 chess_filter: ChessFilter = NoFilter,
+                 train_eval_split: float = 0.95,
+                 ) -> None:
+
+        self.pgn_database = open(pgn_file, errors="ignore")
+        self.n_games = n_games
+        self.chess_filter = chess_filter
+        self.train_eval_split = train_eval_split
+
+        # list contains chess games that goes (boards from move's trajectory)
+        # into the evaluation dataset
+        self.dataset_containig_games_to_eval_statistics: Dict[int, Transition] = {}
+        self.current_game: Optional[chess.pgn.Game] = None
+
+    def next_game_to_raw_data(self) -> Optional[OneGameData]:
+
+        self.current_game: chess.pgn.Game = chess.pgn.read_game(self.pgn_database)
+
+        if self.current_game is None:  # condition is met if there are no more games in the dataset
+            return None
+        else:
+            chess_metadata: ChessMetadata = ChessMetadata(**self.current_game.headers)
+            transitions: List[Transition] = []
+
+            if self.chess_filter.use_game(chess_metadata):
+                board = chess.Board()
+                for move in enumerate(self.current_game.mainline_moves()):
+                    _, chess_move = move
+                    try:
+                        transitions.append(Transition(ImmutableBoard.from_board(board), chess_move))
+                        board.push(chess_move)
+                    except:
+                        break
+
+            return OneGameData(chess_metadata, transitions)
+
+    def create_data(self) -> None:
+
+        n_iterations: int = 0
+        dict_position: int = 0
+
+        while self.n_games > 0:
+            n_iterations += 1
+            train_eval: str = get_split(n_iterations, self.train_eval_split)
+
+            if train_eval == "eval":
+                game = self.next_game_to_raw_data()
+                if len(game.transitions) == 0:  # empty games created after applying the filter
+                    continue
+                else:
+                    self.dataset_containig_games_to_eval_statistics[dict_position] = game
+                    dict_position += 1
+                    self.n_games -= 1
+            else:
+                game = self.next_game_to_raw_data()
+
+            if game is None:  # the entire dataset was used
+                break
+
+
+class StatisticOfSubgoals:
+    def __init__(self,
+                 chess_stats_eval_dataset_creator: ChessStatsEvalDatasetCreator,
                  chess_subgaols_generator_checkpoint_path: str) -> None:
         """
         Atribut self.chess_dataset_statistics is a pandas frame which contains information about chess dataset.
@@ -75,11 +124,12 @@ class QualityOfSubgoals:
         :param: chess_subgaols_generator_checkpoint_path: This is path to transformer's model.
         """
 
-        self.database_of_chess_games_path = database_of_chess_games_path
+        self.chess_stats_eval_dataset_creator = chess_stats_eval_dataset_creator
         self.chess_subgaols_generator_checkpoint_path = chess_subgaols_generator_checkpoint_path
         self.subgoal_model: BasicChessSubgoalGenerator = \
             BasicChessSubgoalGenerator(self.chess_subgaols_generator_checkpoint_path)
-        self.chess_dataset_statistics: pd.DataFrame = self.chess_dataset_stats()
+
+       # self.chess_dataset_statistics: pd.DataFrame = self.chess_dataset_stats()  # TODO: consider filters !
 
     def chess_dataset_stats(self, path_to_save_statistics: Optional[str] = None) -> pd.DataFrame:
         """
@@ -92,9 +142,10 @@ class QualityOfSubgoals:
         0               33                                   15                                      6                12
 
         :param: path_to_save_statistics: Path to save chess dataset (.csv format). If path_to_save_statistics is None,
-        then the data is not saved (by default is None), e.g. 'path/to/save/stats/name_of_document.csv.
-        :return: Pandas frame which contains dataset statistic information.
+        then the data is not saved (by defult is None), e.g. 'path/to/save/stats/name_of_document.csv.
+        :return: Pandas frame which contains dataset statistic information
         """
+
         number_of_games: int = 0
         white_won: int = 0
         black_won: int = 0
@@ -122,7 +173,7 @@ class QualityOfSubgoals:
         database_statistic['Number of games won by black player: '] = [black_won]
         database_statistic['Nuber of draws: '] = [drawns]
 
-        df: pd.DataFrame = pd.DataFrame(database_statistic)
+        df = pd.DataFrame(database_statistic)
         database_of_chess_games_file.close()
 
         if path_to_save_statistics is not None:
@@ -132,93 +183,75 @@ class QualityOfSubgoals:
         return df
 
     def diff_value_input_state_vs_subgolas_multi_games(self,
-                                                       number_of_games: int,
-                                                       white_or_black: str,
                                                        number_of_subgoals: int,
                                                        path_to_folder_to_save_graphics: Optional[str] = None
                                                        ) -> pd.DataFrame:
-        """
-        This function returns Pandas dataframe which contains information about stockfish value estiamtion
-        on the input board and n subgoals (form imput board) in n games.
 
-        For example_1: For the 3 games (number_of_games = 3) that were won by white oponent (white_or_black = '1-0')
-        and with 2 subgols form each input board, we get the following table:
-
-                Input board evaluation  Subgoal_1 evaluation  Subgoal_2 evaluation
-            0                     -31                    22                  -114
-            1                    -182                  -179                   -58
-            2                    -105                    21                  -111
-
-        Important note: If subgoal generator was trained on the boards that were won by white oponent
-        (white_or_black = '1-0'), then we give to the generator the boards (states) in which the black
-        player is to make a move.
-
-        For example_2:
-        We have a generator trained on the boards that the white opponents (1-0) won.Then we take the gameplay,
-        draw the number of moves and from the resulting state we generate the subgoals (the resulting state is the state
-        in which the black player has move).
-
-        :param: number_of_games: The number of games we want to evaluate (have in the table in the table).
-        :param: white_or_black: Type of games on which the generator was trained (which we select from a chees dataset).
-        :param: number_of_subgoals: Number of subgols from giveb state.
-        :param: path_to_folder_to_save_graphics: If path_to_folder_to_save_graphics is not None (default is None), then each row of
-         dataframe is saved with images of the boards.
-        :return: Dataframe with stats.
-        """
-
-        assert number_of_games > 0 and isinstance(number_of_games, int), "Number of games must be positive integer."
+        database_of_chess_games: Dict[int, Transition] = \
+            self.chess_stats_eval_dataset_creator.dataset_containig_games_to_eval_statistics
 
         data_stockfish_estimation_state: dict = {'Input board evaluation': []}
-        game: int = 0  # number of current game
-
-        if white_or_black == '1-0':
-            number_of_games = min(number_of_games,
-                                  self.chess_dataset_statistics['Number of games won by white player: '][0])
-        elif white_or_black == '0-1':
-            number_of_games = min(number_of_games,
-                                  self.chess_dataset_statistics['Number of games won by black player: '][0])
-
-        database_of_chess_games = open(self.database_of_chess_games_path)
-
         for i in range(1, number_of_subgoals + 1):
             data_stockfish_estimation_state['Subgoal_' + str(i) + ' evaluation'] = []
 
-        for _ in range(self.chess_dataset_statistics['Number of games: '][0]):
-            game_from_dataset = chess.pgn.read_game(database_of_chess_games)
-            if game_from_dataset.headers['Result'] == white_or_black:
-                moves_in_current_game: chess.pgn.Mainline = game_from_dataset.mainline_moves()
-                number_of_forward_moves: int = odd_even_random_move(moves_in_current_game, white_or_black)
-                board_after_n_moves: chess.Board = n_forwad_moves_chess_board(moves_in_current_game,
-                                                                              number_of_forward_moves
-                                                                              )
-                immutable_board_after_n_moves: ImmutableBoard = ImmutableBoard.from_board(board_after_n_moves)
-                subgoals_from_board_after_n_moves: List[ImmutableBoard] = \
-                    self.subgoal_model.generate_subgoals(immutable_board_after_n_moves, number_of_subgoals)
+        # Here you can add information about the games played, which are included in the ChessMetadata or ImmutableBoard
 
-                for p, key in enumerate(data_stockfish_estimation_state.keys()):
-                    if key == 'Input board evaluation':
-                        board_after_n_moves_eval: float = \
-                            evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board_after_n_moves)
-                        data_stockfish_estimation_state[key].append(board_after_n_moves_eval)
-                    else:
-                        subgoals_from_board_after_n_moves_eval: float = \
-                            evaluate_immutable_board_by_stockfish_with_resret_machine(
-                                subgoals_from_board_after_n_moves[p - 1])
-                        data_stockfish_estimation_state[key].append(subgoals_from_board_after_n_moves_eval)
+        # Example for ChessMetadata:
 
-                if isinstance(path_to_folder_to_save_graphics, str):
-                    immutable_boards_to_img([ImmutableBoard.from_board(board_after_n_moves)]
-                                            + subgoals_from_board_after_n_moves,
-                                            [name + ': ' + str(value[game]) for name, value in data_stockfish_estimation_state.items()]
-                                            )
-                    plt.savefig(path_to_folder_to_save_graphics + str(game) + '.png')
-                    game = game + 1
+        # {'Event': '27th BIH Teams A 2020', 'Site': 'Lukavac BIH', 'Date': '2020.11.04',
+        # 'Round': '9.1', 'White': 'Redzepi, Mehmedalija', 'Black': 'Kurtcehajic, Suad', 'Result': '1/2-1/2',
+        # 'BlackElo': '1951', 'BlackFideId': '14409585', 'BlackTeam': 'SK Sarajevo, Sarajevo', 'ECO':
+        # 'D02', 'EventDate': '2020.10.30', 'EventType': 'team', 'Opening': "Queen's pawn game",
+        # 'WhiteElo': '1859', 'WhiteFideId': '14405032', 'WhiteTeam': 'SK Preporod, Zenica'}
 
-                number_of_games -= 1
-                if number_of_games == 0:
-                    break
+        # Example of ImmutableBoard:
+        # active_player = 'w', castles = 'KQkq', en_passant_target = '-', halfmove_clock = '0', fullmove_clock = '1'
 
-        database_of_chess_games.close()
+        data_stockfish_estimation_state['active_player'] = []
+        data_stockfish_estimation_state['Result'] = []
+
+        eval_boards_key_names: List[str] = \
+            ['Input board evaluation'] + ['Subgoal_' + str(i) + ' evaluation' for i in range(1, number_of_subgoals + 1)]
+
+        for number_of_current_game in range(len(database_of_chess_games)):
+            current_game: OneGameData = database_of_chess_games[number_of_current_game]
+            info_about_current_game: Dict[str, str] = current_game[0].__dict__
+            moves_in_current_game: List[Tuple[str, chess.Move]] = [(move[0].active_player, move[1]) for move in
+                                                                   current_game.transitions]
+            number_of_forward_moves: int = random.randrange(0, len(moves_in_current_game))
+            board_after_n_moves: Tuple[chess.Board, str] = n_forwad_moves_chess_board(moves_in_current_game,
+                                                                                      number_of_forward_moves
+                                                                                      )
+            immutable_board_after_n_moves: ImmutableBoard = ImmutableBoard.from_board(board_after_n_moves[0])
+            subgoals_from_board_after_n_moves: List[ImmutableBoard] = \
+                self.subgoal_model.generate_subgoals(immutable_board_after_n_moves, number_of_subgoals)
+
+            # update evaluation by stockfish
+
+            for p, eval_name in enumerate(eval_boards_key_names):
+                if eval_name == 'Input board evaluation':
+                    board_after_n_moves_eval: float = \
+                        evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board_after_n_moves)
+                    data_stockfish_estimation_state[eval_name].append(board_after_n_moves_eval)
+                else:
+                    subgoals_from_board_after_n_moves_eval: float = \
+                        evaluate_immutable_board_by_stockfish_with_resret_machine(
+                            subgoals_from_board_after_n_moves[p - 1])
+                    data_stockfish_estimation_state[eval_name].append(subgoals_from_board_after_n_moves_eval)
+
+            # update of the rest of the data
+
+            data_stockfish_estimation_state['active_player'].append(board_after_n_moves[1])
+            data_stockfish_estimation_state['Result'].append(info_about_current_game['Result'])
+
+            if isinstance(path_to_folder_to_save_graphics, str):
+                immutable_boards_to_img([immutable_board_after_n_moves]
+                                        + subgoals_from_board_after_n_moves,
+                                        [name + ': ' + str(data_stockfish_estimation_state[name][number_of_current_game])
+                                         for name in eval_boards_key_names]
+                                        )
+                plt.savefig(path_to_folder_to_save_graphics + str(number_of_current_game) + '.png')
+
         stats_df: pd.DataFrame = pd.DataFrame(data_stockfish_estimation_state)
         return stats_df
 
@@ -231,12 +264,8 @@ if __name__ == '__main__':
     path_to_subgoal_generator = '/home/gracjan/subgoal/subgoal_search_chess/generator_checkpoints/k_2/checkpoint-2000'
     path_to_save_stockfish_image_evaluations = '/home/gracjan/subgoal/subgoal_search_chess/example_of_stats/'
 
-    stats = QualityOfSubgoals(path_to_chess_dataset, path_to_subgoal_generator)
-    print(stats.chess_dataset_statistics.to_string())
+    dataset = ChessStatsEvalDatasetCreator(pgn_file=path_to_chess_dataset, n_games=3, train_eval_split=0.5)
+    dataset.create_data()
+    stats = StatisticOfSubgoals(dataset, path_to_subgoal_generator)
+    print(stats.diff_value_input_state_vs_subgolas_multi_games(3, path_to_save_stockfish_image_evaluations).to_string())
 
-    stockfish_stats = stats.diff_value_input_state_vs_subgolas_multi_games(number_of_games=3,
-                                                                           white_or_black='1-0',
-                                                                           number_of_subgoals=2,
-                                                                           path_to_folder_to_save_graphics=path_to_save_stockfish_image_evaluations
-                                                                           )
-    print(stockfish_stats.to_string())
