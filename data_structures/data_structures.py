@@ -12,6 +12,7 @@ ImmutableBoardData = namedtuple(
     "board active_player castles en_passant_target halfmove_clock fullmove_clock",
 )
 
+
 SubgoalsFromModel = namedtuple("SubgoalFromModel", "input_immutable_board target_immutable_board")
 
 @dataclass
@@ -29,22 +30,27 @@ class ImmutableBoard(ImmutableBoardData):
     def to_board(self):
         return chess.Board(fen=" ".join(self))
 
+    def act(self, move):
+        chess_board = self.to_board()
+        chess_board.push(move)
+        return ImmutableBoard.from_board(chess_board)
 
-class SingleSubgoal:
-    def __init__(
-        self,
-        input_immutable_board,
-        target_immutable_board,
-        input_value: Optional[float] = None,
-        target_value: Optional[float] = None,
-    ):
-        self.input_immutable_board = input_immutable_board
-        self.target_immutable_board = target_immutable_board
-        self.input_value = input_value
-        self.target_value = target_value
 
-        if self.input_value is not None and self.target_value is not None:
-            self.delta = self.target_value - self.input_value
-
-    def evaluate_with_stockfish(self):
-        pass
+# class SingleSubgoal:
+#     def __init__(
+#         self,
+#         input_immutable_board,
+#         target_immutable_board,
+#         input_value: Optional[float] = None,
+#         target_value: Optional[float] = None,
+#     ):
+#         self.input_immutable_board = input_immutable_board
+#         self.target_immutable_board = target_immutable_board
+#         self.input_value = input_value
+#         self.target_value = target_value
+#
+#         if self.input_value is not None and self.target_value is not None:
+#             self.delta = self.target_value - self.input_value
+#
+#     def evaluate_with_stockfish(self):
+#         pass
