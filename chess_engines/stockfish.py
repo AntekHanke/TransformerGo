@@ -48,12 +48,3 @@ def evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board: I
             return -VALUE_FOR_MATE
         elif immutable_board.active_player == "b":
             return VALUE_FOR_MATE
-
-
-if __name__ == '__main__':
-    # testing evaluation stockfish on the same board - should be the same value
-    board = chess.Board('6k1/7p/1p2p1pP/p2b1r2/Pqn2P2/3Q4/2PB1RP1/1R4K1 b - - 2 32')
-    im_board = ImmutableBoard.from_board(board)
-
-    for _ in range(10):
-        print(evaluate_immutable_board_by_stockfish_with_resret_machine(im_board))
