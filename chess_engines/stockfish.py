@@ -27,7 +27,7 @@ class StockfishEngine:
 
 
 def evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board: ImmutableBoard,
-                                                              time_limit: float = 0.05
+                                                              depth_limit: int = 10
                                                               ) -> float:
     """
     Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
@@ -37,7 +37,7 @@ def evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board: I
     :return: Evaluation of the state of the game.
     """
     engine = chess.engine.SimpleEngine.popen_uci("stockfish")
-    result = engine.analyse(immutable_board.to_board(), chess.engine.Limit(time=time_limit), game=object())['score']
+    result = engine.analyse(immutable_board.to_board(), chess.engine.Limit(depth=depth_limit), game=object())['score']
     engine.quit()
 
     if not result.is_mate():
@@ -49,3 +49,11 @@ def evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board: I
         elif immutable_board.active_player == "b":
             return VALUE_FOR_MATE
 
+
+if __name__ == '__main__':
+    # testing evaluation stockfish on the same board - should be the same value
+    board = chess.Board('6k1/7p/1p2p1pP/p2b1r2/Pqn2P2/3Q4/2PB1RP1/1R4K1 b - - 2 32')
+    im_board = ImmutableBoard.from_board(board)
+
+    for _ in range(10):
+        print(evaluate_immutable_board_by_stockfish_with_resret_machine(im_board))
