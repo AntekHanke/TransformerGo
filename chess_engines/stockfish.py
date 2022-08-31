@@ -22,7 +22,7 @@ class StockfishEngine:
                 return VALUE_FOR_MATE
 
     @classmethod
-    def evaluate_immutable_board_by_stockfish_with_resret_machine(
+    def evaluate_immutable_board_by_stockfish_with_machine_reset(
         cls, immutable_board: ImmutableBoard, depth_limit: int = 10
     ) -> float:
         """

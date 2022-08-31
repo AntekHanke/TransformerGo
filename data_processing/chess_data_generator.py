@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 
 import chess.pgn
 import random
@@ -103,7 +103,7 @@ class ChessDataGenerator:
         self.n_games = 0
         self.data_constructed = False
 
-   def next_game_to_raw_data(self) -> Optional[OneGameData]:
+    def next_game_to_raw_data(self) -> Optional[OneGameData]:
         """
         Function takes the next game from the set of chess games, checks if it passes through the filter used and
         return information about game chass.

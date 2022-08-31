@@ -61,3 +61,5 @@ class EvaluateGenerator(Job):
                 + [f"target v={target_eval} cp"],
             )
             log_object("Subgoals", fig)
+
+    def
