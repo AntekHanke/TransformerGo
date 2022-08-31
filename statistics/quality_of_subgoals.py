@@ -5,14 +5,17 @@ import chess.engine
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Any
 import random
+from tqdm import tqdm
 
 from data_processing.data_utils import immutable_boards_to_img, get_split
 from data_structures.data_structures import ImmutableBoard, OneGameData, ChessMetadata, Transition
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 from chess_engines.stockfish import evaluate_immutable_board_by_stockfish_with_resret_machine
-from data_processing.chess_data_generator import NoFilter, ChessFilter
+from data_processing.chess_data_generator import NoFilter, ChessFilter, ChessDataGenerator
+
+import chess.svg
 
 
 def n_forwad_moves_chess_board(
@@ -48,14 +51,9 @@ def n_forwad_moves_chess_board(
     return beggining_board, active_player
 
 
-class ChessStatsDatasetCreator:
-    def __init__(
-            self,
-            pgn_file: str,
-            n_games: int,
-            chess_filter: ChessFilter = NoFilter,
-            train_eval_split: float = 0.95,
-    ) -> None:
+class ChessStatsDatasetCreator(ChessDataGenerator):
+    def __init__(self, pgn_file: str, n_games: int, train_eval_split: float, chess_filter: ChessFilter = NoFilter):
+        super().__init__(pgn_file, chess_filter, train_eval_split)
 
         self.pgn_file = pgn_file
         self.pgn_database = open(pgn_file, errors="ignore")
@@ -67,33 +65,6 @@ class ChessStatsDatasetCreator:
         # into the evaluation dataset
         self.dataset_containig_games_to_eval_statistics: Dict[int, Transition] = {}
 
-    def next_game_to_raw_data(self) -> Optional[OneGameData]:
-        """
-        Function takes the next game from the set of chess games, checks if it passes through the filter used and
-        return information about game chass.
-        :return: OneGameData contains inforamtion about chess game.
-        """
-
-        current_game: chess.pgn.Game = chess.pgn.read_game(self.pgn_database)
-
-        if current_game is None:  # Condition is met if there are no more games in the dataset.
-            return None
-        else:
-            chess_metadata: ChessMetadata = ChessMetadata(**current_game.headers)
-            transitions: List[Transition] = []
-
-            if self.chess_filter.use_game(chess_metadata):
-                board = chess.Board()
-                for move in enumerate(current_game.mainline_moves()):
-                    _, chess_move = move
-                    try:
-                        transitions.append(Transition(ImmutableBoard.from_board(board), chess_move))
-                        board.push(chess_move)
-                    except:
-                        break
-
-            return OneGameData(chess_metadata, transitions)
-
     def create_data(self) -> None:
         """
         Function splits chess dataset on training and evaluation set (using filtr - by default there is no filter).
@@ -102,6 +73,7 @@ class ChessStatsDatasetCreator:
         """
         n_iterations: int = 0
         dict_position: int = 0
+        n_game_to_eval: int = self.n_games
 
         while self.n_games > 0:
             n_iterations += 1
@@ -119,10 +91,24 @@ class ChessStatsDatasetCreator:
                     dict_position += 1
                     self.n_games -= 1
 
+        assert len(self.dataset_containig_games_to_eval_statistics) != 0, "No data for evaluation, probably set too " \
+                                                                          "large train_eval_split."
+        if self.n_games != 0:
+            print('The number of games we want to '
+                  'evaluate is {0} but {1} are required.'.format(n_game_to_eval - self.n_games, n_game_to_eval))
+            print('If more games are needed for evluation, then increase the dataset,'
+                  ' change the filter or minimize large train_eval_split parameter.')
+
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
+        pass
+
+    def sample_to_log_object(self, sample: Any, game_metadata: ChessMetadata) -> Any:
+        pass
+
     def chess_dataset_stats(self) -> pd.DataFrame:
 
         """
-        A functions counts the number of games, the number of games that white opponent has won,
+        A functions that counts the number of games, the number of games that white opponent has won,
         the number of games that black opponent has won, the number of games ended in a draw and the and
         the number of games filtred by the filter used.
 
@@ -161,7 +147,7 @@ class ChessStatsDatasetCreator:
                 else:
                     draws += 1
 
-        assert number_of_games == white_won + black_won + drawns, 'number_of_games = white_won + black_won + draws'
+        assert number_of_games == white_won + black_won + draws, 'number_of_games = white_won + black_won + draws'
 
         database_statistic['Number of games: '] = [number_of_games]
         database_statistic['Number of games won by white player: '] = [white_won]
@@ -192,8 +178,24 @@ class StatisticOfSubgoals:
             number_of_subgoals: int,
             path_to_folder_to_save_graphics: Optional[str] = None
     ) -> pd.DataFrame:
+        """
+        Function takes n games form evaluation set, randomly chooses state (from each game)
+        and generates subgoals from it. Then evaluates each state and subgoal using stockfish.
 
-        database_of_chess_games: Dict[int, Transition] = \
+        For example:
+
+           Input board evaluation  Subgoal_1 evaluation    active_player   Result  Numbers of forward moves
+0                      17                    22               b            1/2-1/2                10
+1                      71                    71               b              0-1                  32
+2                    -179                  1176               b            1/2-1/2                56
+
+        :param: number_of_subgoals: Number of subgoals we want to generate for current state.
+        :param: path_to_folder_to_save_graphics: If None then each line is stored in graphical form.
+        :return: Dataframe which consits of evaluations (by stockfish) entire game with subgoals
+        and inforamtion about game. Each row represents current evaluated state wwith subgoals form it.
+        """
+
+        database_of_chess_games_to_eval: Dict[int, Transition] = \
             self.chess_stats_eval_dataset_creator.dataset_containig_games_to_eval_statistics
 
         data_stockfish_estimation_state: Dict[str, List] = {'Input board evaluation': []}
@@ -222,8 +224,8 @@ class StatisticOfSubgoals:
         eval_boards_key_names: List[str] = \
             ['Input board evaluation'] + ['Subgoal_' + str(i) + ' evaluation' for i in range(1, number_of_subgoals + 1)]
 
-        for number_of_current_game in range(len(database_of_chess_games)):
-            current_game: OneGameData = database_of_chess_games[number_of_current_game]
+        for number_of_current_game in tqdm(range(len(database_of_chess_games_to_eval))):
+            current_game: OneGameData = database_of_chess_games_to_eval[number_of_current_game]
             info_about_current_game: Dict[str, str] = current_game[0].__dict__
             moves_in_current_game: List[Tuple[str, chess.Move]] = [(move[0].active_player, move[1]) for move in
                                                                    current_game.transitions]
@@ -271,17 +273,50 @@ class StatisticOfSubgoals:
 
     def diff_value_input_state_vs_subgolas_one_game(
             self,
-            game: OneGameData, number_of_subgoals: int,
+            game: OneGameData,
+            number_of_subgoals: int,
             path_to_folder_to_save_graphics: Optional[str] = None
     ) -> pd.DataFrame:
+        """
+        Function takes chess game, then generates subgoals form each state (from each board during play) and evaluates
+        by stockfish.
+
+        :param: game: OneGameData data type (consists of game information and trajectory).
+        :param: number_of_subgoals: Number of subgoals we want to generate for current state.
+        :param: path_to_folder_to_save_graphics:
+        :return: Dataframe which consits of evaluations (by stockfish) entire game with subgoals. Each row represents
+        current evaluated state wwith subgoals form it.
+
+        For example:
+                                    Evaluation of current state  Subgoal_1 evaluation  Subgoal_2 evaluation
+                        0                           105                    75                    49
+                        1                             2                     4                    35
+                        2                            73                    75                    61
+                        3                           -16                    59                    20
+                        4                            66                    76                    60
+                        5                            34                    33                   -31
+                        6                            47                    61                   115
+                        7                            73                    49                   115
+                        8                            15                    15                    79
+                        9                            90                   504                    90
+                        10                           17                    22                    17
+                        11                          106                   106                    58
+                        12                           12                     7                    12
+                        13                           92                    92                    78
+                        14                           10                    10                     8
+                        15                          138                   138                    89
+        """
 
         game_info: Dict[str, str] = game[0].__dict__  # some information that will be use in the future
         game_trajectory: List[Transition] = game[1]
         data_stockfish_estimation_state: Dict[str, List] = {'Evaluation of current state': []}
+        collect_data_to_image: Dict[int, List[Tuple[ImmutableBoard, float]]] = {}
+        
         for i in range(1, number_of_subgoals + 1):
             data_stockfish_estimation_state['Subgoal_' + str(i) + ' evaluation'] = []
 
-        for transition in game_trajectory:
+        for row, transition in tqdm(enumerate(game_trajectory)):
+            collect_data_to_image[row] = []
             current_game_state: ImmutableBoard = transition[0]
             subgoals_from_current_game_state: List[ImmutableBoard] = \
                 self.subgoal_model.generate_subgoals(current_game_state, number_of_subgoals)
@@ -291,12 +326,19 @@ class StatisticOfSubgoals:
                     board_after_n_moves_eval: float = \
                         evaluate_immutable_board_by_stockfish_with_resret_machine(current_game_state)
                     data_stockfish_estimation_state[eval_name].append(board_after_n_moves_eval)
+                    collect_data_to_image[row].append((current_game_state, board_after_n_moves_eval))
                 else:
                     subgoals_from_board_after_n_moves_eval: float = \
                         evaluate_immutable_board_by_stockfish_with_resret_machine(
                             subgoals_from_current_game_state[p - 1]
                         )
                     data_stockfish_estimation_state[eval_name].append(subgoals_from_board_after_n_moves_eval)
+                    collect_data_to_image[row].append(
+                        (subgoals_from_current_game_state[p - 1], subgoals_from_board_after_n_moves_eval)
+                    )
+
+        if isinstance(path_to_folder_to_save_graphics, str):
+            pass
 
         stats_df: pd.DataFrame = pd.DataFrame(data_stockfish_estimation_state)
         return stats_df
