@@ -1,5 +1,5 @@
 """Stockfish-related functions."""
-from typing import List, Dict, Union
+from typing import List, Union
 
 import chess
 import chess.engine
@@ -21,8 +21,9 @@ class StockfishEngine:
             elif immutable_board.active_player == "b":
                 return VALUE_FOR_MATE
 
+    @classmethod
     def evaluate_immutable_board_by_stockfish_with_resret_machine(
-        self, immutable_board: ImmutableBoard, depth_limit: int = 10
+        cls, immutable_board: ImmutableBoard, depth_limit: int = 10
     ) -> float:
         """
         Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
@@ -39,8 +40,9 @@ class StockfishEngine:
 
         return StockfishEngine.get_result_score(immutable_board, result)
 
+    @classmethod
     def get_top_n_moves(
-        self, immutable_board: ImmutableBoard, n: Union[int, None] = None, depth_limit: int = 12
+        cls, immutable_board: ImmutableBoard, top_n_moves: Union[int, None] = None, analysis_depth_limit: int = 10
     ) -> List[chess.Move]:
 
         engine = chess.engine.SimpleEngine.popen_uci("stockfish")
@@ -48,12 +50,12 @@ class StockfishEngine:
         move_scores = {move: None for move in board.legal_moves}
 
         for move in move_scores:
-            result = engine.analyse(board, chess.engine.Limit(depth=12), root_moves=[move])["score"]
+            result = engine.analyse(board, chess.engine.Limit(depth=analysis_depth_limit), root_moves=[move])["score"]
             move_scores[move] = StockfishEngine.get_result_score(immutable_board, result)
 
         engine.quit()
-        sorted_moves = sorted(move_scores.items(), key=lambda x: x[1], reverse=True)
-        if n is None:
+        sorted_moves, scores = zip(*sorted(move_scores.items(), key=lambda x: x[1], reverse=True))
+        if top_n_moves is None:
             return sorted_moves
         else:
-            return sorted_moves[:n]
+            return sorted_moves[:top_n_moves]
