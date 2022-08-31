@@ -19,13 +19,32 @@ class StockfishEngine:
         if not result.is_mate():
             return result.relative.cp
         else:
-            #TODO(TO): check if signs are correct
+            # TODO(TO): check if signs are correct
             if immutable_board.active_player == "w":
                 return -VALUE_FOR_MATE
             elif immutable_board.active_player == "b":
                 return VALUE_FOR_MATE
 
 
-# x = StockfishEngine()
-# for _ in range(100):
-#     print(x.evaluate_immutable_board(ImmutableBoard.from_board(chess.Board())))
+def evaluate_immutable_board_by_stockfish_with_resret_machine(immutable_board: ImmutableBoard,
+                                                              depth_limit: int = 10
+                                                              ) -> float:
+    """
+    Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
+
+    :param: immutable_board: Input chess board.
+    :param: time_limit: (probabliy) Time to assess the state of play by stockfish.
+    :return: Evaluation of the state of the game.
+    """
+    engine = chess.engine.SimpleEngine.popen_uci("stockfish")
+    result = engine.analyse(immutable_board.to_board(), chess.engine.Limit(depth=depth_limit), game=object())['score']
+    engine.quit()
+
+    if not result.is_mate():
+        return result.relative.cp
+    else:
+        # TODO(TO): check if signs are correct
+        if immutable_board.active_player == "w":
+            return -VALUE_FOR_MATE
+        elif immutable_board.active_player == "b":
+            return VALUE_FOR_MATE

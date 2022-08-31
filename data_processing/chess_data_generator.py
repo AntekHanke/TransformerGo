@@ -103,25 +103,32 @@ class ChessDataGenerator:
         self.n_games = 0
         self.data_constructed = False
 
-    def next_game_to_raw_data(self):
-        self.current_game = chess.pgn.read_game(self.pgn_database)
-        self.current_game.mainline_moves()
-        #
-        chess_metadata = ChessMetadata(**self.current_game.headers)
+   def next_game_to_raw_data(self) -> Optional[OneGameData]:
+        """
+        Function takes the next game from the set of chess games, checks if it passes through the filter used and
+        return information about game chass.
+        :return: OneGameData contains inforamtion about chess game.
+        """
 
-        transitions = []
+        current_game: chess.pgn.Game = chess.pgn.read_game(self.pgn_database)
 
-        if self.chess_filter.use_game(chess_metadata):
-            board = chess.Board()
-            for move in enumerate(self.current_game.mainline_moves()):
-                _, chess_move = move
-                try:
-                    transitions.append(Transition(ImmutableBoard.from_board(board), chess_move))
-                    board.push(chess_move)
-                except:
-                    break
+        if current_game is None:  # Condition is met if there are no more games in the dataset.
+            return None
+        else:
+            chess_metadata: ChessMetadata = ChessMetadata(**current_game.headers)
+            transitions: List[Transition] = []
 
-        return OneGameData(chess_metadata, transitions)
+            if self.chess_filter.use_game(chess_metadata):
+                board = chess.Board()
+                for move in enumerate(current_game.mainline_moves()):
+                    _, chess_move = move
+                    try:
+                        transitions.append(Transition(ImmutableBoard.from_board(board), chess_move))
+                        board.push(chess_move)
+                    except:
+                        break
+
+            return OneGameData(chess_metadata, transitions)
 
     def create_data(self):
         n_iterations = 0
