@@ -115,13 +115,13 @@ class ChessTokenizer:
 
     @classmethod
     def decode_move(cls, output_tokens: List[int]) -> Move:
-        promotion_str = cls.tokens_to_vocab[output_tokens[3]]
+        promotion_str = cls.tokens_to_vocab[output_tokens[2]]
         if promotion_str == "-":
             promotion = None
         else:
             promotion = PIECE_SYMBOL_TO_INT[promotion_str]
         return Move(
+            int(cls.tokens_to_vocab[output_tokens[0]]),
             int(cls.tokens_to_vocab[output_tokens[1]]),
-            int(cls.tokens_to_vocab[output_tokens[2]]),
             promotion,
         )
