@@ -35,22 +35,5 @@ class ImmutableBoard(ImmutableBoardData):
         chess_board.push(move)
         return ImmutableBoard.from_board(chess_board)
 
-
-# class SingleSubgoal:
-#     def __init__(
-#         self,
-#         input_immutable_board,
-#         target_immutable_board,
-#         input_value: Optional[float] = None,
-#         target_value: Optional[float] = None,
-#     ):
-#         self.input_immutable_board = input_immutable_board
-#         self.target_immutable_board = target_immutable_board
-#         self.input_value = input_value
-#         self.target_value = target_value
-#
-#         if self.input_value is not None and self.target_value is not None:
-#             self.delta = self.target_value - self.input_value
-#
-#     def evaluate_with_stockfish(self):
-#         pass
+    def legal_moves(self):
+        return self.to_board().legal_moves
