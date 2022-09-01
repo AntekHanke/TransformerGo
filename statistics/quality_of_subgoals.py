@@ -55,11 +55,11 @@ class SubgoalQualityDatabaseGenerator(Job):
         eval_data_len = len(eval_data)
         idx_to_eval = random.choices(list(range(eval_data_len)), k=self.n_eval_datapoints)
 
-    def generate_subgoals(self, input_ids, label_ids):
+    def prepare_data_row(self, input_ids, label_ids):
         input_board = ChessTokenizer.decode_board(input_ids)
         data_target = ChessTokenizer.decode_board(label_ids)
-
         subgoals = self.subgoal_generator.generate_subgoals(input_board, self.n_subgoals)
+        
 
 
         input_board = ChessTokenizer.decode_board(eval_data[idx]["input_ids"])
