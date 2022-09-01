@@ -4,7 +4,7 @@ from typing import Optional
 
 import chess
 
-Transition = namedtuple("Transition", "immutable_board move")
+Transition = namedtuple("Transition", "immutable_board move move_number")
 OneGameData = namedtuple("OneGameData", "metadata, transitions")
 
 ImmutableBoardData = namedtuple(
@@ -37,3 +37,6 @@ class ImmutableBoard(ImmutableBoardData):
 
     def legal_moves(self):
         return self.to_board().legal_moves
+
+    def fen(self):
+        return " ".join(self)

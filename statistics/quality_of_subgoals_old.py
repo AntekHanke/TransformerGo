@@ -241,11 +241,11 @@ class StatisticOfSubgoals:
             for p, eval_name in enumerate(eval_boards_key_names):
                 if eval_name == 'Input board evaluation':
                     board_after_n_moves_eval: float = \
-                        StockfishEngine.evaluate_immutable_board_by_stockfish_with_machine_reset(immutable_board_after_n_moves)
+                        StockfishEngine.evaluate_immutable_board(immutable_board_after_n_moves)
                     data_stockfish_estimation_state[eval_name].append(board_after_n_moves_eval)
                 else:
                     subgoals_from_board_after_n_moves_eval: float = \
-                        StockfishEngine.evaluate_immutable_board_by_stockfish_with_machine_reset(
+                        StockfishEngine.evaluate_immutable_board(
                             subgoals_from_board_after_n_moves[p - 1])
                     data_stockfish_estimation_state[eval_name].append(subgoals_from_board_after_n_moves_eval)
 
@@ -323,12 +323,12 @@ class StatisticOfSubgoals:
             for p, eval_name in enumerate(data_stockfish_estimation_state):
                 if eval_name == 'Evaluation of current state':
                     board_after_n_moves_eval: float = \
-                        StockfishEngine.evaluate_immutable_board_by_stockfish_with_machine_reset(current_game_state)
+                        StockfishEngine.evaluate_immutable_board(current_game_state)
                     data_stockfish_estimation_state[eval_name].append(board_after_n_moves_eval)
                     collect_data_to_image[row].append((current_game_state, board_after_n_moves_eval))
                 else:
                     subgoals_from_board_after_n_moves_eval: float = \
-                        StockfishEngine.evaluate_immutable_board_by_stockfish_with_machine_reset(
+                        StockfishEngine.evaluate_immutable_board(
                             subgoals_from_current_game_state[p - 1]
                         )
                     data_stockfish_estimation_state[eval_name].append(subgoals_from_board_after_n_moves_eval)

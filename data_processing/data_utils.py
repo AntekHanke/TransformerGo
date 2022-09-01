@@ -15,6 +15,8 @@ from metric_logging import log_object
 
 mp.dps = 50
 
+RESULT_TO_WINNER = {"1-0": "w", "0-1": "b", "1/2-1/2": None}
+
 
 def hash_string_to_int(arg: Union[str, int]) -> int:
     arg = str(arg) + str(TRAIN_TEST_SPLIT_SEED)
@@ -35,7 +37,9 @@ def get_split(arg: Union[str, int], train_eval_split: float) -> str:
         return "eval"
 
 
-def immutable_boards_to_img(immutable_boards: List[ImmutableBoard], descriptions: List[str], size: int=5) -> plt.Figure:
+def immutable_boards_to_img(
+    immutable_boards: List[ImmutableBoard], descriptions: List[str], size: int = 5
+) -> plt.Figure:
 
     fig = plt.figure(figsize=(size * len(immutable_boards), size))
     for immutable_board, title, num in zip(immutable_boards, descriptions, range(len(immutable_boards))):
@@ -49,8 +53,3 @@ def immutable_boards_to_img(immutable_boards: List[ImmutableBoard], descriptions
         ax.set_title(title)
         plt.imshow(img)
     return fig
-
-# def log_immutable_boards(name, immutable_boards, descriptions, size=5):
-#     fig = immutable_boards_to_img(immutable_boards, descriptions, size)
-#     log_object(name, fig)
-#     plt.close(fig)

@@ -22,9 +22,9 @@ class StockfishEngine:
                 return VALUE_FOR_MATE
 
     @classmethod
-    def evaluate_immutable_board_by_stockfish_with_machine_reset(
+    def evaluate_immutable_board(
         cls, immutable_board: ImmutableBoard, depth_limit: int = 10
-    ) -> float:
+    ) -> Union[float, None]:
         """
         Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
 
@@ -33,12 +33,17 @@ class StockfishEngine:
         :return: Evaluation of the state of the game.
         """
         engine = chess.engine.SimpleEngine.popen_uci("stockfish")
-        result = engine.analyse(immutable_board.to_board(), chess.engine.Limit(depth=depth_limit), game=object())[
-            "score"
-        ]
-        engine.quit()
+        try:
+            result = engine.analyse(immutable_board.to_board(), chess.engine.Limit(depth=depth_limit), game=object())[
+                "score"
+            ]
+            engine.quit()
+            return cls.get_result_score(immutable_board, result)
+        except chess.engine.EngineTerminatedError:
+            return None
 
-        return StockfishEngine.get_result_score(immutable_board, result)
+
+
 
     @classmethod
     def get_top_n_moves(

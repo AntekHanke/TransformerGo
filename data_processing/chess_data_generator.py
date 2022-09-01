@@ -7,13 +7,12 @@ from collections import namedtuple
 
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
-from data_processing.data_utils import get_split, immutable_boards_to_img
+from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
 
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
-
 
 class ChessFilter:
     """Filters games and transitions to use in training."""
@@ -47,7 +46,6 @@ class ResultFilter(ChessFilter):
     def __init__(self, winner_or_looser: str):
         assert winner_or_looser in ["winner", "loser"], "winner_or_looser must be 'winner' or 'loser'"
         self.winner_or_looser = winner_or_looser
-        self.result_to_winner = {"1-0": "w", "0-1": "b"}
 
     @staticmethod
     def use_game(game_metadata: ChessMetadata) -> bool:
@@ -55,9 +53,9 @@ class ResultFilter(ChessFilter):
 
     def use_transition(self, transition: Transition, one_game_data: OneGameData) -> bool:
         if self.winner_or_looser == "winner":
-            return transition.immutable_board.active_player == self.result_to_winner[one_game_data.metadata.Result]
+            return transition.immutable_board.active_player == RESULT_TO_WINNER[one_game_data.metadata.Result]
         elif self.winner_or_looser == "loser":
-            return transition.immutable_board.active_player != self.result_to_winner[one_game_data.metadata.Result]
+            return transition.immutable_board.active_player != RESULT_TO_WINNER[one_game_data.metadata.Result]
 
 
 class ChessDataset(torch.utils.data.Dataset):
@@ -121,9 +119,9 @@ class ChessDataGenerator:
             if self.chess_filter.use_game(chess_metadata):
                 board = chess.Board()
                 for move in enumerate(current_game.mainline_moves()):
-                    _, chess_move = move
+                    move_num, chess_move = move
                     try:
-                        transitions.append(Transition(ImmutableBoard.from_board(board), chess_move))
+                        transitions.append(Transition(ImmutableBoard.from_board(board), chess_move, move_num))
                         board.push(chess_move)
                     except:
                         break
