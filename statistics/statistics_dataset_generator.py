@@ -6,10 +6,13 @@ import pandas as pd
 from data_processing.chess_data_generator import ChessDataGenerator, ChessFilter, NoFilter
 from data_processing.data_utils import get_split
 from data_structures.data_structures import Transition, OneGameData, ChessMetadata
+from metric_logging import log_value
 
 
 class StatisticsDatasetCreator(ChessDataGenerator):
-    def __init__(self, pgn_file: str, n_games: int, train_eval_split: float = 0.95, chess_filter: ChessFilter = NoFilter()):
+    def __init__(
+        self, pgn_file: str, n_games: int, train_eval_split: float = 0.95, chess_filter: ChessFilter = NoFilter()
+    ):
         super().__init__(pgn_file, chess_filter, train_eval_split)
 
         self.pgn_file = pgn_file
@@ -30,7 +33,6 @@ class StatisticsDatasetCreator(ChessDataGenerator):
         """
         n_iterations: int = 0
         dict_position: int = 0
-        n_game_to_eval: int = self.n_games
 
         while len(self.games_to_eval) < self.n_games:
             n_iterations += 1
@@ -46,16 +48,12 @@ class StatisticsDatasetCreator(ChessDataGenerator):
                 else:
                     self.games_to_eval[dict_position] = game
                     dict_position += 1
-                    self.n_games -= 1
 
-        assert len(self.games_to_eval) != 0, "No data for evaluation, probably set too " \
-                                                                          "large train_eval_split."
-        if self.n_games != 0:
-            print('The number of games we want to '
-                  'evaluate is {0} but {1} are required.'.format(n_game_to_eval - self.n_games, n_game_to_eval))
-            print('If more games are needed for evaluation, then increase the dataset,'
-                  ' change the filter or minimize large train_eval_split parameter.')
+            if len(self.games_to_eval) % 100 == 0 and len(self.games_to_eval) > 0:
+                log_value("stats_data_generation", len(self.games_to_eval) // self.n_games, len(self.games_to_eval))
+                log_value("stats_data_progress", len(self.games_to_eval) // self.n_games, len(self.games_to_eval))
 
+        print(f'Finished creating {len(self.games_to_eval)} games for evaluation.')
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         raise NotImplementedError
 
@@ -64,16 +62,16 @@ class StatisticsDatasetCreator(ChessDataGenerator):
 
     def chess_dataset_stats(self) -> pd.DataFrame:
         """
-        A functions that counts the number of games, the number of games that white opponent has won,
-        the number of games that black opponent has won, the number of games ended in a draw and the and
-        the number of games filtered by the filter used.
+          A functions that counts the number of games, the number of games that white opponent has won,
+          the number of games that black opponent has won, the number of games ended in a draw and the and
+          the number of games filtered by the filter used.
 
-        For example:
+          For example:
 
-        Number of games:   Number of games won by white player:   Number of games won by black player:   Nuber of draws:   Nuber of filtred gamse:
-      0                 33                                     15                                      6                12                        33
+          Number of games:   Number of games won by white player:   Number of games won by black player:   Nuber of draws:   Nuber of filtred gamse:
+        0                 33                                     15                                      6                12                        33
 
-        :return: Pandas frame which contains dataset statistic information.
+          :return: Pandas frame which contains dataset statistic information.
         """
 
         number_of_games: int = 0
@@ -90,26 +88,26 @@ class StatisticsDatasetCreator(ChessDataGenerator):
                 break
             else:
                 chess_metadata: ChessMetadata = ChessMetadata(**game.headers)
-                game_result = chess_metadata.__dict__['Result']
+                game_result = chess_metadata.__dict__["Result"]
                 number_of_games += 1
 
                 if self.chess_filter.use_game(chess_metadata):
                     filtred_games += 1
 
-                if game_result == '1-0':
+                if game_result == "1-0":
                     white_won += 1
-                elif game_result == '0-1':
+                elif game_result == "0-1":
                     black_won += 1
                 else:
                     draws += 1
 
-        assert number_of_games == white_won + black_won + draws, 'number_of_games = white_won + black_won + draws'
+        assert number_of_games == white_won + black_won + draws, "number_of_games = white_won + black_won + draws"
 
-        database_statistic['Number of games: '] = [number_of_games]
-        database_statistic['Number of games won by white player: '] = [white_won]
-        database_statistic['Number of games won by black player: '] = [black_won]
-        database_statistic['Number of draws: '] = [draws]
-        database_statistic['Number of filtered games: '] = [filtred_games]
+        database_statistic["Number of games: "] = [number_of_games]
+        database_statistic["Number of games won by white player: "] = [white_won]
+        database_statistic["Number of games won by black player: "] = [black_won]
+        database_statistic["Number of draws: "] = [draws]
+        database_statistic["Number of filtered games: "] = [filtred_games]
 
         df_chess_games_dataset_stats = pd.DataFrame(database_statistic)
         database_of_chess_games_file.close()
