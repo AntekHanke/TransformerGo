@@ -5,8 +5,8 @@ from transformers import (
     BartForConditionalGeneration, BartConfig, TrainingArguments,
 )
 
-from metric_logging import log_param, source_files_register
-from mrunner_utils.neptune_logger import NeptuneLogger
+from metric_logging import log_param, source_files_register, pytorch_callback_loggers
+from mrunner_utils.mrunner_client import NeptuneLogger
 
 source_files_register.register(__file__)
 
@@ -17,8 +17,7 @@ class TrainModel(Job):
         model_config: BartConfig=None,
         training_args: TrainingArguments=None,
         chess_database: ChessDataGenerator=None,
-        save_model_path: str=None,
-        neptune_logger: NeptuneLogger=None,
+        save_model_path: str=None
     ):
         self.model_config = model_config
         self.training_args = training_args
@@ -31,7 +30,8 @@ class TrainModel(Job):
             eval_dataset=chess_database.get_eval_set_generator(),
         )
 
-        self.trainer.add_callback(neptune_logger.get_pytorch_callback())
+        for callback_logger in pytorch_callback_loggers:
+            self.trainer.add_callback(callback_logger.get_pytorch_callback())
         assert save_model_path is not None
         self.save_model_path = save_model_path
         log_param("Save model path", self.save_model_path)

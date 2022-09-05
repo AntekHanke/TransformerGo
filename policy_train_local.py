@@ -7,12 +7,11 @@ from transformers import (
 )
 
 import metric_logging
-from configs.global_config import source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter
 from jobs.train_model import TrainModel
-from mrunner_utils.neptune_logger import NeptuneLogger
+from mrunner_utils.mrunner_client import NeptuneLogger
 
-source_files_register.register(__file__)
+metric_logging.source_files_register.register(__file__)
 
 LOCAL_LOG_DIR = "/home/tomek/Research/subgoal_chess_data/fast_iter_dupa/"
 ENTROPY_LOG_DIR = "/home/todrzygozdz/subgoal_search_storage/"
@@ -59,6 +58,7 @@ chess_filter = ResultFilter("winner")
 dataset = PolicyDataGenerator(
     pgn_file=LOCAL_PGN, chess_filter=chess_filter, p_sample=1.0, n_data=10**4, log_samples_limit=100, p_log_sample=1.0
 )
+
 
 # TrainModel(
 #     fast_iter_config,

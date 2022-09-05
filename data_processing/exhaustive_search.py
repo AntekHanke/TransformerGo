@@ -21,6 +21,7 @@ class ExhaustiveSearch:
         self.dist_to_states = {i: set() for i in range(max_distance + 1)}
         self.dist_to_states[0].add(input_board)
         self.states_to_dist = {input_board: 0}
+        self.boards_to_dist = {input_board.board: 0}
         self.search()
 
     def moves_to_expand(self, immutable_board: ImmutableBoard):
@@ -30,6 +31,7 @@ class ExhaustiveSearch:
             return StockfishEngine.get_top_n_moves(immutable_board, self.top_n_moves, self.analysis_depth_limit)
 
     def search(self):
+        print(f"Searching for {self.depth} steps with {self.top_n_moves} moves per step")
         for dist in range(1, self.depth + 1):
             for state in self.dist_to_states[dist - 1]:
                 for move in self.moves_to_expand(state):
@@ -37,11 +39,22 @@ class ExhaustiveSearch:
                     if new_state not in self.states_to_dist:
                         self.dist_to_states[dist].add(new_state)
                         self.states_to_dist[new_state] = dist
-                    print(len(self.states_to_dist))
+                        self.boards_to_dist[new_state.board] = dist
 
     def get_random_sample(self):
         boards_samples = []
         for i in range(self.depth + 1):
             boards_samples.append(random.sample(list(self.dist_to_states[i]), 1)[0])
         return immutable_boards_to_img(boards_samples, ["dist_" + str(i) for i in range(self.depth + 1)])
+
+    def check_subgoals(self, subgoals):
+        data = {"accessible": [], "distance": []}
+        for subgoal in subgoals:
+            if subgoal.board in self.boards_to_dist:
+                data["accessible"].append(True)
+                data["distance"].append(self.boards_to_dist[subgoal.board])
+            else:
+                data["accessible"].append(False)
+                data["distance"].append(None)
+        return data
 

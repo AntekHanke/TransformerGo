@@ -8,6 +8,7 @@ from chess_engines.stockfish import StockfishEngine
 from data_processing.chess_data_generator import ChessDataGenerator, NoFilter, ChessSubgoalDataGenerator
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img, RESULT_TO_WINNER
+from data_processing.exhaustive_search import ExhaustiveSearch
 from jobs.core import Job
 from transformers import (
     Trainer,
@@ -17,7 +18,6 @@ from transformers import (
 )
 
 from metric_logging import log_param, source_files_register, log_object, log_value
-from mrunner_utils.neptune_logger import NeptuneLogger
 from statistics.statistics_dataset_generator import StatisticsDatasetCreator
 from subgoal_generator.subgoal_generator import ChessSubgoalGenerator, BasicChessSubgoalGenerator
 
@@ -42,7 +42,8 @@ class SubgoalQualityDatabaseGenerator(Job):
         subgoal_generator: ChessSubgoalGenerator,
         take_transition_p: float = 0.05,
         n_eval_datapoints: int = 1000,
-        n_log_samples: int = 100,
+        check_exhaustive_search: bool = True,
+        top_n_actions_range: range = range(1, 4),
     ):
 
         self.k = k
@@ -53,7 +54,8 @@ class SubgoalQualityDatabaseGenerator(Job):
         self.take_transition_p = take_transition_p
         self.chess_database = StatisticsDatasetCreator(pgn_file, self.n_games)
         self.n_eval_datapoints = n_eval_datapoints
-        self.n_log_samples = n_log_samples
+        self.check_exhaustive_search = check_exhaustive_search
+        self.top_n_actions_range = top_n_actions_range
 
         self.evaluated_transitions = 0
 
@@ -66,9 +68,9 @@ class SubgoalQualityDatabaseGenerator(Job):
                 break
             data_rows.extend(self.eval_one_game(self.chess_database.games_to_eval[game_idx]))
 
-            if game_idx % 10 == 0:
-                log_value("evaluated_transitions", game_idx, self.evaluated_transitions)
-                log_value("evaluated_games", game_idx, game_idx + 1)
+
+            log_value("evaluated_transitions", game_idx, self.evaluated_transitions)
+            log_value("evaluated_games", game_idx, game_idx + 1)
         return pd.DataFrame(data_rows)
 
     def eval_one_game(self, one_game_data):
@@ -88,14 +90,38 @@ class SubgoalQualityDatabaseGenerator(Job):
             "n_subgoals": len(subgoals),
             "input_board_fen": transition.immutable_board.fen(),
             "target_board_fen": target_board.fen(),
-            "subgoals_fen": [subgoal.fen() for subgoal in subgoals],
             "result": one_game_data.metadata.Result,
             "winner": RESULT_TO_WINNER[one_game_data.metadata.Result],
             "move_num": transition_num,
+            "game_len": len(one_game_data.transitions),
             "input_board_value": StockfishEngine.evaluate_immutable_board(transition.immutable_board),
             "target_board_value": StockfishEngine.evaluate_immutable_board(target_board),
-            "subgoals_values": [StockfishEngine.evaluate_immutable_board(subgoal) for subgoal in subgoals],
         }
+
+        for id, subgoal in enumerate(subgoals):
+            row_data[f"subgoal_{id}_fen"] = subgoal.fen()
+            row_data[f"subgoal_{id}_value"] = StockfishEngine.evaluate_immutable_board(subgoal)
+
+        if self.check_exhaustive_search:
+            search_wit_all_actions = ExhaustiveSearch(transition.immutable_board, self.k, None)
+            search_wit_top_n_actions = [
+                ExhaustiveSearch(transition.immutable_board, self.k, n) for n in self.top_n_actions_range
+            ]
+
+            for num, accessible in enumerate(search_wit_all_actions.check_subgoals(subgoals)["accessible"]):
+                row_data[f"subgoal_{num}_accessible"] = accessible
+
+            for num, distance in enumerate(search_wit_all_actions.check_subgoals(subgoals)["distance"]):
+                row_data[f"subgoal_{num}_distance"] = distance
+
+
+            for top_n_actions in self.top_n_actions_range:
+                subgoals_accessible = search_wit_top_n_actions[
+                    top_n_actions - 1
+                ].check_subgoals(subgoals)["accessible"]
+
+                for id, subgoal_accessible in enumerate(subgoals_accessible):
+                    row_data[f"subgoal_{id}_accessible_top_{top_n_actions}"] = subgoal_accessible
 
         self.evaluated_transitions += 1
         return row_data
@@ -107,16 +133,3 @@ class SubgoalQualityDatabaseGenerator(Job):
         return subgoals
 
 
-duper = SubgoalQualityDatabaseGenerator(
-    2,
-    3,
-    25,
-    "/home/tomek/Research/subgoal_chess_data/chess_micro_aa",
-    BasicChessSubgoalGenerator("/home/tomek/Research/subgoal_chess_data/generator_k_2/out/checkpoint-2000"),
-    take_transition_p=0.25,
-    n_eval_datapoints=10,
-)
-
-df = duper.execute()
-
-print(df.columns)

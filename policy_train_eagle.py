@@ -7,7 +7,7 @@ from transformers import (
 from metric_logging import log_param, register_logger, source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator
 from jobs.train_model import TrainModel
-from mrunner_utils.neptune_logger import NeptuneLogger
+from mrunner_utils.mrunner_client import NeptuneLogger
 
 source_files_register.register(__file__)
 
@@ -21,11 +21,6 @@ def train_policy_eagle(learning_rate):
 
     LOG_DIR = f"/home/plgrid/plgtodrzygozdz/chess_models/policy-lr_{learning_rate}/"
 
-    neptune_logger = NeptuneLogger(
-        name=f"eagle_policy_train-{learning_rate} lr", tags=["eagle", "policy"]
-    )
-
-    register_logger(neptune_logger)
     log_param("learning_rate", learning_rate)
     log_param("log_dir", LOG_DIR)
     log_param("n_datapoints", n_datapoints)
@@ -72,6 +67,5 @@ def train_policy_eagle(learning_rate):
         eagle_config,
         eagle_training,
         chess_database=dataset,
-        save_model_path=LOG_DIR + "/eagle_policy_model",
-        neptune_logger=neptune_logger,
+        save_model_path=LOG_DIR + "/eagle_policy_model"
     ).execute()

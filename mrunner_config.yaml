@@ -43,7 +43,7 @@ contexts:
     backend_type: slurm
     cmd_type: sbatch
     partition: tesla
-    time: 1440
+    time: 4300
     cpu: 4
     gpu: 1
     ntasks: 1
@@ -67,7 +67,9 @@ contexts:
     nodes: 1
     ntasks: 1
     partition: common
-    qos: 16gpu3d
-    venv: /home/todrzygozdz/venvs/transformers
+    qos: 4gpu4d
     slurm_url: todrzygozdz@entropy.mimuw.edu.pl
     storage_dir: /home/todrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+      -B /home/todrzygozdz/
+      --env NEPTUNEPWD=$PWD  --nv /home/todrzygozdz/singularity_images/transformers_5.09.2022.sif
