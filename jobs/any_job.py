@@ -21,6 +21,6 @@ class AnyJob(Job):
         pass
         # generate_quality_database()
         # train_generator_entropy(learning_rate=self.learning_rate, k=self.k, n_datapoints=self.n_datapoints)
-        train_generator_eagle(learning_rate=self.learning_rate, k=self.k, n_datapoints=self.n_datapoints, p_sample=self.p_sample)
+        # train_generator_eagle(learning_rate=self.learning_rate, k=self.k, n_datapoints=self.n_datapoints, p_sample=self.p_sample)
         # generate_quality_database()
         check_stockfish()

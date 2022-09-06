@@ -54,7 +54,7 @@ contexts:
     singularity_container: -H $PWD:/homeplaceholder
       -B /tmp/lustre/plgtodrzygozdz
       -B /home/plgrid/plgtodrzygozdz/
-      --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_8.08.2022.sif
+      --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_6.09.2022.sif
 
   entropy:
     account: students

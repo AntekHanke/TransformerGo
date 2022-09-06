@@ -7,7 +7,7 @@ params_grid = {
     "idx": [0],
     "AnyJob.learning_rate": [3e-4],
     "AnyJob.k": [2,3,4],
-    "AnyJob.n_datapoints": [5**7],
+    "AnyJob.n_datapoints": [5*10**7],
     "AnyJob.p_sample": [0.25]
 }
 

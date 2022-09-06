@@ -7,12 +7,23 @@ import chess.engine
 from configs.global_config import VALUE_FOR_MATE
 from data_structures.data_structures import ImmutableBoard
 
+DEFAULT_STOCKFISH_PATH = "stockfish"
+DEFAULT_STOCKFISH_PATH_CLUSTER = "/Stockfish/src/stockfish"
+
 
 class StockfishEngine:
     """Wrapper for stockfish chess engine."""
 
-    @classmethod
-    def get_result_score(cls, immutable_board, result):
+    def __init__(self, stockfish_path: Union[str, None]):
+
+        if stockfish_path is None:
+            print(f"Using default stockfish path.")
+            stockfish_path = DEFAULT_STOCKFISH_PATH
+        elif stockfish_path == "cluster":
+            stockfish_path = DEFAULT_STOCKFISH_PATH_CLUSTER
+        self.stockfish_path = stockfish_path
+
+    def get_result_score(self, immutable_board, result):
         if not result.is_mate():
             return result.relative.cp
         else:
@@ -21,29 +32,23 @@ class StockfishEngine:
             elif immutable_board.active_player == "b":
                 return VALUE_FOR_MATE
 
-    @classmethod
-    def evaluate_immutable_board(
-        cls, immutable_board: ImmutableBoard, depth_limit: int = 10
-    ) -> Union[float, None]:
+    def evaluate_immutable_board(self, immutable_board: ImmutableBoard, depth_limit: int = 10) -> Union[float, None]:
         """
         Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
 
         :param: immutable_board: Input chess board.
-        :param: time_limit: (probabliy) Time to assess the state of play by stockfish.
+        :param: time_limit: (probably) Time to assess the state of play by stockfish.
         :return: Evaluation of the state of the game.
         """
-        engine = chess.engine.SimpleEngine.popen_uci("stockfish")
+        engine = chess.engine.SimpleEngine.popen_uci(self.stockfish_path)
         try:
             result = engine.analyse(immutable_board.to_board(), chess.engine.Limit(depth=depth_limit), game=object())[
                 "score"
             ]
             engine.quit()
-            return cls.get_result_score(immutable_board, result)
+            return self.get_result_score(immutable_board, result)
         except chess.engine.EngineTerminatedError:
             return None
-
-
-
 
     @classmethod
     def get_top_n_moves(
