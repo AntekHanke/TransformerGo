@@ -7,3 +7,4 @@ TRAIN_TEST_SPLIT_SEED = 11
 VALUE_FOR_MATE = 1000
 
 ENTROPY_HOME = "/home/todrzygozdz"
+EAGLE_HOME = "/home/plgrid/plgtodrzygozdz"

@@ -6,8 +6,8 @@ base_config = {"run.job_class": "@jobs.AnyJob",
 params_grid = {
     "idx": [0],
     "AnyJob.learning_rate": [3e-4],
-    "AnyJob.k": [2,3,4],
-    "AnyJob.n_datapoints": [5**7],
+    "AnyJob.k": [2],
+    "AnyJob.n_datapoints": [10**8],
     "AnyJob.p_sample": [0.25]
 }
 
@@ -19,7 +19,7 @@ experiments_list = create_experiments_helper(
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "alpacka.egg-info", "out", ".git"],
     python_path="",
-    tags=["train-policy"],
+    tags=["subgoal-quality"],
     with_neptune=True,
     env={},
 )

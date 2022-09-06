@@ -11,14 +11,12 @@ from jobs.train_model import TrainModel
 source_files_register.register(__file__)
 
 
-def train_generator_eagle(learning_rate, k):
+def train_generator_eagle(learning_rate, k, n_datapoints, p_sample):
 
-    n_datapoints = 10 ** 4
-    p_sample = 0.3
 
     print(f"learning_rate: {learning_rate}")
 
-    LOG_DIR = f"/home/plgrid/plgtodrzygozdz/chess_models/generator_k={k}-lr_{learning_rate}/"
+    LOG_DIR = f"/home/plgrid/plgtodrzygozdz/chess_models/large_generator_k={k}-lr_{learning_rate}/"
 
 
     log_param("learning_rate", learning_rate)
