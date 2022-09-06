@@ -8,3 +8,5 @@ VALUE_FOR_MATE = 1000
 
 ENTROPY_HOME = "/home/todrzygozdz"
 EAGLE_HOME = "/home/plgrid/plgtodrzygozdz"
+
+MAX_JOBLIB_N_JOBS = 28

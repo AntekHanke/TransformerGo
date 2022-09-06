@@ -50,8 +50,8 @@ class StatisticsDatasetCreator(ChessDataGenerator):
                     dict_position += 1
 
             if len(self.games_to_eval) % 100 == 0 and len(self.games_to_eval) > 0:
-                log_value("stats_data_generation", len(self.games_to_eval) // self.n_games, len(self.games_to_eval))
-                log_value("stats_data_progress", len(self.games_to_eval) // self.n_games, len(self.games_to_eval))
+                log_value("stats_data_generation", n_iterations, len(self.games_to_eval))
+                log_value("stats_data_progress", n_iterations, len(self.games_to_eval)/self.n_games)
 
         print(f'Finished creating {len(self.games_to_eval)} games for evaluation.')
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):

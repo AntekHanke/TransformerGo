@@ -1,9 +1,6 @@
 import random
 from typing import Union
 
-import chess
-import chess.engine
-
 from chess_engines.stockfish import StockfishEngine
 from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
@@ -11,24 +8,31 @@ from data_structures.data_structures import ImmutableBoard
 
 class ExhaustiveSearch:
     def __init__(
-        self, input_board: ImmutableBoard, max_distance: int, top_n_moves: Union[int, None], analysis_depth_limit: int = 10
+        self,
+        stockfish_engine: StockfishEngine,
+        input_board: ImmutableBoard,
+        max_distance: int,
+        top_n_moves: Union[int, None],
     ):
+
+        self.stockfish = stockfish_engine
+
         self.input_board = input_board
         self.depth = max_distance
         self.top_n_moves = top_n_moves
-        self.analysis_depth_limit = analysis_depth_limit
 
         self.dist_to_states = {i: set() for i in range(max_distance + 1)}
         self.dist_to_states[0].add(input_board)
         self.states_to_dist = {input_board: 0}
         self.boards_to_dist = {input_board.board: 0}
+
         self.search()
 
     def moves_to_expand(self, immutable_board: ImmutableBoard):
         if self.top_n_moves is None:
             return immutable_board.legal_moves()
         else:
-            return StockfishEngine.get_top_n_moves(immutable_board, self.top_n_moves, self.analysis_depth_limit)
+            return self.stockfish.get_top_n_moves(immutable_board, self.top_n_moves)
 
     def search(self):
         print(f"Searching for {self.depth} steps with {self.top_n_moves} moves per step")
@@ -57,4 +61,3 @@ class ExhaustiveSearch:
                 data["accessible"].append(False)
                 data["distance"].append(None)
         return data
-

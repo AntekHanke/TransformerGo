@@ -1,6 +1,5 @@
 import gin
 
-from check_stockfish_eagle import check_stockfish
 from generator_train_entropy import train_generator_entropy
 from jobs.core import Job
 from policy_train_eagle import train_policy_eagle
@@ -22,5 +21,5 @@ class AnyJob(Job):
         # generate_quality_database()
         # train_generator_entropy(learning_rate=self.learning_rate, k=self.k, n_datapoints=self.n_datapoints)
         # train_generator_eagle(learning_rate=self.learning_rate, k=self.k, n_datapoints=self.n_datapoints, p_sample=self.p_sample)
-        # generate_quality_database()
-        check_stockfish()
+        generate_quality_database(self.k)
+        # check_stockfish()
