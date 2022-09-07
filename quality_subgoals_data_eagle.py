@@ -12,7 +12,7 @@ def generate_quality_database(k):
         subgoal_generator=BasicChessSubgoalGenerator(
             f"{EAGLE_HOME}/chess_models/generator_k={k}-lr_0.0002/out/checkpoint-11500/"),
         take_transition_p=0.05,
-        n_eval_datapoints=200,
+        n_eval_datapoints=1000,
         check_exhaustive_search=True,
         stockfish_path="cluster",
         top_n_actions_max=3

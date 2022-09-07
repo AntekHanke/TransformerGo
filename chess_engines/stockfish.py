@@ -74,6 +74,8 @@ class StockfishEngine:
 
     def evaluate_boards_in_parallel(self, list_of_immutable_boards):
         print(f"Parallel evaluation of {len(list_of_immutable_boards)} boards.")
+        if len(list_of_immutable_boards) == 0:
+            return []
         return Parallel(n_jobs=min(len(list_of_immutable_boards), MAX_JOBLIB_N_JOBS))(
             delayed(self.evaluate_immutable_board)(board) for board in list_of_immutable_boards
         )
