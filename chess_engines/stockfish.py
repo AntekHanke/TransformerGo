@@ -47,7 +47,6 @@ class StockfishEngine:
         Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
 
         :param: immutable_board: Input chess board.
-        :param: time_limit: (probably) Time to assess the state of play by stockfish.
         :return: Evaluation of the state of the game.
         """
         engine = chess.engine.SimpleEngine.popen_uci(self.stockfish_path)

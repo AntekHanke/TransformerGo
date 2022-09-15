@@ -1,6 +1,7 @@
 import random
-from typing import Union
+from typing import Union, List, Dict
 
+import pandas
 import pandas as pd
 
 from chess_engines.stockfish import StockfishEngine
@@ -8,6 +9,7 @@ from data_processing.data_utils import immutable_boards_to_img, RESULT_TO_WINNER
 from data_processing.exhaustive_search import ExhaustiveSearch
 
 # from jobs.core import Job
+from data_structures.data_structures import OneGameData, ImmutableBoard
 
 from metric_logging import source_files_register, log_value
 from statistics.statistics_dataset_generator import StatisticsDatasetCreator
@@ -51,12 +53,11 @@ class SubgoalQualityDatabaseGenerator:
         self.top_n_actions_max = top_n_actions_max
         self.top_n_actions_range = range(1, self.top_n_actions_max + 1)
 
-
         self.stockfish = StockfishEngine(stockfish_path)
 
         self.evaluated_transitions = 0
 
-    def execute(self):
+    def execute(self) -> pandas.DataFrame:
         self.chess_database.create_data()
         random_games_order = list(range(len(self.chess_database.games_to_eval)))
         data_rows = []
@@ -66,7 +67,7 @@ class SubgoalQualityDatabaseGenerator:
             data_rows.extend(self.eval_one_game(self.chess_database.games_to_eval[game_idx]))
 
             log_value("evaluated_transitions", num, self.evaluated_transitions)
-            log_value("evaluated_games", num, num+1)
+            log_value("evaluated_games", num, num + 1)
             log_value("game_idx", num, game_idx)
         metadata = {
             "stockfish_depth_limit": self.stockfish.depth_limit,
@@ -77,14 +78,14 @@ class SubgoalQualityDatabaseGenerator:
         df.metadata = metadata
         return df
 
-    def eval_one_game(self, one_game_data):
+    def eval_one_game(self, one_game_data: OneGameData) -> List[Dict]:
         data_rows = []
         for transition_num in range(len(one_game_data.transitions)):
             if random.random() < self.take_transition_p:
                 data_rows.append(self.eval_transition(transition_num, one_game_data))
         return data_rows
 
-    def eval_transition(self, transition_num, one_game_data):
+    def eval_transition(self, transition_num: int, one_game_data: OneGameData) -> Dict:
         transition = one_game_data.transitions[transition_num]
         subgoals = self.generate_subgoals(transition.immutable_board)
         target_idx = min(transition_num + self.k, len(one_game_data.transitions) - 1)
@@ -115,7 +116,7 @@ class SubgoalQualityDatabaseGenerator:
                 for n in self.top_n_actions_range
             ]
 
-            print(f'Search with top_n_actions: {search_with_top_n_actions}')
+            print(f"Search with top_n_actions: {search_with_top_n_actions}")
 
             for num, accessible in enumerate(search_with_all_actions.check_subgoals(subgoals)["accessible"]):
                 row_data[f"subgoal_{num}_accessible"] = accessible
@@ -124,7 +125,9 @@ class SubgoalQualityDatabaseGenerator:
                 row_data[f"subgoal_{num}_distance"] = distance
 
             for top_n_actions in self.top_n_actions_range:
-                subgoals_accessible = search_with_top_n_actions[top_n_actions - 1].check_subgoals(subgoals)["accessible"]
+                subgoals_accessible = search_with_top_n_actions[top_n_actions - 1].check_subgoals(subgoals)[
+                    "accessible"
+                ]
 
                 for id, subgoal_accessible in enumerate(subgoals_accessible):
                     row_data[f"subgoal_{id}_accessible_top_{top_n_actions}"] = subgoal_accessible
@@ -132,7 +135,7 @@ class SubgoalQualityDatabaseGenerator:
         self.evaluated_transitions += 1
         return row_data
 
-    def generate_subgoals(self, input_board):
+    def generate_subgoals(self, input_board: ImmutableBoard) -> List[ImmutableBoard]:
         subgoals = self.subgoal_generator.generate_subgoals(input_board, self.n_subgoals)
         for subgoal in subgoals:
             assert subgoal.board != input_board.board, "Subgoal is the same as input board"

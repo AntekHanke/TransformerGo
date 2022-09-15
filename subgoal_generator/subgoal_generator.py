@@ -20,7 +20,7 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         else:
             self.model = checkpoint_path_or_model
 
-    def generate_subgoals(self, input_board: ImmutableBoard, n_subgoals: int):
+    def generate_subgoals(self, input_board: ImmutableBoard, n_subgoals: int) -> List[ImmutableBoard]:
         encoded_board = ChessTokenizer.encode_immutable_board(input_board) + [
             ChessTokenizer.vocab_to_tokens["<SEP>"]
         ]

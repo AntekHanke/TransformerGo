@@ -6,9 +6,9 @@ quality_data_generator = SubgoalQualityDatabaseGenerator(
     k=k,
     n_subgoals=6,
     n_games=500,
-    pgn_file="/home/tomek/Research/subgoal_chess_data/chess_data_aa",
+    pgn_file="/chess_data_aa",
     subgoal_generator=BasicChessSubgoalGenerator(
-        "/home/tomek/Research/subgoal_chess_data/generator_k_2/generator_model"),
+        "/generator_k_2/generator_model"),
     take_transition_p=0.1,
     n_eval_datapoints=75,
     check_exhaustive_search=True,

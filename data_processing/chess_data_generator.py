@@ -14,6 +14,7 @@ from metric_logging import log_value, log_object
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
 
+
 class ChessFilter:
     """Filters games and transitions to use in training."""
 

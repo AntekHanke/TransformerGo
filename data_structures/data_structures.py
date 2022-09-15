@@ -1,6 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 import chess
 
@@ -38,8 +38,8 @@ class ImmutableBoard(ImmutableBoardData):
         chess_board.push(move)
         return ImmutableBoard.from_board(chess_board)
 
-    def legal_moves(self) -> list[chess.Move]:
-        return list(self.to_board().legal_moves)
+    def legal_moves(self) -> Tuple[chess.Move]:
+        return tuple(self.to_board().legal_moves)
 
     def fen(self) -> str:
         return " ".join(self)

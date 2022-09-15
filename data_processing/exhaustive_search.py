@@ -1,5 +1,8 @@
 import random
-from typing import Union
+from typing import Union, Tuple, List
+
+import chess
+from matplotlib import pyplot as plt
 
 from chess_engines.stockfish import StockfishEngine
 from data_processing.data_utils import immutable_boards_to_img
@@ -28,13 +31,13 @@ class ExhaustiveSearch:
 
         self.search()
 
-    def moves_to_expand(self, immutable_board: ImmutableBoard):
+    def moves_to_expand(self, immutable_board: ImmutableBoard) -> Tuple[chess.Move]:
         if self.top_n_moves is None:
             return immutable_board.legal_moves()
         else:
             return self.stockfish.get_top_n_moves(immutable_board, self.top_n_moves)
 
-    def search(self):
+    def search(self) -> None:
         print(f"Searching for {self.depth} steps with {self.top_n_moves} moves per step")
         for dist in range(1, self.depth + 1):
             for state in self.dist_to_states[dist - 1]:
@@ -45,13 +48,13 @@ class ExhaustiveSearch:
                         self.states_to_dist[new_state] = dist
                         self.boards_to_dist[new_state.board] = dist
 
-    def get_random_sample(self):
+    def get_random_sample(self) -> plt.Figure:
         boards_samples = []
         for i in range(self.depth + 1):
             boards_samples.append(random.sample(list(self.dist_to_states[i]), 1)[0])
         return immutable_boards_to_img(boards_samples, ["dist_" + str(i) for i in range(self.depth + 1)])
 
-    def check_subgoals(self, subgoals):
+    def check_subgoals(self, subgoals : List[ImmutableBoard]) -> dict:
         data = {"accessible": [], "distance": []}
         for subgoal in subgoals:
             if subgoal.board in self.boards_to_dist:
