@@ -1,5 +1,5 @@
 """Stockfish-related functions."""
-from typing import List, Union
+from typing import List, Union, Tuple
 from joblib import Parallel, delayed
 
 import chess
@@ -15,7 +15,7 @@ DEFAULT_STOCKFISH_PATH_CLUSTER = "/Stockfish/src/stockfish"
 class StockfishEngine:
     """Wrapper for stockfish chess engine."""
 
-    def __init__(self, stockfish_path: Union[str, None], depth_limit: int = 10):
+    def __init__(self, stockfish_path: Union[str, None] = None, depth_limit: int = 10):
 
         if stockfish_path is None:
             print(f"Using default stockfish path.")
@@ -35,6 +35,13 @@ class StockfishEngine:
             elif immutable_board.active_player == "b":
                 return VALUE_FOR_MATE
 
+    @staticmethod
+    def absolute_v(player, v):
+        if player == "w":
+            return v
+        elif player == "b":
+            return -v
+
     def evaluate_immutable_board(self, immutable_board: ImmutableBoard) -> Union[float, None]:
         """
         Function is used to evaluate the state of the game, after each evaluation the chess machine is reset.
@@ -44,20 +51,22 @@ class StockfishEngine:
         :return: Evaluation of the state of the game.
         """
         engine = chess.engine.SimpleEngine.popen_uci(self.stockfish_path)
+        player = immutable_board.active_player
         try:
             result = engine.analyse(
                 immutable_board.to_board(), chess.engine.Limit(depth=self.depth_limit), game=object()
             )["score"]
             engine.quit()
-            return self.get_result_score(immutable_board, result)
+            return StockfishEngine.absolute_v(
+                immutable_board.active_player, self.get_result_score(immutable_board, result)
+            )
         except chess.engine.EngineTerminatedError:
             return None
 
     def get_top_n_moves(
         self, immutable_board: ImmutableBoard, top_n_moves: Union[int, None] = None
-    ) -> List[chess.Move]:
+    ) -> Tuple[chess.Move]:
 
-        # engine = chess.engine.SimpleEngine.popen_uci(self.stockfish_path)
         board = immutable_board.to_board()
         move_scores = {move: None for move in board.legal_moves}
 
@@ -72,7 +81,7 @@ class StockfishEngine:
         else:
             return sorted_moves[:top_n_moves]
 
-    def evaluate_boards_in_parallel(self, list_of_immutable_boards):
+    def evaluate_boards_in_parallel(self, list_of_immutable_boards: List[ImmutableBoard]) -> List[float]:
         print(f"Parallel evaluation of {len(list_of_immutable_boards)} boards.")
         if len(list_of_immutable_boards) == 0:
             return []

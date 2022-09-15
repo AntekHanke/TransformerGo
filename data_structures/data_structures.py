@@ -15,28 +15,31 @@ ImmutableBoardData = namedtuple(
 
 SubgoalsFromModel = namedtuple("SubgoalFromModel", "input_immutable_board target_immutable_board")
 
+
 @dataclass
 class ChessMetadata:
     """Stores arbitrary metadata about a single game. Different games have different metadata fields."""
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+
 class ImmutableBoard(ImmutableBoardData):
     @classmethod
-    def from_board(cls, board):
+    def from_board(cls, board: chess.Board) -> "ImmutableBoard":
         fen_data = board.fen().split()
         return cls(*fen_data)
 
-    def to_board(self):
+    def to_board(self) -> chess.Board:
         return chess.Board(fen=" ".join(self))
 
-    def act(self, move):
+    def act(self, move: chess.Move) -> "ImmutableBoard":
         chess_board = self.to_board()
         chess_board.push(move)
         return ImmutableBoard.from_board(chess_board)
 
-    def legal_moves(self):
-        return self.to_board().legal_moves
+    def legal_moves(self) -> list[chess.Move]:
+        return list(self.to_board().legal_moves)
 
-    def fen(self):
+    def fen(self) -> str:
         return " ".join(self)
