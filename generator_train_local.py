@@ -7,12 +7,11 @@ from transformers import (
 )
 
 import metric_logging
-from configs.global_config import source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter, ChessSubgoalDataGenerator, NoFilter
 from jobs.train_model import TrainModel
-from mrunner_utils.neptune_logger import NeptuneLogger
+from mrunner_utils.mrunner_client import NeptuneLogger
 
-source_files_register.register(__file__)
+metric_logging.source_files_register.register(__file__)
 k = 2
 
 LOCAL_LOG_DIR = f"/home/tomek/Research/subgoal_chess_data/generator_k_{k}/"
@@ -63,17 +62,16 @@ dataset = ChessSubgoalDataGenerator(
     pgn_file=LOCAL_PGN,
     chess_filter=chess_filter,
     p_sample=0.5,
-    n_data=2*10**5,
+    n_data=2*10**3,
     log_samples_limit=25,
     p_log_sample=0.05,
 )
 
 dataset.create_data()
 
-# TrainModel(
-#     fast_iter_config,
-#     fast_iter_training,
-#     chess_database=dataset,
-#     save_model_path=LOG_DIR + "/generator_model",
-#     neptune_logger=neptune_logger,
-# ).execute()
+TrainModel(
+    fast_iter_config,
+    fast_iter_training,
+    chess_database=dataset,
+    save_model_path=LOG_DIR + "/generator_model",
+).execute()

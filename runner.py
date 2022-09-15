@@ -12,6 +12,7 @@ import metric_logging
 
 # This imports are needed for gin-config:
 import jobs
+from configs.global_config import NEPTUNE_PROJECT
 
 
 def _parse_args():
@@ -51,11 +52,14 @@ if __name__ == '__main__':
         specification, overrides = mrunner_client.get_configuration(spec_path)
         gin_bindings.extend(overrides)
 
+        print(f'specification: {specification}')
         if 'use_neptune' in specification['parameters']:
             if specification['parameters']['use_neptune']:
+                print(f'Creating neptune logger with project {NEPTUNE_PROJECT}')
                 try:
                     neptune_logger = mrunner_client.configure_neptune(specification)
                     metric_logging.register_logger(neptune_logger)
+                    metric_logging.register_pytorch_callback_logger(neptune_logger)
 
                 except mrunner_client.NeptuneAPITokenException:
                     print('HINT: To run with Neptune logging please set your '

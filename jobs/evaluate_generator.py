@@ -13,7 +13,6 @@ from transformers import (
 )
 
 from metric_logging import log_param, source_files_register, log_object
-from mrunner_utils.neptune_logger import NeptuneLogger
 from subgoal_generator.subgoal_generator import ChessSubgoalGenerator
 
 source_files_register.register(__file__)

@@ -4,20 +4,23 @@ from transformers import (
     BartConfig,
 )
 
-from metric_logging import log_param, source_files_register
-from data_processing.chess_data_generator import ResultFilter, ChessSubgoalDataGenerator
+from configs.global_config import ENTROPY_HOME
+from metric_logging import log_param, register_logger, log_object, source_files_register
+from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter, ChessSubgoalDataGenerator, NoFilter
 from jobs.train_model import TrainModel
+from mrunner_utils.mrunner_client import NeptuneLogger
 
 source_files_register.register(__file__)
 
 
-def train_generator_eagle(learning_rate, k, n_datapoints, p_sample):
+def train_generator_entropy(learning_rate, k, n_datapoints):
 
+    # n_datapoints = 2*10 ** 7
+    p_sample = 0.3
 
     print(f"learning_rate: {learning_rate}")
 
-    LOG_DIR = f"/home/plgrid/plgtodrzygozdz/chess_models/large_generator_k={k}-lr_{learning_rate}/"
-
+    LOG_DIR = f"{ENTROPY_HOME}/chess_models/generator_k={k}-lr_{learning_rate}/"
 
     log_param("learning_rate", learning_rate)
     log_param("log_dir", LOG_DIR)
@@ -31,12 +34,12 @@ def train_generator_eagle(learning_rate, k, n_datapoints, p_sample):
         max_position_embeddings=128,
         encoder_layers=12,
         decoder_layers=12,
-        encoder_attention_heads=16,
-        decoder_attention_heads=16,
-        decoder_ffn_dim=2048,
-        encoder_ffn_dim=2048,
-        d_model=1024,
-        dropout=0.05
+        encoder_attention_heads=8,
+        decoder_attention_heads=8,
+        decoder_ffn_dim=1024,
+        encoder_ffn_dim=1024,
+        d_model=512,
+        dropout=0.
     )
 
     eagle_training = TrainingArguments(
@@ -58,7 +61,7 @@ def train_generator_eagle(learning_rate, k, n_datapoints, p_sample):
 
     dataset = ChessSubgoalDataGenerator(
         k=k,
-        pgn_file="/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn",
+        pgn_file=f"{ENTROPY_HOME}/subgoal_chess/database.pgn",
         chess_filter=chess_filter,
         p_sample=p_sample,
         n_data=n_datapoints,
@@ -68,11 +71,11 @@ def train_generator_eagle(learning_rate, k, n_datapoints, p_sample):
 
     dataset.create_data()
 
-    log_param("save_model_path", LOG_DIR + "/eagle_generator_model")
+    log_param("save_model_path", LOG_DIR + "/generator_model")
 
     TrainModel(
         eagle_config,
         eagle_training,
         chess_database=dataset,
-        save_model_path=LOG_DIR + "/eagle_generator_model",
+        save_model_path=LOG_DIR + "/generator_model"
     ).execute()

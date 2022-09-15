@@ -68,8 +68,10 @@ class ChessTokenizer:
         board_tokens.append(cls.vocab_to_tokens[immutable_board.active_player])
         board_tokens.append(cls.vocab_to_tokens[immutable_board.castles])
         board_tokens.append(cls.vocab_to_tokens[immutable_board.en_passant_target])
-        board_tokens.append(cls.vocab_to_tokens[str(immutable_board.halfmove_clock)])
-        board_tokens.append(cls.vocab_to_tokens[str(immutable_board.fullmove_clock)])
+        halfmove_clock = min(int(immutable_board.halfmove_clock), 255)
+        board_tokens.append(cls.vocab_to_tokens[str(halfmove_clock)])
+        fullmove_clock = min(int(immutable_board.fullmove_clock), 255)
+        board_tokens.append(cls.vocab_to_tokens[str(fullmove_clock)])
 
         assert (
             len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
