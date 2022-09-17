@@ -17,7 +17,7 @@ source_files_register.register(__file__)
 class TrainModel(Job):
     def __init__(
         self,
-        chess_database: Type[ChessDataGenerator],
+        chess_database_cls: Type[ChessDataGenerator],
         model_config: Union[BartConfig, None] = None,
         training_args: Union[TrainingArguments] = None,
         save_model_path: str = None,
@@ -26,9 +26,8 @@ class TrainModel(Job):
             model_config = BartConfig()
         if training_args is None:
             training_args = TrainingArguments(output_dir=f"{save_model_path}/out")
-        if chess_database is None:
-            chess_database = ChessDataGenerator()
 
+        chess_database = chess_database_cls()
         chess_database.create_data()
 
         self.model_config = model_config
@@ -48,7 +47,7 @@ class TrainModel(Job):
         self.save_model_path = save_model_path + "/final_model"
         log_param("Save model path", self.save_model_path)
 
-    def execute(self):
+    def execute(self) -> None:
         self.trainer.train()
         print(f"Saving model at {self.save_model_path}")
         self.trainer.save_model(self.save_model_path)

@@ -4,11 +4,11 @@ k = 3
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
-    "TrainModel.chess_database": "@data.ChessCLLPDataGenerator",
+    "TrainModel.chess_database_cls": "@data.ChessCLLPDataGenerator",
 
     "ChessCLLPDataGenerator.k": k,
     "ChessCLLPDataGenerator.pgn_file": "/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn",
-    "ChessCLLPDataGenerator.filter": "@filters.NoFilter",
+    "ChessCLLPDataGenerator.chess_filter": "@filters.NoFilter",
     "ChessCLLPDataGenerator.p_sample": 0.1,
     "ChessCLLPDataGenerator.n_data": 5*10**5,
     "ChessCLLPDataGenerator.log_samples_limit": 100,
@@ -36,6 +36,8 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 0.0001,
+
+    "use_neptune": True,
 }
 
 params_grid = {

@@ -24,5 +24,5 @@ def configure_classes(classes, module=None):
 configure_classes([AnyJob, TrainModel], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
-configure_classes([PolicyDataGenerator, ChessSubgoalDataGenerator, ChessCLLPDataGenerator], "data_processing")
-configure_classes([Trainer, TrainingArguments, BartConfig], "config")
+configure_classes([PolicyDataGenerator, ChessSubgoalDataGenerator, ChessCLLPDataGenerator], "data")
+# configure_classes([Trainer, TrainingArguments, BartConfig], "config")
