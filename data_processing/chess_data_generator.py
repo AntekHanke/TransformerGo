@@ -77,7 +77,7 @@ class ChessDataGenerator:
 
     def __init__(
         self,
-        pgn_file: str,
+        pgn_file: str = None,
         chess_filter: ChessFilter = None,
         p_sample: float = 1.0,
         n_data: int = None,
@@ -257,7 +257,6 @@ class ChessCLLPDataGenerator(ChessDataGenerator):
             max_target_board_num = min(game_length - 1, num + self.k)
             target_board_num = random.randint(num + 1, max_target_board_num)
             move = one_game_data.transitions[num].move
-
             target_board = one_game_data.transitions[target_board_num].immutable_board
 
             if random.random() <= self.p_sample:

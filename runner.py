@@ -10,8 +10,7 @@ import gin
 
 import metric_logging
 
-# This imports are needed for gin-config:
-import jobs
+import configs.gin_configurable_classes #keep this import
 from configs.global_config import NEPTUNE_PROJECT
 
 
