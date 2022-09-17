@@ -241,3 +241,43 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
             [sample["input_board"], sample["target_board"]],
             [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
         )
+
+
+class ChessCLLPDataGenerator(ChessDataGenerator):
+    def __init__(self, k, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k = k
+
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
+        game_length = len(one_game_data.transitions)
+
+        for num in range(game_length - 1):
+
+            input_board = one_game_data.transitions[num].immutable_board
+            max_target_board_num = min(game_length - 1, num + self.k)
+            target_board_num = random.randint(num + 1, max_target_board_num)
+            move = one_game_data.transitions[num].move
+
+            target_board = one_game_data.transitions[target_board_num].immutable_board
+
+            if random.random() <= self.p_sample:
+                current_dataset[len(current_dataset)] = {
+                    "input_ids": ChessTokenizer.encode_immutable_board(input_board)
+                    + ChessTokenizer.encode_immutable_board(input_board)
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    "labels": ChessTokenizer.encode_move(move),
+                }
+
+            sample = {
+                "input_board": input_board,
+                "target_board": target_board,
+                "num": num,
+                "move": move.uci(),
+            }
+            self.log_sample(sample, one_game_data.metadata)
+
+    def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata):
+        return immutable_boards_to_img(
+            [sample["input_board"], sample["target_board"]],
+            [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
+        )
