@@ -10,7 +10,7 @@ base_config = {
     "ChessCLLPDataGenerator.pgn_file": "/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn",
     "ChessCLLPDataGenerator.chess_filter": "@filters.NoFilter",
     "ChessCLLPDataGenerator.p_sample": 0.1,
-    "ChessCLLPDataGenerator.n_data": 5*10**5,
+    "ChessCLLPDataGenerator.n_data": 5*10**7,
     "ChessCLLPDataGenerator.log_samples_limit": 100,
     "ChessCLLPDataGenerator.p_log_sample": 0.01,
 
