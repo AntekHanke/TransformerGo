@@ -5,6 +5,8 @@ import random
 import torch
 from collections import namedtuple
 
+from matplotlib import pyplot as plt
+
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
 from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
@@ -77,7 +79,7 @@ class ChessDataGenerator:
 
     def __init__(
         self,
-        pgn_file: str,
+        pgn_file: str = None,
         chess_filter: ChessFilter = None,
         p_sample: float = 1.0,
         n_data: int = None,
@@ -158,7 +160,7 @@ class ChessDataGenerator:
             raise ValueError(f"Unknown train_eval value. Expected 'train' or 'eval', got {train_eval}")
         return current_dataset
 
-    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict) -> None:
         """Converts a game to datapoints added to the current_dataset (train or eval)."""
         raise NotImplementedError
 
@@ -171,7 +173,7 @@ class ChessDataGenerator:
     def sample_to_log_object(self, sample: Any, game_metadata: ChessMetadata) -> Any:
         raise NotImplementedError
 
-    def log_progress(self, n_iterations: int):
+    def log_progress(self, n_iterations: int) -> None:
         if n_iterations % 1000 == 0:
             log_value("Train dataset points", n_iterations, len(self.data_queue))
             log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
@@ -200,7 +202,7 @@ class PolicyDataGenerator(ChessDataGenerator):
                 sample = {"input_board": transition.immutable_board, "move": transition.move.uci(), "num": num}
                 self.log_sample(sample, one_game_data.metadata)
 
-    def sample_to_log_object(self, sample: Any, metadata: ChessMetadata):
+    def sample_to_log_object(self, sample: Any, metadata: ChessMetadata) -> plt.Figure:
         return immutable_boards_to_img(
             [sample["input_board"]],
             [f"{sample['num']} : {sample['move']}, result: {metadata.Result}"],
@@ -212,9 +214,8 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
         super().__init__(*args, **kwargs)
         self.k = k
 
-    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict) -> None:
         game_length = len(one_game_data.transitions)
-
         for num in range(game_length - self.k):
 
             input_board = one_game_data.transitions[num].immutable_board
@@ -236,7 +237,45 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
             }
             self.log_sample(sample, one_game_data.metadata)
 
-    def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata):
+    def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
+        return immutable_boards_to_img(
+            [sample["input_board"], sample["target_board"]],
+            [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
+        )
+
+
+class ChessCLLPDataGenerator(ChessDataGenerator):
+    def __init__(self, k, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k = k
+
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict) -> None:
+        game_length = len(one_game_data.transitions)
+        for num in range(game_length - 1):
+
+            input_board = one_game_data.transitions[num].immutable_board
+            max_target_board_num = min(game_length - 1, num + self.k)
+            target_board_num = random.randint(num + 1, max_target_board_num)
+            move = one_game_data.transitions[num].move
+            target_board = one_game_data.transitions[target_board_num].immutable_board
+
+            if random.random() <= self.p_sample:
+                current_dataset[len(current_dataset)] = {
+                    "input_ids": ChessTokenizer.encode_immutable_board(input_board)
+                    + ChessTokenizer.encode_immutable_board(input_board)
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    "labels": ChessTokenizer.encode_move(move),
+                }
+
+            sample = {
+                "input_board": input_board,
+                "target_board": target_board,
+                "num": num,
+                "move": move.uci(),
+            }
+            self.log_sample(sample, one_game_data.metadata)
+
+    def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
         return immutable_boards_to_img(
             [sample["input_board"], sample["target_board"]],
             [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
