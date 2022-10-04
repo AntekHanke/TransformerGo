@@ -74,7 +74,7 @@ class ChessDataset(torch.utils.data.Dataset):
         return len(self.data)
 
 
-class ChessDataGenerator:
+class ChessGamesDataGenerator:
     """Reads PGN file and creates data."""
 
     def __init__(
@@ -98,7 +98,7 @@ class ChessDataGenerator:
         self.p_log_sample = p_log_sample
         self.only_eval = only_eval
 
-        self.data_queue = {}
+        self.train_data_queue = {}
         self.eval_data_queue = {}
         self.logged_samples = 0
         self.n_games = 0
@@ -133,7 +133,7 @@ class ChessDataGenerator:
 
     def create_data(self):
         n_iterations = 0
-        while len(self.data_queue) + len(self.eval_data_queue) < self.n_data:
+        while len(self.train_data_queue) + len(self.eval_data_queue) < self.n_data:
             n_iterations += 1
             train_eval = get_split(n_iterations, self.train_eval_split)
             if not self.only_eval or train_eval == "eval":
@@ -145,7 +145,7 @@ class ChessDataGenerator:
 
     def get_train_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
-        return ChessDataset(self.data_queue)
+        return ChessDataset(self.train_data_queue)
 
     def get_eval_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
@@ -153,7 +153,7 @@ class ChessDataGenerator:
 
     def select_dataset(self, train_eval) -> Dict:
         if train_eval == "train":
-            current_dataset = self.data_queue
+            current_dataset = self.train_data_queue
         elif train_eval == "eval":
             current_dataset = self.eval_data_queue
         else:
@@ -175,22 +175,22 @@ class ChessDataGenerator:
 
     def log_progress(self, n_iterations: int) -> None:
         if n_iterations % 1000 == 0:
-            log_value("Train dataset points", n_iterations, len(self.data_queue))
+            log_value("Train dataset points", n_iterations, len(self.train_data_queue))
             log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
             log_value("Dataset games", n_iterations, self.n_games)
             log_value(
                 "Dataset size",
                 n_iterations,
-                len(self.data_queue) + len(self.eval_data_queue),
+                len(self.train_data_queue) + len(self.eval_data_queue),
             )
             log_value(
                 "Dataset progress",
                 n_iterations,
-                (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
+                (len(self.train_data_queue) + len(self.eval_data_queue)) / self.n_data,
             )
 
 
-class PolicyDataGenerator(ChessDataGenerator):
+class PolicyGamesDataGenerator(ChessGamesDataGenerator):
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         for num, transition in enumerate(one_game_data.transitions):
             if random.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
@@ -209,7 +209,7 @@ class PolicyDataGenerator(ChessDataGenerator):
         )
 
 
-class ChessSubgoalDataGenerator(ChessDataGenerator):
+class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
     def __init__(self, k, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.k = k
@@ -244,7 +244,7 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
         )
 
 
-class ChessCLLPDataGenerator(ChessDataGenerator):
+class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
     def __init__(self, k, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.k = k

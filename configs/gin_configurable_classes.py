@@ -4,9 +4,9 @@ from transformers import Trainer, TrainingArguments, BartConfig
 from data_processing.chess_data_generator import (
     NoFilter,
     ResultFilter,
-    ChessCLLPDataGenerator,
-    ChessSubgoalDataGenerator,
-    PolicyDataGenerator,
+    ChessCLLPGamesDataGenerator,
+    ChessSubgoalGamesDataGenerator,
+    PolicyGamesDataGenerator,
 )
 from jobs.any_job import AnyJob
 from jobs.train_model import TrainModel
@@ -24,4 +24,4 @@ def configure_classes(classes, module=None) -> None:
 configure_classes([AnyJob, TrainModel], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
-configure_classes([PolicyDataGenerator, ChessSubgoalDataGenerator, ChessCLLPDataGenerator], "data")
+configure_classes([PolicyGamesDataGenerator, ChessSubgoalGamesDataGenerator, ChessCLLPGamesDataGenerator], "data")

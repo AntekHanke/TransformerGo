@@ -5,7 +5,7 @@ from transformers import (
 )
 
 from metric_logging import log_param, source_files_register
-from data_processing.chess_data_generator import ResultFilter, ChessSubgoalDataGenerator
+from data_processing.chess_data_generator import ResultFilter, ChessSubgoalGamesDataGenerator
 from jobs.train_model import TrainModel
 
 source_files_register.register(__file__)
@@ -56,7 +56,7 @@ def train_generator_eagle(learning_rate, k, n_datapoints, p_sample):
     chess_filter = ResultFilter('winner')
     # chess_filter = NoFilter()
 
-    dataset = ChessSubgoalDataGenerator(
+    dataset = ChessSubgoalGamesDataGenerator(
         k=k,
         pgn_file="/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn",
         chess_filter=chess_filter,

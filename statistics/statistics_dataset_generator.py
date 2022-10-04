@@ -3,13 +3,13 @@ from typing import Dict, Any
 import chess
 import pandas as pd
 
-from data_processing.chess_data_generator import ChessDataGenerator, ChessFilter, NoFilter
+from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessFilter, NoFilter
 from data_processing.data_utils import get_split
 from data_structures.data_structures import Transition, OneGameData, ChessMetadata
 from metric_logging import log_value
 
 
-class StatisticsDatasetCreator(ChessDataGenerator):
+class StatisticsDatasetCreator(ChessGamesDataGenerator):
     def __init__(
         self, pgn_file: str, n_games: int, train_eval_split: float = 0.95, chess_filter: ChessFilter = NoFilter()
     ):
