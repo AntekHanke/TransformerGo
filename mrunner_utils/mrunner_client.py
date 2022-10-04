@@ -53,9 +53,7 @@ class NeptunePytorchCallback(TrainerCallback):
                     try:
                         self.run[metric_name].log(value=float(value), step=step)
                     except Exception as e:
-                        print(
-                            f"Exception while logging metric {metric_name} value {value} step {step}"
-                        )
+                        print(f"Exception while logging metric {metric_name} value {value} step {step}")
                         print(f"Exception: {e}")
 
 

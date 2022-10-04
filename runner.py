@@ -18,17 +18,17 @@ def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--config_file', action='append', default=[],
-        help='Gin configures files.'
+        help='Gin configs files.'
     )
     parser.add_argument(
         '--config', action='append', default=[],
-        help='Gin configures overrides.'
+        help='Gin configs overrides.'
     )
     parser.add_argument(
         '--mrunner', action='store_true',
-        help='Add mrunner spec to gin-configures overrides and Neptune to loggers.'
-        '\nNOTE: It assumes that the last configures override (--configures argument) '
-        'is a path to a pickled experiment configures created by the mrunner CLI or'
+        help='Add mrunner spec to gin-configs overrides and Neptune to loggers.'
+        '\nNOTE: It assumes that the last configs override (--configs argument) '
+        'is a path to a pickled experiment configs created by the mrunner CLI or'
         'a mrunner specification file.'
     )
     return parser.parse_args()
