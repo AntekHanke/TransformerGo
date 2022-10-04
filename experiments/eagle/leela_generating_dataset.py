@@ -1,9 +1,9 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {
-    "run.job_class": "@jobs.LeelaDatasetGenerator",
+    "run.job_class": "@data.LeelaDatasetGenerator",
     # Params for LeelaDatasetGenerator:
-    "LeelaDatasetGenerator.path_to_chess_dataset": "/home/plgrid/plggracjangoral/data/chess_database/cas_small.pgn.pgn",
+    "LeelaDatasetGenerator.path_to_chess_dataset": "/home/plgrid/plggracjangoral/data/chess_database/cas_small.pgn",
     "LeelaDatasetGenerator.leela_parms": [
         "/home/plgrid/plggracjangoral/leela/build/release/lc0",
         "--weights=/home/plgrid/plggracjangoral/leela_weights/591154",
