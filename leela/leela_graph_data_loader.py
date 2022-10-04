@@ -70,8 +70,21 @@ class LeelaGMLTree:
         plt.show()
 
     def k_successors(self, node, k):
-        all_k_successors =  list(nx.dfs_successors(self.graph, node, depth_limit=k+1))
-        k_successors_dist = {succ_node: self.distance_to_predecessors(succ_node, node) for succ_node in all_k_successors}
+        all_k_successors = list(nx.dfs_successors(self.graph, node, depth_limit=k + 1))
+        for node in all_k_successors:
+            self.create_state(node)
+        k_successors_dist = {
+            succ_node: {
+                "dist": self.distance_to_predecessors(succ_node, node),
+                "state": self.graph.nodes[succ_node]["state"],
+                "N": self.graph.nodes[succ_node]["N"],
+                "Q": self.graph.nodes[succ_node]["Q"],
+                "D": self.graph.nodes[succ_node]["D"],
+                "M": self.graph.nodes[succ_node]["M"],
+                "P": self.graph.nodes[succ_node]["P"]
+            }
+            for succ_node in all_k_successors
+        }
         return k_successors_dist
 
     def get_parent(self, node):
@@ -86,10 +99,3 @@ class LeelaGMLTree:
                 parent = self.get_parent(parent)
                 dist += 1
         return dist
-
-        # return [self.distance(node, predecessor) for predecessor in predecessors]
-
-
-
-    # def distance(self, node1, node2):
-    #     return nx.shortest_path_length(self.graph, node1, node2)
