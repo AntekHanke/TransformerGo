@@ -9,7 +9,7 @@ from mpmath import mp, mpf, fmod
 from PIL import Image
 from io import BytesIO
 
-from configs.global_config import TRAIN_TEST_SPLIT_SEED
+from configures.global_config import TRAIN_TEST_SPLIT_SEED
 from data_structures.data_structures import ImmutableBoard
 from metric_logging import log_object
 

@@ -1,4 +1,4 @@
-"""Parse and return mrunner gin-configs and set-up Neptune.
+"""Parse and return mrunner gin-configures and set-up Neptune.
 
 This is copied from alpacka (with removed ray setup).
 """
@@ -13,12 +13,12 @@ import neptune.new as neptune
 
 from transformers import TrainerCallback
 
-from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN
+from configures.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN
 from metric_logging import source_files_register
 
 
 def get_configuration(spec_path):
-    """Get mrunner experiment specification and gin-configs overrides."""
+    """Get mrunner experiment specification and gin-configures overrides."""
     try:
         with open(spec_path, "rb") as f:
             specification = cloudpickle.load(f)

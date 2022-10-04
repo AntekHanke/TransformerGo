@@ -6,29 +6,29 @@ import torch
 
 import gin
 # This makes gin configurable classes picklable
-# gin.configs._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
+# gin.configures._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
 
 import metric_logging
 
-import configs.gin_configurable_classes #keep this import
-from configs.global_config import NEPTUNE_PROJECT
+import configures.gin_configurable_classes #keep this import
+from configures.global_config import NEPTUNE_PROJECT
 
 
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--config_file', action='append', default=[],
-        help='Gin configs files.'
+        help='Gin configures files.'
     )
     parser.add_argument(
         '--config', action='append', default=[],
-        help='Gin configs overrides.'
+        help='Gin configures overrides.'
     )
     parser.add_argument(
         '--mrunner', action='store_true',
-        help='Add mrunner spec to gin-configs overrides and Neptune to loggers.'
-        '\nNOTE: It assumes that the last configs override (--configs argument) '
-        'is a path to a pickled experiment configs created by the mrunner CLI or'
+        help='Add mrunner spec to gin-configures overrides and Neptune to loggers.'
+        '\nNOTE: It assumes that the last configures override (--configures argument) '
+        'is a path to a pickled experiment configures created by the mrunner CLI or'
         'a mrunner specification file.'
     )
     return parser.parse_args()

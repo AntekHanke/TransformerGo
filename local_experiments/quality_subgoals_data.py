@@ -1,4 +1,4 @@
-from configs.global_config import EAGLE_DATASET, EAGLE_HOME
+from configures.global_config import EAGLE_DATASET, EAGLE_HOME
 from statistics.quality_of_subgoals import SubgoalQualityDatabaseGenerator
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 
