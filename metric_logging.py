@@ -1,5 +1,8 @@
 """Metric logging."""
 import numpy as np
+from mrunner_utils.source_files_register import SourceFilesRegister
+
+source_files_register = SourceFilesRegister()
 
 
 class StdoutLogger:
