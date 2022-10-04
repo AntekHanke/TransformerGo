@@ -1,8 +1,5 @@
 """Metric logging."""
 import numpy as np
-from mrunner_utils.source_files_register import SourceFilesRegister
-
-source_files_register = SourceFilesRegister()
 
 
 class StdoutLogger:
@@ -40,12 +37,15 @@ class StdoutLogger:
 _loggers = [StdoutLogger]
 pytorch_callback_loggers = []
 
+
 def register_logger(logger):
     """Adds a logger to log to."""
     _loggers.append(logger)
 
+
 def register_pytorch_callback_logger(logger):
     pytorch_callback_loggers.append(logger)
+
 
 def log_value(name, step, value):
     """Logs a scalar to the loggers."""
