@@ -38,6 +38,23 @@ contexts:
       -B /home/plgrid/plgtodrzygozdz/
       --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_8.08.2022.sif
 
+  eagle_alpacka_g:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: plgrid-long
+    time: 10000
+    cpu: 1
+    mem: 30G
+    nodes: 1
+    slurm_url: plggracjangoral@eagle.man.poznan.pl
+    storage_dir: /tmp/lustre/plggracjangoral/leela_chess
+    singularity_container: -H $PWD:/homeplaceholder
+      -B /home/plgrid/plggracjangoral/data/chess_database
+      -B /home/plgrid/plggracjangoral/leela_weights
+      -B /home/plgrid/plggracjangoral/leela
+      --env NEPTUNEPWD=$PWD --nv /home/plgrid/plggracjangoral/singularity/transformers_26.09.2022.sif
+
   eagle_tesla:
     account: plgrlresearch
     backend_type: slurm
