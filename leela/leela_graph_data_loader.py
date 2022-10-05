@@ -64,7 +64,7 @@ class LeelaGMLTree:
             self.create_state(node)
         k_successors_data = {
             succ_node: {
-                "dist": self.distance_to_predecessors(succ_node, node),
+                "dist_from_input": self.distance_to_predecessors(succ_node, node),
                 "state": self.graph.nodes[succ_node]["state"],
                 "N": self.graph.nodes[succ_node]["N"],
                 "Q": self.graph.nodes[succ_node]["Q"],

@@ -6,6 +6,7 @@ import chess
 
 Transition = namedtuple("Transition", "immutable_board move move_number")
 OneGameData = namedtuple("OneGameData", "metadata, transitions")
+LeelaSubgoal = namedtuple("LeelaSubgoal", "input_board, target_board")
 
 ImmutableBoardData = namedtuple(
     "ImmutableBoard",
