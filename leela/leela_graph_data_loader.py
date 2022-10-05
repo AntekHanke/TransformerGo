@@ -90,15 +90,26 @@ class LeelaGMLTree:
         return dist
 
 
+class EndOfGMLFile(Exception):
+    pass
+
 def data_trees_generator(data_path: str, create_all_states: bool = False) -> Iterable[LeelaGMLTree]:
     with open(data_path, "rb") as dataset:
-        while True:
-            graph_lines: List[str] = []
-            input_board: str = dataset.readline().decode("UTF-8")[:-1]
+        try:
+            while True:
+                graph_lines: List[str] = []
+                input_board: str = dataset.readline().decode("UTF-8")[:-1]
 
-            for line in dataset:
-                line = line.decode("ascii")
-                if line == "\n":
-                    break
-                graph_lines.append(line)
-            yield LeelaGMLTree(graph_lines, input_board, create_all_states)
+                for line in dataset:
+                    if not line:
+                        raise EndOfGMLFile
+                    line = line.decode("ascii")
+                    if line == "\n":
+                        break
+                    graph_lines.append(line)
+                try:
+                    yield LeelaGMLTree(graph_lines, input_board, create_all_states)
+                except nx.exception.NetworkXError:
+                    raise EndOfGMLFile
+        except EndOfGMLFile:
+            print("End of GML file")

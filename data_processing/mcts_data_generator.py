@@ -3,7 +3,6 @@ from typing import Dict
 
 from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_structures.data_structures import OneGameData
 from leela.leela_graph_data_loader import LeelaGMLTree
 
 
