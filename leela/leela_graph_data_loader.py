@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 
+from data_structures.data_structures import LeelaNodeData, LeelaSubgoal
+
 
 def get_moves(graph: nx.classes.digraph.DiGraph, n: int) -> List[str]:
     moves = []
@@ -36,16 +38,30 @@ class LeelaGMLTree:
         G: nx.classes.digraph.DiGraph = nx.readwrite.gml.parse_gml(self.lines, label="id")
         if self.create_all_states:
             for node in G.nodes:
-                self.create_state(node)
+                self.get_node_data(node)
         return G
 
-    def create_state(self, node) -> str:
-        if "state" not in self.graph.nodes[node]:
-            return self.graph.nodes[node]["state"]
+    def get_node_data(self, node) -> LeelaNodeData:
+        if "data" in self.graph.nodes[node]:
+            return self.graph.nodes[node]["data"]
         else:
-            position = current_position(self.input_board, get_moves(self.graph, node))
-            self.graph.nodes[node]["state"] = position
-            return position
+            moves_from_root = get_moves(self.graph, node)
+            state = current_position(self.input_board, moves_from_root)
+            print(self.graph.nodes[node])
+            node_info = self.graph.nodes[node]
+            data = LeelaNodeData(
+                node,
+                state,
+                moves_from_root,
+                len(moves_from_root),
+                node_info["N"],
+                node_info["Q"],
+                node_info["D"],
+                node_info["M"],
+                node_info["P"],
+            )
+            self.graph.nodes[node]["data"] = data
+            return data
 
     def visualize_states_graph(self) -> None:
         fig, ax = plt.subplots(figsize=(60, 60))
@@ -59,22 +75,24 @@ class LeelaGMLTree:
         plt.show()
 
     def k_successors(self, node, k):
-        all_k_successors = list(nx.dfs_successors(self.graph, node, depth_limit=k + 1))
-        for node in all_k_successors:
-            self.create_state(node)
-        k_successors_data = {
-            succ_node: {
-                "dist_from_input": self.distance_to_predecessors(succ_node, node),
-                "state": self.graph.nodes[succ_node]["state"],
-                "N": self.graph.nodes[succ_node]["N"],
-                "Q": self.graph.nodes[succ_node]["Q"],
-                "D": self.graph.nodes[succ_node]["D"],
-                "M": self.graph.nodes[succ_node]["M"],
-                "P": self.graph.nodes[succ_node]["P"],
-            }
-            for succ_node in all_k_successors
-        }
-        return k_successors_data
+        k_successors_idx = list(nx.dfs_successors(self.graph, node, depth_limit=k + 1))
+        k_succesors = []
+        for idx in k_successors_idx:
+            moves_from_input = [x for x in get_moves(self.graph, idx) if x not in get_moves(self.graph, node)]
+            succ = LeelaSubgoal(
+                input_board=self.get_node_data(node).state,
+                target_board=self.get_node_data(idx).state,
+                dist_from_input=self.distance_to_predecessors(idx, node),
+                input_level=self.get_node_data(node).level,
+                moves=moves_from_input,
+                N=self.get_node_data(idx).N,
+                Q=self.get_node_data(idx).Q,
+                D=self.get_node_data(idx).D,
+                M=self.get_node_data(idx).M,
+                P=self.get_node_data(idx).P,
+            )
+            k_succesors.append(succ)
+        return k_succesors
 
     def get_parent(self, node):
         return list(self.graph.predecessors(node))[0]
@@ -92,6 +110,7 @@ class LeelaGMLTree:
 
 class EndOfGMLFile(Exception):
     pass
+
 
 def data_trees_generator(data_path: str, create_all_states: bool = False) -> Iterable[LeelaGMLTree]:
     with open(data_path, "rb") as dataset:
