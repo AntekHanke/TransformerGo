@@ -1,4 +1,5 @@
-from typing import List, ByteString, Tuple, Dict, Iterable
+from collections import defaultdict
+from typing import List, ByteString, Tuple, Dict, Iterable, Iterator
 
 import chess
 import matplotlib.pyplot as plt
@@ -6,6 +7,9 @@ import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 
 from data_structures.data_structures import LeelaNodeData, LeelaSubgoal
+
+class EndOfGMLFile(Exception):
+    pass
 
 
 def get_moves(graph: nx.classes.digraph.DiGraph, n: int) -> List[str]:
@@ -27,6 +31,8 @@ def current_position(input_board: str, moves: List[str]) -> str:
 
 
 class LeelaGMLTree:
+    """Wrapper for networkx graph"""
+
     def __init__(self, lines, input_board: str, create_all_states: bool = False):
         self.lines = lines
         self.input_board = input_board
@@ -47,7 +53,6 @@ class LeelaGMLTree:
         else:
             moves_from_root = get_moves(self.graph, node)
             state = current_position(self.input_board, moves_from_root)
-            print(self.graph.nodes[node])
             node_info = self.graph.nodes[node]
             data = LeelaNodeData(
                 node,
@@ -97,6 +102,14 @@ class LeelaGMLTree:
     def get_parent(self, node):
         return list(self.graph.predecessors(node))[0]
 
+    def nodes_by_N(self):
+        N_to_node_dict = defaultdict(list)
+        for node in self.graph.nodes:
+            N_to_node_dict[int(self.graph.nodes[node]["N"])].append(node)
+        N_list = [int(x) for x in N_to_node_dict.keys()]
+        N_list.sort(reverse=True)
+        return N_to_node_dict, N_list
+
     def distance_to_predecessors(self, node, predecessor) -> int:
         dist = 0
         if node != predecessor:
@@ -108,11 +121,9 @@ class LeelaGMLTree:
         return dist
 
 
-class EndOfGMLFile(Exception):
-    pass
 
 
-def data_trees_generator(data_path: str, create_all_states: bool = False) -> Iterable[LeelaGMLTree]:
+def data_trees_generator(data_path: str, create_all_states: bool = False) -> Iterator[LeelaGMLTree]:
     with open(data_path, "rb") as dataset:
         try:
             while True:
@@ -126,9 +137,12 @@ def data_trees_generator(data_path: str, create_all_states: bool = False) -> Ite
                     if line == "\n":
                         break
                     graph_lines.append(line)
-                try:
-                    yield LeelaGMLTree(graph_lines, input_board, create_all_states)
-                except nx.exception.NetworkXError:
-                    raise EndOfGMLFile
+
+                yield LeelaGMLTree(graph_lines, input_board, create_all_states)
+
+                # try:
+                #     yield LeelaGMLTree(graph_lines, input_board, create_all_states)
+                # except nx.exception.NetworkXError:
+                #     raise EndOfGMLFile
         except EndOfGMLFile:
             print("End of GML file")

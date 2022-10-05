@@ -1,32 +1,33 @@
 import random
-from typing import Dict
+from typing import Dict, List
 
-from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataset
-from data_processing.chess_tokenizer import ChessTokenizer
-from leela.leela_graph_data_loader import LeelaGMLTree
+from data_processing.chess_data_generator import ChessDataset
+# from data_processing.chess_tokenizer import ChessTokenizer
+from data_structures.data_structures import LeelaSubgoal
+# from leela.leela_graph_data_loader import LeelaGMLTree
 
 
-class NodesSelectionRule:
-    pass
+class MCTSSubgoalSelector:
+    def select_subgoals(self, k_successors: List[LeelaSubgoal]) -> List[LeelaSubgoal]:
+        raise NotImplementedError
+
+
+class HighestNSelector(MCTSSubgoalSelector):
+    def __init__(self, n_subgoals):
+        self.n_subgoals = n_subgoals
+
+    def select_subgoals(self, k_successors: List[LeelaSubgoal]) -> List[LeelaSubgoal]:
+        return list(sorted(k_successors, key=lambda x: x.N, reverse=True))[:self.n_subgoals]
 
 class SubgoalMCGamesDataGenerator:
     def __init__(self, k, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.k = k
 
-        self.train_data = {}
-        self.eval_data = {}
+        self.data = {}
 
         self.data_constructed = False
 
-    def get_train_set_generator(self) -> ChessDataset:
+    def get_chess_dataset(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
-        return ChessDataset(self.train_data)
-
-    def get_eval_set_generator(self) -> ChessDataset:
-        assert self.data_constructed, "Data not constructed, call .create_data() first"
-        return ChessDataset(self.eval_data)
-
-
-    # def tree_to_datapoints(self, leela_tree: LeelaGMLTree) -> None:
-    #
+        return ChessDataset(self.data)
