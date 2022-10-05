@@ -3,7 +3,7 @@ import random
 import chess
 import neptune.new as neptune
 
-from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
+from configures.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
 from data_processing.chess_tokenizer import ChessTokenizer
 
 source_files_register.register(__file__)

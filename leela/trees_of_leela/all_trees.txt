@@ -1,0 +1,1806 @@
+1r1rn1k1/4ppbp/p2p2p1/qp2P1N1/2b2P2/2P1B2P/PPB2QP1/3RR1K1 w - - 0 22
+graph
+[
+directed 1
+node
+[
+id 0
+move ""
+N "20"
+Q "-0.722703"
+D "0.151195"
+M "2.400000"
+P ""
+]
+edge
+[
+source 0
+target 1
+]
+node
+[
+id 1
+move "a2a3"
+N "1"
+Q "0.523971"
+D "0.244734"
+M "0.000000"
+P "0.093658"
+]
+edge
+[
+source 0
+target 2
+]
+node
+[
+id 2
+move "b2b3"
+N "11"
+Q "0.763845"
+D "0.133671"
+M "2.181818"
+P "0.127991"
+]
+edge
+[
+source 2
+target 3
+]
+node
+[
+id 3
+move "h7h6"
+N "5"
+Q "-0.726287"
+D "0.155881"
+M "1.400000"
+P "0.130127"
+]
+edge
+[
+source 3
+target 4
+]
+node
+[
+id 4
+move "b3c4"
+N "3"
+Q "0.702236"
+D "0.170702"
+M "1.000000"
+P "0.187622"
+]
+edge
+[
+source 4
+target 5
+]
+node
+[
+id 5
+move "h6g5"
+N "2"
+Q "-0.765966"
+D "0.134728"
+M "0.500000"
+P "0.604492"
+]
+edge
+[
+source 5
+target 6
+]
+node
+[
+id 6
+move "e5e6"
+N "1"
+Q "0.800976"
+D "0.111890"
+M "0.000000"
+P "0.375854"
+]
+edge
+[
+source 3
+target 7
+]
+node
+[
+id 7
+move "g5f3"
+N "1"
+Q "0.783337"
+D "0.120214"
+M "0.000000"
+P "0.169800"
+]
+edge
+[
+source 2
+target 8
+]
+node
+[
+id 8
+move "c4e6"
+N "5"
+Q "-0.787233"
+D "0.120215"
+M "1.400000"
+P "0.181763"
+]
+edge
+[
+source 8
+target 9
+]
+node
+[
+id 9
+move "f4f5"
+N "3"
+Q "0.813533"
+D "0.102210"
+M "1.000000"
+P "0.183777"
+]
+edge
+[
+source 9
+target 10
+]
+node
+[
+id 10
+move "e6f5"
+N "2"
+Q "-0.816626"
+D "0.100908"
+M "0.500000"
+P "0.286865"
+]
+edge
+[
+source 10
+target 11
+]
+node
+[
+id 11
+move "c2f5"
+N "1"
+Q "0.714850"
+D "0.156495"
+M "0.000000"
+P "0.468384"
+]
+edge
+[
+source 8
+target 12
+]
+node
+[
+id 12
+move "g5e6"
+N "1"
+Q "0.639253"
+D "0.214122"
+M "0.000000"
+P "0.159912"
+]
+edge
+[
+source 0
+target 13
+]
+node
+[
+id 13
+move "f2h4"
+N "2"
+Q "0.677339"
+D "0.171011"
+M "0.500000"
+P "0.090271"
+]
+edge
+[
+source 13
+target 14
+]
+node
+[
+id 14
+move "h7h6"
+N "1"
+Q "-0.647898"
+D "0.185127"
+M "0.000000"
+P "0.441406"
+]
+edge
+[
+source 0
+target 15
+]
+node
+[
+id 15
+move "e3a7"
+N "2"
+Q "0.721469"
+D "0.144311"
+M "0.500000"
+P "0.080719"
+]
+edge
+[
+source 15
+target 16
+]
+node
+[
+id 16
+move "b8b7"
+N "1"
+Q "-0.794543"
+D "0.106340"
+M "0.000000"
+P "0.343628"
+]
+edge
+[
+source 0
+target 17
+]
+node
+[
+id 17
+move "e5e6"
+N "3"
+Q "0.660791"
+D "0.179694"
+M "1.000000"
+P "0.094055"
+]
+edge
+[
+source 17
+target 18
+]
+node
+[
+id 18
+move "c4e6"
+N "2"
+Q "-0.638586"
+D "0.195391"
+M "0.500000"
+P "0.208679"
+]
+edge
+[
+source 18
+target 19
+]
+node
+[
+id 19
+move "g5e6"
+N "1"
+Q "0.444960"
+D "0.299738"
+M "0.000000"
+P "0.335327"
+]
+]
+
+rn1qkb1r/ppp2ppp/4pn2/3p1bB1/3P4/5NP1/PPPNPP1P/R2QKB1R b KQkq - 1 5
+graph
+[
+directed 1
+node
+[
+id 0
+move ""
+N "20"
+Q "-0.097997"
+D "0.333336"
+M "2.600000"
+P ""
+]
+edge
+[
+source 0
+target 1
+]
+node
+[
+id 1
+move "b8d7"
+N "9"
+Q "0.102778"
+D "0.321948"
+M "2.333333"
+P "0.206116"
+]
+edge
+[
+source 1
+target 2
+]
+node
+[
+id 2
+move "f1g2"
+N "3"
+Q "-0.130441"
+D "0.347448"
+M "1.000000"
+P "0.193542"
+]
+edge
+[
+source 2
+target 3
+]
+node
+[
+id 3
+move "h7h6"
+N "2"
+Q "0.104159"
+D "0.355805"
+M "0.500000"
+P "0.273071"
+]
+edge
+[
+source 3
+target 4
+]
+node
+[
+id 4
+move "g5f6"
+N "1"
+Q "-0.079591"
+D "0.370105"
+M "0.000000"
+P "0.577148"
+]
+edge
+[
+source 1
+target 5
+]
+node
+[
+id 5
+move "f3h4"
+N "5"
+Q "-0.081563"
+D "0.302608"
+M "2.000000"
+P "0.217957"
+]
+edge
+[
+source 5
+target 6
+]
+node
+[
+id 6
+move "f5g4"
+N "4"
+Q "0.089153"
+D "0.296326"
+M "1.500000"
+P "0.464233"
+]
+edge
+[
+source 6
+target 7
+]
+node
+[
+id 7
+move "h2h3"
+N "3"
+Q "-0.070303"
+D "0.295455"
+M "1.000000"
+P "0.262573"
+]
+edge
+[
+source 7
+target 8
+]
+node
+[
+id 8
+move "g4h5"
+N "2"
+Q "0.088978"
+D "0.295256"
+M "0.500000"
+P "0.590820"
+]
+edge
+[
+source 8
+target 9
+]
+node
+[
+id 9
+move "g3g4"
+N "1"
+Q "-0.001142"
+D "0.287134"
+M "0.000000"
+P "0.184082"
+]
+edge
+[
+source 0
+target 10
+]
+node
+[
+id 10
+move "f8e7"
+N "4"
+Q "0.101845"
+D "0.353979"
+M "1.500000"
+P "0.143494"
+]
+edge
+[
+source 10
+target 11
+]
+node
+[
+id 11
+move "f1g2"
+N "3"
+Q "-0.110085"
+D "0.355858"
+M "1.000000"
+P "0.220764"
+]
+edge
+[
+source 11
+target 12
+]
+node
+[
+id 12
+move "h7h6"
+N "2"
+Q "0.097693"
+D "0.363221"
+M "0.500000"
+P "0.240601"
+]
+edge
+[
+source 12
+target 13
+]
+node
+[
+id 13
+move "g5f6"
+N "1"
+Q "-0.087223"
+D "0.371847"
+M "0.000000"
+P "0.573242"
+]
+edge
+[
+source 0
+target 14
+]
+node
+[
+id 14
+move "c7c5"
+N "3"
+Q "0.082731"
+D "0.334517"
+M "1.000000"
+P "0.124207"
+]
+edge
+[
+source 14
+target 15
+]
+node
+[
+id 15
+move "c2c4"
+N "2"
+Q "-0.080844"
+D "0.333231"
+M "0.500000"
+P "0.148193"
+]
+edge
+[
+source 15
+target 16
+]
+node
+[
+id 16
+move "b8c6"
+N "1"
+Q "0.149141"
+D "0.326771"
+M "0.000000"
+P "0.336182"
+]
+edge
+[
+source 0
+target 17
+]
+node
+[
+id 17
+move "h7h6"
+N "3"
+Q "0.069249"
+D "0.346216"
+M "1.000000"
+P "0.136902"
+]
+edge
+[
+source 17
+target 18
+]
+node
+[
+id 18
+move "g5f6"
+N "2"
+Q "-0.050656"
+D "0.352449"
+M "0.500000"
+P "0.610840"
+]
+edge
+[
+source 18
+target 19
+]
+node
+[
+id 19
+move "d8f6"
+N "1"
+Q "0.009737"
+D "0.353717"
+M "0.000000"
+P "0.636719"
+]
+]
+
+r1r3k1/1p1n1pnp/p2p1bp1/3P4/1P1NPP2/P3B3/3KBP1P/2R4R b - - 4 21
+graph
+[
+directed 1
+node
+[
+id 0
+move ""
+N "20"
+Q "0.876728"
+D "0.075286"
+M "2.450000"
+P ""
+]
+edge
+[
+source 0
+target 1
+]
+node
+[
+id 1
+move "c8e8"
+N "11"
+Q "-0.859902"
+D "0.083195"
+M "2.090909"
+P "0.091431"
+]
+edge
+[
+source 1
+target 2
+]
+node
+[
+id 2
+move "c1c7"
+N "4"
+Q "0.817459"
+D "0.107274"
+M "1.500000"
+P "0.194214"
+]
+edge
+[
+source 2
+target 3
+]
+node
+[
+id 3
+move "f6d4"
+N "3"
+Q "-0.801132"
+D "0.116397"
+M "1.000000"
+P "0.161682"
+]
+edge
+[
+source 3
+target 4
+]
+node
+[
+id 4
+move "e3d4"
+N "2"
+Q "0.775873"
+D "0.131155"
+M "0.500000"
+P "0.473633"
+]
+edge
+[
+source 4
+target 5
+]
+node
+[
+id 5
+move "e8e4"
+N "1"
+Q "-0.716876"
+D "0.159431"
+M "0.000000"
+P "0.312256"
+]
+edge
+[
+source 1
+target 6
+]
+node
+[
+id 6
+move "d2d3"
+N "4"
+Q "0.883674"
+D "0.069797"
+M "1.500000"
+P "0.132080"
+]
+edge
+[
+source 6
+target 7
+]
+node
+[
+id 7
+move "f6d8"
+N "3"
+Q "-0.881801"
+D "0.071332"
+M "1.000000"
+P "0.121704"
+]
+edge
+[
+source 7
+target 8
+]
+node
+[
+id 8
+move "e2f3"
+N "2"
+Q "0.889662"
+D "0.067258"
+M "0.500000"
+P "0.198364"
+]
+edge
+[
+source 8
+target 9
+]
+node
+[
+id 9
+move "d8b6"
+N "1"
+Q "-0.875402"
+D "0.075711"
+M "0.000000"
+P "0.091858"
+]
+edge
+[
+source 1
+target 10
+]
+node
+[
+id 10
+move "f2f3"
+N "2"
+Q "0.892938"
+D "0.063149"
+M "0.500000"
+P "0.129150"
+]
+edge
+[
+source 10
+target 11
+]
+node
+[
+id 11
+move "g7h5"
+N "1"
+Q "-0.881224"
+D "0.070857"
+M "0.000000"
+P "0.118988"
+]
+edge
+[
+source 0
+target 12
+]
+node
+[
+id 12
+move "a6a5"
+N "3"
+Q "-0.914372"
+D "0.055829"
+M "1.000000"
+P "0.065338"
+]
+edge
+[
+source 12
+target 13
+]
+node
+[
+id 13
+move "c1c8"
+N "2"
+Q "0.931969"
+D "0.044544"
+M "0.500000"
+P "0.222473"
+]
+edge
+[
+source 13
+target 14
+]
+node
+[
+id 14
+move "a8c8"
+N "1"
+Q "-0.937548"
+D "0.041046"
+M "0.000000"
+P "0.331665"
+]
+edge
+[
+source 0
+target 15
+]
+node
+[
+id 15
+move "f6d8"
+N "2"
+Q "-0.882147"
+D "0.074491"
+M "0.500000"
+P "0.048828"
+]
+edge
+[
+source 15
+target 16
+]
+node
+[
+id 16
+move "c1c8"
+N "1"
+Q "0.882049"
+D "0.076356"
+M "0.000000"
+P "0.134460"
+]
+edge
+[
+source 0
+target 17
+]
+node
+[
+id 17
+move "f6d4"
+N "3"
+Q "-0.894557"
+D "0.068453"
+M "1.000000"
+P "0.069916"
+]
+edge
+[
+source 17
+target 18
+]
+node
+[
+id 18
+move "e3d4"
+N "2"
+Q "0.925242"
+D "0.047848"
+M "0.500000"
+P "0.611816"
+]
+edge
+[
+source 18
+target 19
+]
+node
+[
+id 19
+move "f7f5"
+N "1"
+Q "-0.927191"
+D "0.048162"
+M "0.000000"
+P "0.132507"
+]
+]
+
+r5k1/pp1bnr1p/2n1p1pP/q1pp4/3P4/P1P2N2/2PBBPP1/R2QK2R w KQ - 6 15
+graph
+[
+directed 1
+node
+[
+id 0
+move ""
+N "20"
+Q "-0.582042"
+D "0.206081"
+M "2.550000"
+P ""
+]
+edge
+[
+source 0
+target 1
+]
+node
+[
+id 1
+move "a1b1"
+N "5"
+Q "0.567954"
+D "0.209846"
+M "2.000000"
+P "0.158752"
+]
+edge
+[
+source 1
+target 2
+]
+node
+[
+id 2
+move "a5c7"
+N "4"
+Q "-0.559592"
+D "0.216644"
+M "1.500000"
+P "0.247620"
+]
+edge
+[
+source 2
+target 3
+]
+node
+[
+id 3
+move "e1h1"
+N "3"
+Q "0.549590"
+D "0.218911"
+M "1.000000"
+P "0.267212"
+]
+edge
+[
+source 3
+target 4
+]
+node
+[
+id 4
+move "a8f8"
+N "2"
+Q "-0.536368"
+D "0.228868"
+M "0.500000"
+P "0.195618"
+]
+edge
+[
+source 4
+target 5
+]
+node
+[
+id 5
+move "d4c5"
+N "1"
+Q "0.590061"
+D "0.195325"
+M "0.000000"
+P "0.165039"
+]
+edge
+[
+source 0
+target 6
+]
+node
+[
+id 6
+move "e1h1"
+N "9"
+Q "0.582933"
+D "0.208625"
+M "2.000000"
+P "0.236328"
+]
+edge
+[
+source 6
+target 7
+]
+node
+[
+id 7
+move "a8f8"
+N "2"
+Q "-0.625077"
+D "0.182717"
+M "0.500000"
+P "0.159241"
+]
+edge
+[
+source 7
+target 8
+]
+node
+[
+id 8
+move "a1b1"
+N "1"
+Q "0.595688"
+D "0.179611"
+M "0.000000"
+P "0.196350"
+]
+edge
+[
+source 6
+target 9
+]
+node
+[
+id 9
+move "e7f5"
+N "6"
+Q "-0.562226"
+D "0.222757"
+M "1.500000"
+P "0.194275"
+]
+edge
+[
+source 9
+target 10
+]
+node
+[
+id 10
+move "a1b1"
+N "2"
+Q "0.602368"
+D "0.196442"
+M "0.500000"
+P "0.143616"
+]
+edge
+[
+source 10
+target 11
+]
+node
+[
+id 11
+move "f5d6"
+N "1"
+Q "-0.647014"
+D "0.180483"
+M "0.000000"
+P "0.180847"
+]
+edge
+[
+source 9
+target 12
+]
+node
+[
+id 12
+move "c3c4"
+N "3"
+Q "0.503172"
+D "0.253996"
+M "1.000000"
+P "0.148376"
+]
+edge
+[
+source 12
+target 13
+]
+node
+[
+id 13
+move "a5c7"
+N "2"
+Q "-0.466270"
+D "0.271088"
+M "0.500000"
+P "0.385498"
+]
+edge
+[
+source 13
+target 14
+]
+node
+[
+id 14
+move "c4d5"
+N "1"
+Q "0.340604"
+D "0.321963"
+M "0.000000"
+P "0.297241"
+]
+edge
+[
+source 0
+target 15
+]
+node
+[
+id 15
+move "c3c4"
+N "2"
+Q "0.529614"
+D "0.238199"
+M "0.500000"
+P "0.090576"
+]
+edge
+[
+source 15
+target 16
+]
+node
+[
+id 16
+move "a5c7"
+N "1"
+Q "-0.572338"
+D "0.223458"
+M "0.000000"
+P "0.418945"
+]
+edge
+[
+source 0
+target 17
+]
+node
+[
+id 17
+move "f3g5"
+N "3"
+Q "0.603593"
+D "0.185119"
+M "1.000000"
+P "0.120758"
+]
+edge
+[
+source 17
+target 18
+]
+node
+[
+id 18
+move "f7f6"
+N "2"
+Q "-0.625772"
+D "0.178789"
+M "0.500000"
+P "0.306885"
+]
+edge
+[
+source 18
+target 19
+]
+node
+[
+id 19
+move "e1h1"
+N "1"
+Q "0.614838"
+D "0.179605"
+M "0.000000"
+P "0.273438"
+]
+]
+
+2rqr1k1/pb2bp1p/1pn1p1pB/8/3P4/2PB1N2/P2Q1PPP/3RR1K1 b - - 5 16
+graph
+[
+directed 1
+node
+[
+id 0
+move ""
+N "20"
+Q "0.277968"
+D "0.359321"
+M "2.400000"
+P ""
+]
+edge
+[
+source 0
+target 1
+]
+node
+[
+id 1
+move "e7f8"
+N "4"
+Q "-0.239549"
+D "0.391982"
+M "1.500000"
+P "0.115082"
+]
+edge
+[
+source 1
+target 2
+]
+node
+[
+id 2
+move "h6f8"
+N "3"
+Q "0.259273"
+D "0.386670"
+M "1.000000"
+P "0.242493"
+]
+edge
+[
+source 2
+target 3
+]
+node
+[
+id 3
+move "e8f8"
+N "2"
+Q "-0.270074"
+D "0.379083"
+M "0.500000"
+P "0.583740"
+]
+edge
+[
+source 3
+target 4
+]
+node
+[
+id 4
+move "d2h6"
+N "1"
+Q "0.314497"
+D "0.340827"
+M "0.000000"
+P "0.215515"
+]
+edge
+[
+source 0
+target 5
+]
+node
+[
+id 5
+move "e7d6"
+N "2"
+Q "-0.251068"
+D "0.352563"
+M "0.500000"
+P "0.086700"
+]
+edge
+[
+source 5
+target 6
+]
+node
+[
+id 6
+move "h2h4"
+N "1"
+Q "0.249088"
+D "0.356941"
+M "0.000000"
+P "0.129028"
+]
+edge
+[
+source 0
+target 7
+]
+node
+[
+id 7
+move "e7f6"
+N "6"
+Q "-0.224041"
+D "0.391535"
+M "1.833333"
+P "0.147522"
+]
+edge
+[
+source 7
+target 8
+]
+node
+[
+id 8
+move "d2f4"
+N "4"
+Q "0.257149"
+D "0.382924"
+M "1.500000"
+P "0.119324"
+]
+edge
+[
+source 8
+target 9
+]
+node
+[
+id 9
+move "f6g7"
+N "3"
+Q "-0.243829"
+D "0.393791"
+M "1.000000"
+P "0.279541"
+]
+edge
+[
+source 9
+target 10
+]
+node
+[
+id 10
+move "h2h4"
+N "2"
+Q "0.258258"
+D "0.386071"
+M "0.500000"
+P "0.181702"
+]
+edge
+[
+source 10
+target 11
+]
+node
+[
+id 11
+move "c6e7"
+N "1"
+Q "-0.301312"
+D "0.368396"
+M "0.000000"
+P "0.235718"
+]
+edge
+[
+source 7
+target 12
+]
+node
+[
+id 12
+move "d3e4"
+N "1"
+Q "0.157581"
+D "0.414229"
+M "0.000000"
+P "0.113678"
+]
+edge
+[
+source 0
+target 13
+]
+node
+[
+id 13
+move "c6b8"
+N "2"
+Q "-0.316912"
+D "0.328561"
+M "0.500000"
+P "0.089417"
+]
+edge
+[
+source 13
+target 14
+]
+node
+[
+id 14
+move "f3e5"
+N "1"
+Q "0.318565"
+D "0.313037"
+M "0.000000"
+P "0.311768"
+]
+edge
+[
+source 0
+target 15
+]
+node
+[
+id 15
+move "c6a5"
+N "5"
+Q "-0.389983"
+D "0.303831"
+M "2.000000"
+P "0.204773"
+]
+edge
+[
+source 15
+target 16
+]
+node
+[
+id 16
+move "f3e5"
+N "4"
+Q "0.419587"
+D "0.289708"
+M "1.500000"
+P "0.446533"
+]
+edge
+[
+source 16
+target 17
+]
+node
+[
+id 17
+move "d8d5"
+N "3"
+Q "-0.465503"
+D "0.276599"
+M "1.000000"
+P "0.157166"
+]
+edge
+[
+source 17
+target 18
+]
+node
+[
+id 18
+move "d3e4"
+N "2"
+Q "0.481644"
+D "0.281469"
+M "0.500000"
+P "0.244812"
+]
+edge
+[
+source 18
+target 19
+]
+node
+[
+id 19
+move "d5d8"
+N "1"
+Q "-0.471623"
+D "0.296905"
+M "0.000000"
+P "0.294189"
+]
+]
+
+1r2r1k1/p4pp1/2pqbn1p/3p4/3N4/1P1B2QP/P1P2PP1/R3R1K1 b - - 3 19
+graph
+[
+directed 1
+node
+[
+id 0
+move ""
+N "20"
+Q "-0.044259"
+D "0.546491"
+M "4.700000"
+P ""
+]
+edge
+[
+source 0
+target 1
+]
+node
+[
+id 1
+move "d6g3"
+N "19"
+Q "0.052527"
+D "0.547843"
+M "3.947368"
+P "0.417603"
+]
+edge
+[
+source 1
+target 2
+]
+node
+[
+id 2
+move "f2g3"
+N "18"
+Q "-0.054964"
+D "0.547526"
+M "3.166667"
+P "0.604492"
+]
+edge
+[
+source 2
+target 3
+]
+node
+[
+id 3
+move "c6c5"
+N "10"
+Q "0.095841"
+D "0.539636"
+M "2.500000"
+P "0.228516"
+]
+edge
+[
+source 3
+target 4
+]
+node
+[
+id 4
+move "d4c6"
+N "1"
+Q "-0.128244"
+D "0.514502"
+M "0.000000"
+P "0.143555"
+]
+edge
+[
+source 3
+target 5
+]
+node
+[
+id 5
+move "d4e6"
+N "8"
+Q "-0.109923"
+D "0.540667"
+M "2.000000"
+P "0.392090"
+]
+edge
+[
+source 5
+target 6
+]
+node
+[
+id 6
+move "e8e6"
+N "6"
+Q "0.150053"
+D "0.542224"
+M "1.500000"
+P "0.455933"
+]
+edge
+[
+source 6
+target 7
+]
+node
+[
+id 7
+move "e1e6"
+N "2"
+Q "-0.199009"
+D "0.501483"
+M "0.500000"
+P "0.172241"
+]
+edge
+[
+source 7
+target 8
+]
+node
+[
+id 8
+move "f7e6"
+N "1"
+Q "0.310212"
+D "0.434122"
+M "0.000000"
+P "0.689209"
+]
+edge
+[
+source 6
+target 9
+]
+node
+[
+id 9
+move "g3g4"
+N "3"
+Q "-0.136926"
+D "0.555260"
+M "1.000000"
+P "0.169678"
+]
+edge
+[
+source 9
+target 10
+]
+node
+[
+id 10
+move "g8f8"
+N "2"
+Q "0.167577"
+D "0.539432"
+M "0.500000"
+P "0.179565"
+]
+edge
+[
+source 10
+target 11
+]
+node
+[
+id 11
+move "e1f1"
+N "1"
+Q "-0.177424"
+D "0.534025"
+M "0.000000"
+P "0.133728"
+]
+edge
+[
+source 5
+target 12
+]
+node
+[
+id 12
+move "f7e6"
+N "1"
+Q "-0.118349"
+D "0.513543"
+M "0.000000"
+P "0.304199"
+]
+edge
+[
+source 2
+target 13
+]
+node
+[
+id 13
+move "e6d7"
+N "7"
+Q "-0.009072"
+D "0.561504"
+M "2.142857"
+P "0.359009"
+]
+edge
+[
+source 13
+target 14
+]
+node
+[
+id 14
+move "e1e8"
+N "6"
+Q "0.013552"
+D "0.561295"
+M "1.500000"
+P "0.270996"
+]
+edge
+[
+source 14
+target 15
+]
+node
+[
+id 15
+move "b8e8"
+N "3"
+Q "-0.007383"
+D "0.563030"
+M "1.000000"
+P "0.528564"
+]
+edge
+[
+source 15
+target 16
+]
+node
+[
+id 16
+move "b3b4"
+N "2"
+Q "0.018903"
+D "0.559211"
+M "0.500000"
+P "0.391602"
+]
+edge
+[
+source 16
+target 17
+]
+node
+[
+id 17
+move "g8f8"
+N "1"
+Q "0.004410"
+D "0.573923"
+M "0.000000"
+P "0.174744"
+]
+edge
+[
+source 14
+target 18
+]
+node
+[
+id 18
+move "f6e8"
+N "2"
+Q "-0.043783"
+D "0.552340"
+M "0.500000"
+P "0.313843"
+]
+edge
+[
+source 18
+target 19
+]
+node
+[
+id 19
+move "d3f5"
+N "1"
+Q "0.074132"
+D "0.559787"
+M "0.000000"
+P "0.208191"
+]
+]
+

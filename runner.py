@@ -6,12 +6,12 @@ import torch
 
 import gin
 # This makes gin configurable classes picklable
-# gin.configs._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
+# gin.configures._OPERATIVE_CONFIG_LOCK = dask.SerializableLock()
 
 import metric_logging
 
-import configs.gin_configurable_classes #keep this import
-from configs.global_config import NEPTUNE_PROJECT
+import configures.gin_configurable_classes #keep this import
+from configures.global_config import NEPTUNE_PROJECT
 
 
 def _parse_args():

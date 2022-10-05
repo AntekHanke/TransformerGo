@@ -4,7 +4,7 @@ from transformers import (
     BartConfig,
 )
 
-from configs.global_config import ENTROPY_HOME
+from configures.global_config import ENTROPY_HOME
 from metric_logging import log_param, register_logger, log_object, source_files_register
 from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter, ChessSubgoalDataGenerator, NoFilter
 from jobs.train_model import TrainModel

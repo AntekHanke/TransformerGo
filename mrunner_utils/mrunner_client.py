@@ -1,8 +1,5 @@
-"""Parse and return mrunner gin-configs and set-up Neptune.
+"""Parse and return mrunner gin-config and set-up Neptune."""
 
-This is copied from alpacka (with removed ray setup).
-"""
-import atexit
 import datetime
 import os
 import pickle
@@ -10,15 +7,11 @@ import pickle
 import cloudpickle
 import neptune.new as neptune
 
-
 from transformers import TrainerCallback
-
-from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN
-from metric_logging import source_files_register
 
 
 def get_configuration(spec_path):
-    """Get mrunner experiment specification and gin-configs overrides."""
+    """Get mrunner experiment specification and gin-config overrides."""
     try:
         with open(spec_path, "rb") as f:
             specification = cloudpickle.load(f)
@@ -32,7 +25,13 @@ def get_configuration(spec_path):
     parameters = specification["parameters"]
     gin_bindings = []
     for key, value in parameters.items():
-        if isinstance(value, str) and not (value[0] == "@" or value[0] == "%"):
+        if key == "imports":
+            for module_str in value:
+                binding = f"import {module_str}"
+                gin_bindings.append(binding)
+            continue
+
+        if isinstance(value, str) and not value[0] in ("@", "%", "{", "(", "["):
             binding = f'{key} = "{value}"'
         else:
             binding = f"{key} = {value}"
@@ -61,35 +60,29 @@ class NeptunePytorchCallback(TrainerCallback):
 class NeptuneLogger:
     """Logs to Neptune."""
 
-    def __init__(self, name, tags, **kwargs):
+    def __init__(self, experiment):
         """Initialize NeptuneLogger with the Neptune experiment."""
+        super().__init__()
+        self._experiment = experiment
 
-        self.run = neptune.init(
-            name=name,
-            tags=tags,
-            project=NEPTUNE_PROJECT,
-            api_token=NEPTUNE_API_TOKEN,
-            source_files=source_files_register.get(),
-        )
+    def log_value(self, name: str, step: int, value: float) -> None:
+        """Logs a scalar with steps to Neptune."""
+        self._experiment[name].log(value=value, step=step)
 
-        atexit.register(neptune.stop)
-
-    def log_value(self, name, step, value):
+    def log_value_without_step(self, name: str, value: float) -> None:
         """Logs a scalar to Neptune."""
-        self.run[name].log(value=value, step=step)
+        self._experiment[name].log(value)
 
-    def log_value_without_step(self, name, value):
-        self.run[name].log(value=value)
+    def log_object(self, name: str, object) -> None:
+        """Logs an objects (for exaple: images) to Neptune."""
+        self._experiment[name].log(object)
 
-    def log_object(self, name, object):
-        """Logs an image to Neptune."""
-        self.run[name].log(object)
+    def log_param(self, name: str, value) -> None:
+        """Logs a param (for example: string) to Neptune."""
+        self._experiment[name].log(value)
 
-    def log_param(self, name, value):
-        self.run[name] = value
-
-    def get_pytorch_callback(self):
-        return NeptunePytorchCallback(self.run)
+    def get_pytorch_callback(self) -> NeptunePytorchCallback:
+        return NeptunePytorchCallback(self._experiment)
 
 
 class NeptuneAPITokenException(Exception):
@@ -105,11 +98,16 @@ def configure_neptune(specification):
     git_info = specification.get("git_info", None)
     if git_info:
         git_info.commit_date = datetime.datetime.now()
-    # Set pwd property with path to experiment.
-    # properties = {"pwd": os.environ.get("NEPTUNEPWD", os.getcwd())}
 
-    return NeptuneLogger(
+    # Set pwd property with path to experiment.
+    properties = {"pwd": os.environ.get("NEPTUNEPWD", os.getcwd())}
+    run = neptune.init_run(
+        project=specification["project"],
         name=specification["name"],
         tags=specification["tags"],
-        git_info=git_info,
     )
+    run["job_params/params"] = specification["parameters"]
+    run["path_to_experimant/properties"] = properties
+    run["git_info/git_info"] = git_info
+
+    return NeptuneLogger(run)

@@ -1,7 +1,7 @@
 import chess
 import neptune.new as neptune
 
-from configs.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
+from configures.global_config import NEPTUNE_PROJECT, NEPTUNE_API_TOKEN, source_files_register
 from data_structures.data_structures import ImmutableBoard
 from data_processing.data_utils import immutable_boards_to_img
 from policy.chess_policy import ChessPolicy
