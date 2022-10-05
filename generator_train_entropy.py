@@ -6,7 +6,7 @@ from transformers import (
 
 from configures.global_config import ENTROPY_HOME
 from metric_logging import log_param, register_logger, log_object, source_files_register
-from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter, ChessSubgoalDataGenerator, NoFilter
+from data_processing.chess_data_generator import PolicyGamesDataGenerator, ResultFilter, ChessSubgoalGamesDataGenerator, NoFilter
 from jobs.train_model import TrainModel
 from mrunner_utils.mrunner_client import NeptuneLogger
 
@@ -59,7 +59,7 @@ def train_generator_entropy(learning_rate, k, n_datapoints):
     chess_filter = ResultFilter('winner')
     # chess_filter = NoFilter()
 
-    dataset = ChessSubgoalDataGenerator(
+    dataset = ChessSubgoalGamesDataGenerator(
         k=k,
         pgn_file=f"{ENTROPY_HOME}/subgoal_chess/database.pgn",
         chess_filter=chess_filter,

@@ -7,7 +7,7 @@ from transformers import (
 )
 
 from config.global_config import source_files_register
-from data_processing.chess_data_generator import PolicyDataGenerator
+from data_processing.chess_data_generator import PolicyGamesDataGenerator
 from jobs.train_model import TrainModel
 
 source_files_register.register(__file__)

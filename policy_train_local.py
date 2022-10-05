@@ -7,7 +7,7 @@ from transformers import (
 )
 
 import metric_logging
-from data_processing.chess_data_generator import PolicyDataGenerator, ResultFilter
+from data_processing.chess_data_generator import PolicyGamesDataGenerator, ResultFilter
 from jobs.train_model import TrainModel
 from mrunner_utils.mrunner_client import NeptuneLogger
 
@@ -55,7 +55,7 @@ fast_iter_training = TrainingArguments(
 
 chess_filter = ResultFilter("winner")
 
-dataset = PolicyDataGenerator(
+dataset = PolicyGamesDataGenerator(
     pgn_file=LOCAL_PGN, chess_filter=chess_filter, p_sample=1.0, n_data=10**4, log_samples_limit=100, p_log_sample=1.0
 )
 
