@@ -59,11 +59,11 @@ class LeelaGMLTree:
                 state,
                 moves_from_root,
                 len(moves_from_root),
-                node_info["N"],
-                node_info["Q"],
-                node_info["D"],
-                node_info["M"],
-                node_info["P"],
+                int(node_info["N"]),
+                float(node_info["Q"]) if node_info["Q"] != "" else 0,
+                float(node_info["D"]) if node_info["D"] != "" else 0,
+                float(node_info["M"]) if node_info["M"] != "" else 0,
+                float(node_info["P"]) if node_info["P"] != "" else 0,
             )
             self.graph.nodes[node]["data"] = data
             return data
@@ -101,6 +101,9 @@ class LeelaGMLTree:
 
     def get_parent(self, node):
         return list(self.graph.predecessors(node))[0]
+
+    def N_count(self):
+        return [int(self.graph.nodes[node]["N"]) for node in self.graph.nodes]
 
     def nodes_by_N(self):
         N_to_node_dict = defaultdict(list)
