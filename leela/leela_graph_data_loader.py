@@ -80,13 +80,17 @@ class LeelaGMLTree:
         plt.show()
 
     def k_successors(self, node, k):
-        k_successors_idx = list(nx.dfs_successors(self.graph, node, depth_limit=k + 1))
+        k_successors_idx = set(nx.dfs_successors(self.graph, node, depth_limit=k + 1))
+        if len(k_successors_idx) > 0:
+            k_successors_idx.remove(node)
         k_succesors = []
         for idx in k_successors_idx:
             moves_from_input = [x for x in get_moves(self.graph, idx) if x not in get_moves(self.graph, node)]
             succ = LeelaSubgoal(
-                input_board=self.get_node_data(node).state,
-                target_board=self.get_node_data(idx).state,
+                input_idx=node,
+                target_idx=idx,
+                input_fen=self.get_node_data(node).state,
+                target_fen=self.get_node_data(idx).state,
                 dist_from_input=self.distance_to_predecessors(idx, node),
                 input_level=self.get_node_data(node).level,
                 moves=moves_from_input,
@@ -95,6 +99,7 @@ class LeelaGMLTree:
                 D=self.get_node_data(idx).D,
                 M=self.get_node_data(idx).M,
                 P=self.get_node_data(idx).P,
+                input_N=self.get_node_data(node).N,
             )
             k_succesors.append(succ)
         return k_succesors
