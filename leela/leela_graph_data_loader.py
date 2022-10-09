@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 
-from data_structures.data_structures import LeelaNodeData, LeelaSubgoal
+from data_structures.data_structures import LeelaNodeData, LeelaSubgoal, ImmutableBoard
+
 
 class EndOfGMLFile(Exception):
     pass
@@ -89,8 +90,8 @@ class LeelaGMLTree:
             succ = LeelaSubgoal(
                 input_idx=node,
                 target_idx=idx,
-                input_fen=self.get_node_data(node).state,
-                target_fen=self.get_node_data(idx).state,
+                input_immutable_board=ImmutableBoard.from_fen_str(self.get_node_data(node).state),
+                target_immutable_board=ImmutableBoard.from_fen_str(self.get_node_data(idx).state),
                 dist_from_input=self.distance_to_predecessors(idx, node),
                 input_level=self.get_node_data(node).level,
                 moves=moves_from_input,
@@ -127,8 +128,6 @@ class LeelaGMLTree:
                 parent = self.get_parent(parent)
                 dist += 1
         return dist
-
-
 
 
 def data_trees_generator(data_path: str, create_all_states: bool = False) -> Iterator[LeelaGMLTree]:

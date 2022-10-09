@@ -8,6 +8,7 @@ from data_processing.chess_data_generator import (
     ChessSubgoalGamesDataGenerator,
     PolicyGamesDataGenerator,
 )
+from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.any_job import AnyJob
 from jobs.train_model import TrainModel
 
@@ -24,4 +25,12 @@ def configure_classes(classes, module=None) -> None:
 configure_classes([AnyJob, TrainModel], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
-configure_classes([PolicyGamesDataGenerator, ChessSubgoalGamesDataGenerator, ChessCLLPGamesDataGenerator], "data")
+configure_classes(
+    [
+        PolicyGamesDataGenerator,
+        ChessSubgoalGamesDataGenerator,
+        ChessCLLPGamesDataGenerator,
+        SubgoalMCGamesDataGenerator,
+    ],
+    "data",
+)
