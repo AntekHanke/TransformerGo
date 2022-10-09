@@ -10,6 +10,7 @@ from data_processing.chess_data_generator import (
 )
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.any_job import AnyJob
+from jobs.job_leela_dataset import LeelaDatasetGenerator
 from jobs.train_model import TrainModel
 
 
@@ -22,7 +23,7 @@ def configure_classes(classes, module=None) -> None:
         configure_class(cls, module)
 
 
-configure_classes([AnyJob, TrainModel], "jobs")
+configure_classes([AnyJob, TrainModel, LeelaDatasetGenerator], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
 configure_classes(

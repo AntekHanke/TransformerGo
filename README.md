@@ -40,3 +40,8 @@ If You want make vizualistion of Leela's trees, use: https://github.com/jkormu/L
 
 Simple self-play example is in file:
 ```local\experiments\self_play.py```
+
+
+## Singularity sandbox:
+
+``` sudo singularity build --sandbox my_sbox my_image.sif```

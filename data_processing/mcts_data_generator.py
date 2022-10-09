@@ -15,7 +15,7 @@ from data_structures.data_structures import LeelaSubgoal, ImmutableBoard
 
 # from leela.leela_graph_data_loader import LeelaGMLTree
 from leela.leela_graph_data_loader import LeelaGMLTree, data_trees_generator
-from metric_logging import log_value, log_object
+from metric_logging import log_value, log_object, log_param
 
 
 class LeelaTreeInputSelector:
@@ -130,10 +130,14 @@ class SubgoalMCGamesDataGenerator:
 
         self.game_over_states = 0
 
+        log_param('save_data_path', self.save_data_path + f"_k={self.k}.pkl")
+
     def get_paths(self):
         for dir_data in os.walk(self.input_data_dir):
-            if  self.input_file_name in dir_data[-1]:
+            print(f"Path candidate = {dir_data}")
+            if self.input_file_name in dir_data[-1]:
                 self.paths_to_trees.append(os.path.join(dir_data[0], self.input_file_name))
+        print(f"Found paths: {self.paths_to_trees}")
 
     def generate_data(self):
         self.get_paths()
@@ -192,4 +196,4 @@ class SubgoalMCGamesDataGenerator:
             ],
             [f"Input Moves={leela_subgoal.moves} Lvl={leela_subgoal.input_level}", f"Target. N = {leela_subgoal.N} "],
         )
-        img.savefig(f"/home/tomek/Research/subgoal_search_chess/tmp/{random.randint(0, 10 ** 7)}.png")
+        log_object("Data sample", img)

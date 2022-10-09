@@ -17,8 +17,9 @@ contexts:
                             -B /home/plgrid/plgtodrzygozdz/subgoal_chess
                             -B /home/plgrid/plgtodrzygozdz/singularity_images
                             -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman
                             -B /home/plgrid/plgtodrzygozdz/chess_models
-                            --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_8.08.2022.sif
+                            --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
   eagle_quick_tesla:
     account: plgrlresearch
