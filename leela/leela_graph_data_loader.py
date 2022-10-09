@@ -146,11 +146,10 @@ def data_trees_generator(data_path: str, create_all_states: bool = False) -> Ite
                         break
                     graph_lines.append(line)
 
-                yield LeelaGMLTree(graph_lines, input_board, create_all_states)
-
-                # try:
-                #     yield LeelaGMLTree(graph_lines, input_board, create_all_states)
-                # except nx.exception.NetworkXError:
-                #     raise EndOfGMLFile
+                # yield LeelaGMLTree(graph_lines, input_board, create_all_states)
+                try:
+                    yield LeelaGMLTree(graph_lines, input_board, create_all_states)
+                except nx.exception.NetworkXError:
+                    raise EndOfGMLFile
         except EndOfGMLFile:
             print("End of GML file")
