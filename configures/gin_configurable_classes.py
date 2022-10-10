@@ -6,7 +6,7 @@ from data_processing.chess_data_generator import (
     ResultFilter,
     ChessCLLPGamesDataGenerator,
     ChessSubgoalGamesDataGenerator,
-    PolicyGamesDataGenerator,
+    PolicyGamesDataGenerator, PandasSubgoalDataProvider,
 )
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.any_job import AnyJob
@@ -32,6 +32,7 @@ configure_classes(
         ChessSubgoalGamesDataGenerator,
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
+        PandasSubgoalDataProvider
     ],
     "data",
 )

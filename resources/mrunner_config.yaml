@@ -39,6 +39,23 @@ contexts:
                             -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
                             --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
+  eagle_data:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: standard
+    time: 1440
+    cpu: 1
+    ntasks: 1
+    mem: 60G
+    nodes: 1
+    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
+    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
+    singularity_container:  -H $PWD:/homeplaceholder
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
   eagle_quick_tesla:
     account: plgrlresearch
     backend_type: slurm

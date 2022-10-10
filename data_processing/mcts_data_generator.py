@@ -104,7 +104,7 @@ class SubgoalMCGamesDataGenerator:
         input_data_dir=None,
         input_file_name="all_trees.txt",
         save_data_path=None,
-        save_data_every=10000,
+        save_data_every=3000,
         # columns_to_save: Tuple[str] = ('input_ids', 'labels', 'moves'),
     ):
         self.k = k
@@ -114,7 +114,7 @@ class SubgoalMCGamesDataGenerator:
         self.log_samples_limit = log_samples_limit
         self.input_data_dir = input_data_dir
         self.input_file_name = input_file_name
-        self.save_data_path = save_data_path
+        self.save_data_path = save_data_path + f"_k={self.k}.pkl"
         self.save_data_every = save_data_every
         # self.columns_to_save = columns_to_save
 
@@ -132,7 +132,7 @@ class SubgoalMCGamesDataGenerator:
 
         self.game_over_states = 0
 
-        log_param('save_data_path', self.save_data_path + f"_k={self.k}.pkl")
+        log_param('save_data_path', self.save_data_path)
 
     def get_paths(self):
         for dir_data in os.walk(self.input_data_dir):
@@ -144,12 +144,13 @@ class SubgoalMCGamesDataGenerator:
         self.get_paths()
         for path in tqdm(self.paths_to_trees):
             log_object("path", path)
-            for tree in data_trees_generator(path):
-                self.leela_tree_to_datapoints(tree)
-                if len(self.data) > self.total_datapoints:
-                    break
-            self.processed_files += 1
-            log_value("processed_files", self.processed_files, self.processed_files)
+            if len(self.data) < self.total_datapoints:
+                for tree in data_trees_generator(path):
+                    self.leela_tree_to_datapoints(tree)
+                    if len(self.data) > self.total_datapoints:
+                        break
+                self.processed_files += 1
+                log_value("processed_files", self.processed_files, self.processed_files)
         self.data.to_pickle(self.save_data_path)
 
     # def get_chess_dataset(self) -> ChessDataset:
@@ -166,6 +167,7 @@ class SubgoalMCGamesDataGenerator:
             self.log_samples(subgoals)
         self.log_subgoals_stats(subgoals)
         self.processed_trees += 1
+        log_value("processed_trees", self.processed_trees, self.processed_trees)
         if self.save_data_path is not None and self.processed_trees % self.save_data_every == 0:
             self.data.to_pickle(self.save_data_path)
         log_value("game_over_states", self.processed_trees, self.game_over_states)
@@ -178,7 +180,7 @@ class SubgoalMCGamesDataGenerator:
             self.dist_count[subgoal.dist_from_input] += 1
 
         log_value("Total subgoals from tree", self.processed_trees, len(subgoals))
-        log_value("Total subgoals", self.processed_trees, len(self.N_list))
+        log_value("Total subgoals", self.processed_trees, len(self.data))
         log_value("N_mean", self.processed_trees, np.mean(self.N_list))
         log_value("dist_mean", self.processed_trees, np.mean(self.dist_list))
         for dist, count in self.dist_count.items():

@@ -1,6 +1,6 @@
 from typing import Type, Union
 
-from data_processing.chess_data_generator import ChessGamesDataGenerator
+from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
 from jobs.core import Job
 from transformers import (
     Trainer,
@@ -17,7 +17,7 @@ source_files_register.register(__file__)
 class TrainModel(Job):
     def __init__(
         self,
-        chess_database_cls: Type[ChessGamesDataGenerator],
+        chess_database_cls: Type[ChessDataProvider],
         model_config: Union[BartConfig, None] = None,
         training_args: Union[TrainingArguments] = None,
         save_model_path: str = None,
@@ -28,7 +28,8 @@ class TrainModel(Job):
             training_args = TrainingArguments(output_dir=f"{save_model_path}/out")
 
         chess_database = chess_database_cls()
-        chess_database.create_data()
+        if isinstance(chess_database, ChessGamesDataGenerator):
+            chess_database.create_data()
 
         self.model_config = model_config
         self.training_args = training_args

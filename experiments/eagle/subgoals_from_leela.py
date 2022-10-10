@@ -6,7 +6,7 @@ base_config = {
 
     'SubgoalMCGamesDataGenerator.k': 3,
     'SubgoalMCGamesDataGenerator.n_subgoals': 4,
-    'SubgoalMCGamesDataGenerator.total_datapoints': 3000,
+    'SubgoalMCGamesDataGenerator.total_datapoints': 10**8,
     'SubgoalMCGamesDataGenerator.log_samples_limit': 50,
     'SubgoalMCGamesDataGenerator.input_data_dir': "/trees",
     'SubgoalMCGamesDataGenerator.save_data_path': "/save_data/full_dataset",
@@ -14,7 +14,7 @@ base_config = {
 }
 
 params_grid = {
-    "idx": [0]
+    'SubgoalMCGamesDataGenerator.k': [1,2,3,4,5,6]
 }
 
 experiments_list = create_experiments_helper(

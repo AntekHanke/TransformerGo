@@ -2,6 +2,8 @@ from typing import Dict, Any, Optional, List
 
 import chess.pgn
 import random
+
+import pandas as pd
 import torch
 from collections import namedtuple
 
@@ -73,8 +75,30 @@ class ChessDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.data)
 
+class ChessDataProvider:
+    def get_train_set_generator(self) -> ChessDataset:
+        raise NotImplementedError
 
-class ChessGamesDataGenerator:
+    def get_eval_set_generator(self) -> ChessDataset:
+        raise NotImplementedError
+
+class PandasSubgoalDataProvider(ChessDataProvider):
+    def __init__(self, data_path: str):
+        data = pd.read_pickle(data_path)
+        cropped_df = data[['input_ids', 'labels']]
+        self.data_train = self.pandas_to_dict(cropped_df.head(-10000))
+        self.data_eval = self.pandas_to_dict(cropped_df.tail(10000))
+
+    def pandas_to_dict(self, data: pd.DataFrame) -> Dict:
+        return data.to_dict(orient="records")
+
+    def get_train_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_train)
+
+    def get_eval_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_eval)
+
+class ChessGamesDataGenerator(ChessDataProvider):
     """Reads PGN file and creates data."""
 
     def __init__(
