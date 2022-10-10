@@ -13,13 +13,31 @@ contexts:
     slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
     storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
     singularity_container:  -H $PWD:/homeplaceholder
+                            -B $TMPDIR:/tmp
                             -B /tmp/lustre/plgtodrzygozdz
                             -B /home/plgrid/plgtodrzygozdz/subgoal_chess
                             -B /home/plgrid/plgtodrzygozdz/singularity_images
                             -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data
-                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/tress
                             -B /home/plgrid/plgtodrzygozdz/chess_models
-                            --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  eagle_quick_go2:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: fast
+    time: 59
+    cpu: 4
+    ntasks: 1
+    mem: 120G
+    nodes: 1
+    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
+    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
+    singularity_container:  -H $PWD:/homeplaceholder
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
   eagle_quick_tesla:
     account: plgrlresearch

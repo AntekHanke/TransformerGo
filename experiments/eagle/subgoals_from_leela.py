@@ -6,10 +6,10 @@ base_config = {
 
     'SubgoalMCGamesDataGenerator.k': 3,
     'SubgoalMCGamesDataGenerator.n_subgoals': 4,
-    'SubgoalMCGamesDataGenerator.total_datapoints': 10**5,
+    'SubgoalMCGamesDataGenerator.total_datapoints': 3000,
     'SubgoalMCGamesDataGenerator.log_samples_limit': 50,
-    'SubgoalMCGamesDataGenerator.input_data_dir': "/tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman",
-    'SubgoalMCGamesDataGenerator.save_data_path': "full_dataset",
+    'SubgoalMCGamesDataGenerator.input_data_dir': "/trees",
+    'SubgoalMCGamesDataGenerator.save_data_path': "/save_data/full_dataset",
     "use_neptune": True,
 }
 

@@ -1,6 +1,6 @@
 import os
 import random
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -105,6 +105,7 @@ class SubgoalMCGamesDataGenerator:
         input_file_name="all_trees.txt",
         save_data_path=None,
         save_data_every=10000,
+        # columns_to_save: Tuple[str] = ('input_ids', 'labels', 'moves'),
     ):
         self.k = k
         self.n_subgoals = n_subgoals
@@ -115,6 +116,7 @@ class SubgoalMCGamesDataGenerator:
         self.input_file_name = input_file_name
         self.save_data_path = save_data_path
         self.save_data_every = save_data_every
+        # self.columns_to_save = columns_to_save
 
         self.nodes_selector = BFSNodeSelector()
         self.data = pd.DataFrame()
@@ -134,10 +136,9 @@ class SubgoalMCGamesDataGenerator:
 
     def get_paths(self):
         for dir_data in os.walk(self.input_data_dir):
-            print(f"Path candidate = {dir_data}")
             if self.input_file_name in dir_data[-1]:
                 self.paths_to_trees.append(os.path.join(dir_data[0], self.input_file_name))
-        print(f"Found paths: {self.paths_to_trees}")
+        # print(f"Found paths: {self.paths_to_trees}")
 
     def generate_data(self):
         self.get_paths()
@@ -158,7 +159,9 @@ class SubgoalMCGamesDataGenerator:
     def leela_tree_to_datapoints(self, leela_tree: LeelaGMLTree):
         subgoals, game_over_states = self.nodes_selector.find_subgoals(0, leela_tree, self.k, self.n_subgoals, 200)
         self.game_over_states += game_over_states
-        self.data = pd.concat([self.data, list_of_subgoals_to_df(subgoals)], ignore_index=True)
+        new_data_all = list_of_subgoals_to_df(subgoals)
+        # new_data_selected = new_data_all[list(self.columns_to_save)]
+        self.data = pd.concat([self.data, new_data_all], ignore_index=True)
         if self.logged_samples < self.log_samples_limit:
             self.log_samples(subgoals)
         self.log_subgoals_stats(subgoals)
@@ -191,8 +194,8 @@ class SubgoalMCGamesDataGenerator:
         self.logged_samples += 1
         img = immutable_boards_to_img(
             [
-                ImmutableBoard.from_fen_str(leela_subgoal.input_fen),
-                ImmutableBoard.from_fen_str(leela_subgoal.target_fen),
+                leela_subgoal.input_immutable_board,
+                leela_subgoal.target_immutable_board,
             ],
             [f"Input Moves={leela_subgoal.moves} Lvl={leela_subgoal.input_level}", f"Target. N = {leela_subgoal.N} "],
         )
