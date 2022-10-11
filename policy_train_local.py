@@ -60,10 +60,10 @@ dataset = PolicyGamesDataGenerator(
 )
 
 
-# TrainModel(
-#     fast_iter_config,
-#     fast_iter_training,
-#     chess_database=dataset,
-#     save_model_path=LOG_DIR + "/policy_model",
-#     neptune_logger=neptune_logger,
-# ).execute()
+TrainModel(
+    fast_iter_config,
+    fast_iter_training,
+    chess_database_cls=dataset,
+    save_model_path=LOG_DIR + "/policy_model",
+    neptune_logger=neptune_logger,
+).execute()

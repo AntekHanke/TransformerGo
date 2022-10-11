@@ -1,6 +1,9 @@
 from typing import Type, Union
 
+from transformers.integrations import NeptuneCallback
+
 from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
+from data_processing.data_utils import PathsProvider
 from jobs.core import Job
 from transformers import (
     Trainer,
@@ -18,21 +21,20 @@ class TrainModel(Job):
     def __init__(
         self,
         chess_database_cls: Type[ChessDataProvider],
-        model_config: Union[BartConfig, None] = None,
-        training_args: Union[TrainingArguments] = None,
-        save_model_path: str = None,
+        model_config_cls: Type[BartConfig] = None,
+        training_args_cls: Type[TrainingArguments] = None,
+        paths_provider_cls: Union[Type[PathsProvider], None] = None,
     ):
-        if model_config is None:
-            model_config = BartConfig()
-        if training_args is None:
-            training_args = TrainingArguments(output_dir=f"{save_model_path}/out")
+
+        self.paths_provider = paths_provider_cls()
+        output_dir = self.paths_provider.get_out_dir()
 
         chess_database = chess_database_cls()
         if isinstance(chess_database, ChessGamesDataGenerator):
             chess_database.create_data()
 
-        self.model_config = model_config
-        self.training_args = training_args
+        self.model_config = model_config_cls()
+        self.training_args = training_args_cls(output_dir=output_dir + "/out")
 
         self.model = BartForConditionalGeneration(self.model_config)
         self.trainer = Trainer(
@@ -44,8 +46,9 @@ class TrainModel(Job):
 
         for callback_logger in pytorch_callback_loggers:
             self.trainer.add_callback(callback_logger.get_pytorch_callback())
-        assert save_model_path is not None
-        self.save_model_path = save_model_path + "/final_model"
+        self.trainer.pop_callback(NeptuneCallback)
+        assert self.paths_provider is not None
+        self.save_model_path = output_dir + '/final_model'
         log_param("Save model path", self.save_model_path)
 
     def execute(self) -> None:

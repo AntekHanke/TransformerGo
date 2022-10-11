@@ -9,6 +9,8 @@ import neptune.new as neptune
 
 from transformers import TrainerCallback
 
+from configures.global_config import NEPTUNE_API_TOKEN
+
 
 def get_configuration(spec_path):
     """Get mrunner experiment specification and gin-config overrides."""
@@ -102,6 +104,7 @@ def configure_neptune(specification):
     # Set pwd property with path to experiment.
     properties = {"pwd": os.environ.get("NEPTUNEPWD", os.getcwd())}
     run = neptune.init_run(
+        api_token=NEPTUNE_API_TOKEN,
         project=specification["project"],
         name=specification["name"],
         tags=specification["tags"],

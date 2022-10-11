@@ -23,7 +23,7 @@ LOCAL_PGN = "/home/tomek/Research/subgoal_chess_data/database.pgn"
 
 LOG_DIR = LOCAL_LOG_DIR
 
-neptune_logger = NeptuneLogger(name=f"generator_k_1 train fast local", tags=["local", "generator_k_1"])
+neptune_logger = NeptuneLogger()
 metric_logging.register_logger(neptune_logger)
 
 fast_iter_config = BartConfig(
@@ -72,6 +72,6 @@ dataset.create_data()
 TrainModel(
     fast_iter_config,
     fast_iter_training,
-    chess_database=dataset,
+    chess_database_cls=dataset,
     save_model_path=LOG_DIR + "/generator_model",
 ).execute()

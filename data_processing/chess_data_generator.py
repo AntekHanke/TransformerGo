@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Type
 
 import chess.pgn
 import random
@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
-from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
+from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER, PathsProvider
 from metric_logging import log_value, log_object
 
 
@@ -83,8 +83,8 @@ class ChessDataProvider:
         raise NotImplementedError
 
 class PandasSubgoalDataProvider(ChessDataProvider):
-    def __init__(self, data_path: str):
-        data = pd.read_pickle(data_path)
+    def __init__(self, paths_provider_cls: Type[PathsProvider]):
+        data = pd.read_pickle(paths_provider_cls().get_data_path())
         cropped_df = data[['input_ids', 'labels']]
         self.data_train = self.pandas_to_dict(cropped_df.head(-10000))
         self.data_eval = self.pandas_to_dict(cropped_df.tail(10000))

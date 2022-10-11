@@ -8,6 +8,7 @@ from data_processing.chess_data_generator import (
     ChessSubgoalGamesDataGenerator,
     PolicyGamesDataGenerator, PandasSubgoalDataProvider,
 )
+from data_processing.data_utils import TrainOnLeelaPathsProvider
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.any_job import AnyJob
 from jobs.job_leela_dataset import LeelaDatasetGenerator
@@ -32,7 +33,8 @@ configure_classes(
         ChessSubgoalGamesDataGenerator,
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
-        PandasSubgoalDataProvider
+        PandasSubgoalDataProvider,
+        TrainOnLeelaPathsProvider
     ],
     "data",
 )
