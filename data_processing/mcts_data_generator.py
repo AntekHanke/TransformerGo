@@ -42,17 +42,6 @@ class LeelaTreeTargetSelector:
 class HighestNSelector(LeelaTreeTargetSelector):
     def select_subgoals(self, input_node: int, graph: LeelaGMLTree, k: int, n_subgoals: int) -> List[LeelaSubgoal]:
         k_successors = graph.k_successors(input_node, k)
-        leaves = [n for n in graph.graph.nodes if graph.graph.out_degree(n) == 0]
-        leaves_set = set(leaves)
-        print(f"leaves = {leaves_set}")
-
-        k_successors_set = set([k_successors.target_idx for k_successors in k_successors])
-        print("==================")
-        print(f"input_node = {input_node}")
-        print(f"k_successors_set = {k_successors_set}")
-        leaves_in_k_successors = leaves_set.intersection(k_successors_set)
-        print(f"leaves_in_k_successors: {leaves_in_k_successors}")
-        print("==================")
         return list(sorted(k_successors, key=lambda x: (x.dist_from_input, x.N), reverse=True))[:n_subgoals]
 
 
@@ -74,11 +63,9 @@ class BFSNodeSelector:
             if node not in visited:
                 visited.add(node)
                 subgoals.extend(selector.select_subgoals(node, graph, k, n_subgoals))
-                print("------")
                 for subgoal in subgoals:
                     if subgoal.target_idx not in queue:
                         queue.append(subgoal.target_idx)
-                        # print(f"appending {subgoal.target_idx} to queue")
 
         correct_subgoals = []
         for subgoal in subgoals:

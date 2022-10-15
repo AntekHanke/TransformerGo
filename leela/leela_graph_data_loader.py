@@ -56,19 +56,19 @@ class LeelaGMLTree:
             state = current_position(self.input_board, moves_from_root)
             node_info = self.graph.nodes[node]
             if "M" not in node_info:
-                node_info["M"] = 0
+                node_info["M"] = ""
             if "P" not in node_info:
-                node_info["P"] = 0
+                node_info["P"] = ""
             data = LeelaNodeData(
                 node,
                 state,
                 moves_from_root,
                 len(moves_from_root),
                 int(node_info["N"]),
-                float(node_info["Q"]) if node_info["Q"] != "" else 0,
-                float(node_info["D"]) if node_info["D"] != "" else 0,
-                float(node_info["M"]) if node_info["M"] != "" else 0,
-                float(node_info["P"]) if node_info["P"] != "" else 0,
+                float(node_info["Q"]) if node_info["Q"] != "" else None,
+                float(node_info["D"]) if node_info["D"] != "" else None,
+                float(node_info["M"]) if node_info["M"] != "" else None,
+                float(node_info["P"]) if node_info["P"] != "" else None,
             )
             self.graph.nodes[node]["data"] = data
             return data
