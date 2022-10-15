@@ -55,6 +55,10 @@ class LeelaGMLTree:
             moves_from_root = get_moves(self.graph, node)
             state = current_position(self.input_board, moves_from_root)
             node_info = self.graph.nodes[node]
+            if "M" not in node_info:
+                node_info["M"] = 0
+            if "P" not in node_info:
+                node_info["P"] = 0
             data = LeelaNodeData(
                 node,
                 state,
@@ -70,7 +74,7 @@ class LeelaGMLTree:
             return data
 
     def visualize_states_graph(self) -> None:
-        fig, ax = plt.subplots(figsize=(60, 60))
+        fig, ax = plt.subplots(figsize=(50, 50))
         pos = graphviz_layout(self.graph, prog="dot")
         nx.draw(
             self.graph,
@@ -81,7 +85,7 @@ class LeelaGMLTree:
         plt.show()
 
     def k_successors(self, node, k):
-        k_successors_idx = set(nx.dfs_successors(self.graph, node, depth_limit=k + 1))
+        k_successors_idx = set(nx.dfs_postorder_nodes(self.graph, node, depth_limit=k + 1))
         if len(k_successors_idx) > 0:
             k_successors_idx.remove(node)
         k_succesors = []
