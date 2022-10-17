@@ -6,11 +6,11 @@ import chess
 
 Transition = namedtuple("Transition", "immutable_board move move_number")
 OneGameData = namedtuple("OneGameData", "metadata transitions")
-LeelaSubgoal = namedtuple(
-    "LeelaSubgoal",
-    "input_idx target_idx input_immutable_board target_immutable_board dist_from_input input_level moves N Q D M P input_N",
-)
-LeelaNodeData = namedtuple("LeelaNodeData", "id state moves_from_root level N Q D M P")
+# LeelaSubgoal = namedtuple(
+#     "LeelaSubgoal",
+#     "input_idx target_idx input_immutable_board target_immutable_board dist_from_input input_level moves N Q D M P input_N",
+# )
+# LeelaNodeData = namedtuple("LeelaNodeData", "id state moves_from_root level N Q D M P")
 
 ImmutableBoardData = namedtuple(
     "ImmutableBoard",

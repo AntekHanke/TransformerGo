@@ -11,10 +11,10 @@ from data_processing.chess_data_generator import ChessDataset
 # from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img, is_fen_game_over
-from data_structures.data_structures import LeelaSubgoal, ImmutableBoard
+# from data_structures.data_structures import ImmutableBoard
 
 # from leela.leela_graph_data_loader import LeelaGMLTree
-from leela.leela_graph_data_loader import LeelaGMLTree, data_trees_generator
+from leela.leela_graph_data_loader import LeelaGMLTree, data_trees_generator, LeelaSubgoal
 from metric_logging import log_value, log_object, log_param
 
 

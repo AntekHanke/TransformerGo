@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 
-from data_structures.data_structures import LeelaNodeData, LeelaSubgoal, ImmutableBoard
+from data_structures.data_structures import ImmutableBoard
 
 
 class EndOfGMLFile(Exception):
@@ -31,6 +31,35 @@ def current_position(input_board: str, moves: List[str]) -> str:
     return board.fen()
 
 
+class LeelaNodeData:
+    def __init__(self, id, params, moves_from_root, input_board_fen):
+        self.id = id
+        self.params = params
+        self.moves_from_root = moves_from_root
+        self.input_board_fen = input_board_fen
+
+    def get_numerical_param(self, param_name):
+        assert param_name in ["N", "Q", "D", "M", "P"], "Invalid param name"
+        if param_name not in self.params:
+            return None
+        else:
+            return self.params[param_name]
+
+    def get_level(self):
+        return len(self.moves_from_root)
+
+    def get_state(self):
+        return current_position(self.input_board_fen, self.moves_from_root)
+
+
+class LeelaSubgoal:
+    def __init__(self, input_node_data, target_node_data):
+        self.input_node_data = input_node_data
+        self.target_node_data = target_node_data
+        self.dist_from_input = self.target_node_data.get_level() - self.input_node_data.get_level()
+        self.N = self.target_node_data.get_numerical_param("N")
+
+
 class LeelaGMLTree:
     """Wrapper for networkx graph"""
 
@@ -53,23 +82,8 @@ class LeelaGMLTree:
             return self.graph.nodes[node]["data"]
         else:
             moves_from_root = get_moves(self.graph, node)
-            state = current_position(self.input_board, moves_from_root)
             node_info = self.graph.nodes[node]
-            if "M" not in node_info:
-                node_info["M"] = ""
-            if "P" not in node_info:
-                node_info["P"] = ""
-            data = LeelaNodeData(
-                node,
-                state,
-                moves_from_root,
-                len(moves_from_root),
-                int(node_info["N"]),
-                float(node_info["Q"]) if node_info["Q"] != "" else None,
-                float(node_info["D"]) if node_info["D"] != "" else None,
-                float(node_info["M"]) if node_info["M"] != "" else None,
-                float(node_info["P"]) if node_info["P"] != "" else None,
-            )
+            data = LeelaNodeData(node, moves_from_root, node_info, self.input_board)
             self.graph.nodes[node]["data"] = data
             return data
 
@@ -90,23 +104,7 @@ class LeelaGMLTree:
             k_successors_idx.remove(node)
         k_succesors = []
         for idx in k_successors_idx:
-            moves_from_input = [x for x in get_moves(self.graph, idx) if x not in get_moves(self.graph, node)]
-            succ = LeelaSubgoal(
-                input_idx=node,
-                target_idx=idx,
-                input_immutable_board=ImmutableBoard.from_fen_str(self.get_node_data(node).state),
-                target_immutable_board=ImmutableBoard.from_fen_str(self.get_node_data(idx).state),
-                dist_from_input=self.distance_to_predecessors(idx, node),
-                input_level=self.get_node_data(node).level,
-                moves=moves_from_input,
-                N=self.get_node_data(idx).N,
-                Q=self.get_node_data(idx).Q,
-                D=self.get_node_data(idx).D,
-                M=self.get_node_data(idx).M,
-                P=self.get_node_data(idx).P,
-                input_N=self.get_node_data(node).N,
-            )
-            k_succesors.append(succ)
+            k_succesors.append(LeelaSubgoal(self.get_node_data(node), self.get_node_data(idx)))
         return k_succesors
 
     def get_parent(self, node):
