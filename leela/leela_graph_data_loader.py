@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 
-from data_structures.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard, LeelaSubgoal
 
 
 class EndOfGMLFile(Exception):
@@ -43,7 +43,7 @@ class LeelaNodeData:
         if param_name not in self.params:
             return None
         else:
-            return self.params[param_name]
+            return float(self.params[param_name])
 
     def get_level(self):
         return len(self.moves_from_root)
@@ -52,12 +52,43 @@ class LeelaNodeData:
         return current_position(self.input_board_fen, self.moves_from_root)
 
 
-class LeelaSubgoal:
+class LeelaSubgoalCandidate:
     def __init__(self, input_node_data, target_node_data):
         self.input_node_data = input_node_data
         self.target_node_data = target_node_data
         self.dist_from_input = self.target_node_data.get_level() - self.input_node_data.get_level()
         self.N = self.target_node_data.get_numerical_param("N")
+
+        self.target_idx = self.target_node_data.id
+        self.input_idx = self.input_node_data.id
+
+    def to_full_subgoal(self):
+        input_immutable_board = ImmutableBoard.from_fen_str(
+            current_position(self.input_node_data.input_board_fen, self.input_node_data.moves_from_root)
+        )
+        target_immutable_board = ImmutableBoard.from_fen_str(
+            current_position(self.target_node_data.input_board_fen, self.target_node_data.moves_from_root)
+        )
+
+        return LeelaSubgoal(
+            self.input_idx,
+            self.target_idx,
+            input_immutable_board,
+            target_immutable_board,
+            self.dist_from_input,
+            self.input_node_data.get_level(),
+            [
+                move
+                for move in self.target_node_data.moves_from_root
+                if move not in self.input_node_data.moves_from_root
+            ],
+            self.target_node_data.get_numerical_param("N"),
+            self.target_node_data.get_numerical_param("Q"),
+            self.target_node_data.get_numerical_param("D"),
+            self.target_node_data.get_numerical_param("M"),
+            self.target_node_data.get_numerical_param("P"),
+            self.input_node_data.get_numerical_param("N"),
+        )
 
 
 class LeelaGMLTree:
@@ -83,7 +114,7 @@ class LeelaGMLTree:
         else:
             moves_from_root = get_moves(self.graph, node)
             node_info = self.graph.nodes[node]
-            data = LeelaNodeData(node, moves_from_root, node_info, self.input_board)
+            data = LeelaNodeData(node, node_info, moves_from_root, self.input_board)
             self.graph.nodes[node]["data"] = data
             return data
 
@@ -104,7 +135,7 @@ class LeelaGMLTree:
             k_successors_idx.remove(node)
         k_succesors = []
         for idx in k_successors_idx:
-            k_succesors.append(LeelaSubgoal(self.get_node_data(node), self.get_node_data(idx)))
+            k_succesors.append(LeelaSubgoalCandidate(self.get_node_data(node), self.get_node_data(idx)))
         return k_succesors
 
     def get_parent(self, node):

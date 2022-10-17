@@ -11,6 +11,7 @@ from data_processing.chess_data_generator import ChessDataset
 # from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img, is_fen_game_over
+
 # from data_structures.data_structures import ImmutableBoard
 
 # from leela.leela_graph_data_loader import LeelaGMLTree
@@ -42,20 +43,24 @@ class LeelaTreeTargetSelector:
 class HighestNSelector(LeelaTreeTargetSelector):
     def select_subgoals(self, input_node: int, graph: LeelaGMLTree, k: int, n_subgoals: int) -> List[LeelaSubgoal]:
         k_successors = graph.k_successors(input_node, k)
-        return list(sorted(k_successors, key=lambda x: (x.dist_from_input, x.N), reverse=True))[:n_subgoals]
+        selected_candidates = list(sorted(k_successors, key=lambda x: (x.dist_from_input, x.N), reverse=True))[
+            :n_subgoals
+        ]
+        return [candidate.to_full_subgoal() for candidate in selected_candidates]
 
 
 class BFSNodeSelector:
     def find_subgoals(
         self, root: int, graph: LeelaGMLTree, k: int, n_subgoals: int, max_iters: int = 200
-    ) -> List[LeelaSubgoal]:
+    ) -> Tuple[List[LeelaSubgoal], Dict]:
 
         selector = HighestNSelector()
         queue = [root]
         visited = set()
         subgoals: List[LeelaSubgoal] = []
+
         iters = 0
-        game_over_states = 0
+        stats: {"game_over_states": 0}
 
         while len(queue) > 0 and iters < max_iters:
             iters += 1
@@ -72,10 +77,10 @@ class BFSNodeSelector:
             if subgoal.dist_from_input == k:
                 correct_subgoals.append(subgoal)
             elif subgoal.target_immutable_board.to_board().is_game_over():
-                game_over_states += 1
+                stats["game_over_states"] += 1
                 correct_subgoals.append(subgoal)
 
-        return correct_subgoals, game_over_states
+        return correct_subgoals, stats
 
 
 def list_of_subgoals_to_df(subgoals: List[LeelaSubgoal]) -> pd.DataFrame:
@@ -132,7 +137,7 @@ class SubgoalMCGamesDataGenerator:
 
         self.game_over_states = 0
 
-        log_param('save_data_path', self.save_data_path)
+        log_param("save_data_path", self.save_data_path)
 
     def get_paths(self):
         for dir_data in os.walk(self.input_data_dir):
@@ -201,4 +206,5 @@ class SubgoalMCGamesDataGenerator:
             ],
             [f"Input Moves={leela_subgoal.moves} Lvl={leela_subgoal.input_level}", f"Target. N = {leela_subgoal.N} "],
         )
-        log_object("Data sample", img)
+        # log_object("Data sample", img)
+        img.savefig(f"/home/tomek/Research/subgoal_chess_data/logs/data_sample_{self.logged_samples}.png")
