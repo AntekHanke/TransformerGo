@@ -60,7 +60,7 @@ class BFSNodeSelector:
         subgoals: List[LeelaSubgoal] = []
 
         iters = 0
-        stats: {"game_over_states": 0}
+        stats = {"game_over_states": 0}
 
         while len(queue) > 0 and iters < max_iters:
             iters += 1
@@ -163,8 +163,8 @@ class SubgoalMCGamesDataGenerator:
     #     return ChessDataset(self.data)
 
     def leela_tree_to_datapoints(self, leela_tree: LeelaGMLTree):
-        subgoals, game_over_states = self.nodes_selector.find_subgoals(0, leela_tree, self.k, self.n_subgoals, 200)
-        self.game_over_states += game_over_states
+        subgoals, stats = self.nodes_selector.find_subgoals(0, leela_tree, self.k, self.n_subgoals, 200)
+        self.game_over_states += stats["game_over_states"]
         new_data_all = list_of_subgoals_to_df(subgoals)
         # new_data_selected = new_data_all[list(self.columns_to_save)]
         self.data = pd.concat([self.data, new_data_all], ignore_index=True)
@@ -206,5 +206,4 @@ class SubgoalMCGamesDataGenerator:
             ],
             [f"Input Moves={leela_subgoal.moves} Lvl={leela_subgoal.input_level}", f"Target. N = {leela_subgoal.N} "],
         )
-        # log_object("Data sample", img)
-        img.savefig(f"/home/tomek/Research/subgoal_chess_data/logs/data_sample_{self.logged_samples}.png")
+        log_object("Data sample", img)

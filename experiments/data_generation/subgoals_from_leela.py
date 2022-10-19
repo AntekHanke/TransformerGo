@@ -3,19 +3,16 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.LeelaDatasetGenerator",
     "LeelaDatasetGenerator.mcts_gen_class": "@data.SubgoalMCGamesDataGenerator",
-
-    'SubgoalMCGamesDataGenerator.k': 3,
-    'SubgoalMCGamesDataGenerator.n_subgoals': 4,
-    'SubgoalMCGamesDataGenerator.total_datapoints': 10**8,
-    'SubgoalMCGamesDataGenerator.log_samples_limit': 50,
-    'SubgoalMCGamesDataGenerator.input_data_dir': "/trees",
-    'SubgoalMCGamesDataGenerator.save_data_path': "/save_data/full_dataset",
+    "SubgoalMCGamesDataGenerator.k": 3,
+    "SubgoalMCGamesDataGenerator.n_subgoals": 4,
+    "SubgoalMCGamesDataGenerator.total_datapoints": 10**8,
+    "SubgoalMCGamesDataGenerator.log_samples_limit": 50,
+    "SubgoalMCGamesDataGenerator.input_data_dir": "/leela_data",
+    "SubgoalMCGamesDataGenerator.save_data_path": "/save_data/full_dataset",
     "use_neptune": True,
 }
 
-params_grid = {
-    'SubgoalMCGamesDataGenerator.k': [1,2,3,4,5,6]
-}
+params_grid = {"SubgoalMCGamesDataGenerator.k": [1]}
 
 experiments_list = create_experiments_helper(
     experiment_name="Subgoals form Leela",
