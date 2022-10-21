@@ -83,21 +83,32 @@ class ChessDataProvider:
     def get_eval_set_generator(self) -> ChessDataset:
         raise NotImplementedError
 
-class PandasSubgoalDataProvider(ChessDataProvider):
-    def __init__(self, paths_provider_cls: Type[PathsProvider]):
-        data = pd.read_pickle(paths_provider_cls().get_data_path())
-        cropped_df = data[['input_ids', 'labels']]
-        self.data_train = self.pandas_to_dict(cropped_df.head(-10000))
-        self.data_eval = self.pandas_to_dict(cropped_df.tail(10000))
+class PandasDataProvider(ChessDataProvider):
+    def __init__(self, paths_provider_cls: Type[PathsProvider], eval_datapoints: int = 10000):
+        df = pd.read_pickle(paths_provider_cls().get_data_path())
+        processed_df = self.process_df(df)
+        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
+        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        raise NotImplementedError
 
-    def pandas_to_dict(self, data: pd.DataFrame) -> Dict:
-        return data.to_dict(orient="records")
+    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
+        return df.to_dict(orient="records")
 
     def get_train_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_train)
 
     def get_eval_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_eval)
+
+class PandasSubgoalDataProvider(ChessDataProvider):
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[['input_ids', 'labels']]
+
+
+class PandasCLLPDataProvider(ChessDataProvider):
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[['input_ids', 'labels']]
 
 class ChessGamesDataGenerator(ChessDataProvider):
     """Reads PGN file and creates data."""
@@ -186,7 +197,6 @@ class ChessGamesDataGenerator(ChessDataProvider):
         return ChessDataset(self.eval_data_queue)
 
     def save_data(self):
-        assert self.data_constructed, "Data not constructed, call .create_data() first"
         with open(self.save_data_path + "train.pkl", 'wb') as handle:
             pickle.dump(self.train_data_queue, handle)
         with open(self.save_data_path + "eval.pkl", 'wb') as handle:

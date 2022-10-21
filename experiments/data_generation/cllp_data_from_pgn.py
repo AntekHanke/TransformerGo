@@ -1,22 +1,27 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {
-    "run.job_class": "@jobs.LeelaDatasetGenerator",
-    "LeelaDatasetGenerator.mcts_gen_class": "@data.SubgoalMCGamesDataGenerator",
-    "SubgoalMCGamesDataGenerator.k": 3,
-    "SubgoalMCGamesDataGenerator.n_subgoals": 4,
-    "SubgoalMCGamesDataGenerator.total_datapoints": 10 ** 9,
-    "SubgoalMCGamesDataGenerator.log_samples_limit": 50,
-    "SubgoalMCGamesDataGenerator.input_data_dir": "/leela_data",
-    "SubgoalMCGamesDataGenerator.save_data_path": "/save_data/full_dataset",
-    "SubgoalMCGamesDataGenerator.save_data_every": 5000,
+    "run.job_class": "@jobs.CreatePGNDataset",
+    "CreatePGNDataset.chess_database_cls": "@data.ChessCLLPGamesDataGenerator",
+
+    "ChessCLLPGamesDataGenerator.max_k": 6,
+    "ChessCLLPGamesDataGenerator.pgn_file": "/chess_data/pgn/database.pgn",
+    "ChessCLLPGamesDataGenerator.chess_filter": "@filters.NoFilter",
+    "ChessCLLPGamesDataGenerator.p_sample": 0.1,
+    "ChessCLLPGamesDataGenerator.n_data": 10**4,
+    "ChessCLLPGamesDataGenerator.log_samples_limit": 100,
+    "ChessCLLPGamesDataGenerator.p_log_sample": 0.01,
+
+    "ChessCLLPGamesDataGenerator.save_data_path": "/chess_data/pgn/train_data/cllp/",
+    "ChessCLLPGamesDataGenerator.save_data_every": 100,
+
     "use_neptune": True,
 }
 
-params_grid = {"SubgoalMCGamesDataGenerator.k": [1,2,3,4,5,6]}
+params_grid = {"idx": [0]}
 
 experiments_list = create_experiments_helper(
-    experiment_name="prom large subgoals form Leela",
+    experiment_name="cllp pgn",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

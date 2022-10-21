@@ -192,20 +192,21 @@ contexts:
     account: plggcontinualrl2
     backend_type: slurm
     cmd_type: sbatch
-    time: v
+    time: 50
     cpu: 8
     mem: 100G
     modules_to_load:
      - plgrid/tools/singularity/stable
     nodes: 1
     ntasks: 1
-    partition: plgrid
+    partition: plgrid-testing
     slurm_url: plgtodrzygozdz@pro.cyfronet.pl
     storage_dir: /net/scratch/people/plgtodrzygozdz/
     singularity_container: -H $PWD:/homeplaceholder
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/save_data
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
                            -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
   prom_long:
@@ -226,6 +227,7 @@ contexts:
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/large_train_leela_data/:/save_data
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
                            -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
   prom_gpu:
