@@ -1,3 +1,4 @@
+import pickle
 from typing import Dict, Any, Optional, List, Type
 
 import chess.pgn
@@ -111,6 +112,8 @@ class ChessGamesDataGenerator(ChessDataProvider):
         log_samples_limit: int = None,
         p_log_sample: float = 0.01,
         only_eval: bool = False,
+        save_data_path: str = None,
+        save_data_every: int = 1000,
     ):
         self.pgn_database = open(pgn_file, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
@@ -127,6 +130,9 @@ class ChessGamesDataGenerator(ChessDataProvider):
         self.logged_samples = 0
         self.n_games = 0
         self.data_constructed = False
+
+        self.save_data_path = save_data_path
+        self.save_data_every = save_data_every
 
     def next_game_to_raw_data(self) -> Optional[OneGameData]:
         """
@@ -165,6 +171,10 @@ class ChessGamesDataGenerator(ChessDataProvider):
                 self.game_to_datapoints(self.next_game_to_raw_data(), current_dataset)
                 self.n_games += 1
                 self.log_progress(n_iterations)
+
+            if self.save_data_path is not None and n_iterations % self.save_data_every == 0:
+                self.save_data()
+
         self.data_constructed = True
 
     def get_train_set_generator(self) -> ChessDataset:
@@ -174,6 +184,13 @@ class ChessGamesDataGenerator(ChessDataProvider):
     def get_eval_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
         return ChessDataset(self.eval_data_queue)
+
+    def save_data(self):
+        assert self.data_constructed, "Data not constructed, call .create_data() first"
+        with open(self.save_data_path + "train.pkl", 'wb') as handle:
+            pickle.dump(self.train_data_queue, handle)
+        with open(self.save_data_path + "eval.pkl", 'wb') as handle:
+            pickle.dump(self.eval_data_queue, handle)
 
     def select_dataset(self, train_eval) -> Dict:
         if train_eval == "train":
@@ -269,18 +286,19 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
 
 
 class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
-    def __init__(self, k, *args, **kwargs):
+    def __init__(self, max_k, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.k = k
+        self.max_k = max_k
 
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict) -> None:
         game_length = len(one_game_data.transitions)
         for num in range(game_length - 1):
 
             input_board = one_game_data.transitions[num].immutable_board
-            max_target_board_num = min(game_length - 1, num + self.k)
+            max_target_board_num = min(game_length - 1, num + self.max_k)
             target_board_num = random.randint(num + 1, max_target_board_num)
             move = one_game_data.transitions[num].move
+            all_cllp_moves = [one_game_data.transitions[i].move for i in range(num + 1, target_board_num + 1)]
             target_board = one_game_data.transitions[target_board_num].immutable_board
 
             if random.random() <= self.p_sample:
@@ -296,11 +314,12 @@ class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
                 "target_board": target_board,
                 "num": num,
                 "move": move.uci(),
+                "all_cllp_moves": all_cllp_moves,
             }
             self.log_sample(sample, one_game_data.metadata)
 
     def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
         return immutable_boards_to_img(
             [sample["input_board"], sample["target_board"]],
-            [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
+            [f"{sample['num']} : {sample['all_cllp_moves']}, res: {metadata.Result}", ""],
         )

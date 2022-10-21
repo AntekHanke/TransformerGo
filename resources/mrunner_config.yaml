@@ -3,11 +3,11 @@ contexts:
     account: plgrlresearchgpu-gpu
     backend_type: slurm
     cmd_type: sbatch
-    partition: plgrid-testing
-    time: 50
+    partition: plgrid-bigmem
+    time: 2800
     cpu: 1
     ntasks: 1
-    mem: 2G
+    mem: 10G
     nodes: 1
     slurm_url: plgtodrzygozdz@ares.cyfronet.pl
     storage_dir: /net/ascratch/people/plgtodrzygozdz
@@ -17,11 +17,31 @@ contexts:
                             -B /net/ascratch/people/plgtodrzygozdz/leela_all_trees/:/leela_data
                             -B $TMPDIR:/tmp /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
 
+  ares_gpu:
+    account: plgrlresearchgpu-gpu
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: plgrid-gpu-v100
+    time: 0-00:20:00
+    cpu: 5
+    mem: 100G
+    gpu: 1
+    ntasks: 1
+    nodes: 1
+    slurm_url: plgtodrzygozdz@ares.cyfronet.pl
+    storage_dir: /net/ascratch/people/plgtodrzygozdz
+    singularity_container:  -H $PWD:/homeplaceholder 
+                            --bind /net:/net --env NEPTUNEPWD=$PWD 
+                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
+                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/small_train_leela_data/:/save_data
+                            -B /net/ascratch/people/plgtodrzygozdz/leela_all_trees/:/leela_data
+                            -B $TMPDIR:/tmp /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
+
   eagle_quick_go:
     account: plgrlresearch
     backend_type: slurm
     cmd_type: sbatch
-    partition: fast
+    partition: standard
     time: 59
     cpu: 4
     ntasks: 1
@@ -61,10 +81,10 @@ contexts:
     backend_type: slurm
     cmd_type: sbatch
     partition: standard
-    time: 1440
+    time: 50
     cpu: 1
     ntasks: 1
-    mem: 60G
+    mem: 10G
     nodes: 1
     slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
     storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
@@ -139,6 +159,8 @@ contexts:
     ntasks: 1
     mem: 120G
     nodes: 1
+    modules_to_load:
+      - plgrid/tools/singularity/stable
     slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
     storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
     singularity_container:  -H $PWD:/homeplaceholder
@@ -164,3 +186,91 @@ contexts:
     singularity_container: -H $PWD:/homeplaceholder
       -B /home/todrzygozdz/
       --env NEPTUNEPWD=$PWD  --nv /home/todrzygozdz/singularity_images/transformers_5.09.2022.sif
+
+
+  prom:
+    account: plggcontinualrl2
+    backend_type: slurm
+    cmd_type: sbatch
+    time: v
+    cpu: 8
+    mem: 100G
+    modules_to_load:
+     - plgrid/tools/singularity/stable
+    nodes: 1
+    ntasks: 1
+    partition: plgrid
+    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+    storage_dir: /net/scratch/people/plgtodrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/save_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  prom_long:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 7-00:00:00
+    cpu: 1
+    mem: 100G
+    modules_to_load:
+     - plgrid/tools/singularity/stable
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-long
+    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+    storage_dir: /net/scratch/people/plgtodrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/large_train_leela_data/:/save_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  prom_gpu:
+    account: plgrlresearchgpu
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 1-00:00:00
+    cpu: 4
+    mem: 20G
+    gpu: 1
+    modules_to_load:
+    - plgrid/tools/singularity/stable
+    - plgrid/apps/cuda/11.2
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-gpu-v100
+    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+    storage_dir: /net/scratch/people/plgtodrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/small_train_leela_data/:/save_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/small_train_leela_data/:/leela_data_processed
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
+                           -B $TMPDIR:/tmp --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+
+#  prom_gpu_continual:
+#    account: plgcontinualrl2gpu
+#    backend_type: slurm
+#    cmd_type: sbatch
+#    time: 1-00:00:00
+#    cpu: 4
+#    mem: 20G
+#    gpu: 1
+#    modules_to_load:
+#    - plgrid/tools/singularity/stable
+#    - plgrid/apps/cuda/11.2
+#    nodes: 1
+#    ntasks: 1
+#    partition: plgrid-gpu-v100
+#    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+#    storage_dir: /net/scratch/people/plgtodrzygozdz/
+#    singularity_container: -H $PWD:/homeplaceholder
+#                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+#                           -B /net/scratch/people/plgtodrzygozdz/chess_data/small_train_leela_data/:/save_data
+#                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+#                           -B $TMPDIR:/tmp --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif

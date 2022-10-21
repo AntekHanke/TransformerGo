@@ -1,20 +1,18 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-k = 3
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
-    "TrainModel.chess_database_cls": "@data.ChessCLLPDataGenerator",
+    "TrainModel.chess_database_cls": "@data.PandasSubgoalDataProvider",
+    "TrainModel.paths_provider_cls": "@data.TrainOnLeelaPathsProvider",
+    "TrainModel.model_config_cls": "@transformers.BartConfig",
+    "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "ChessCLLPDataGenerator.k": k,
-    "ChessCLLPDataGenerator.pgn_file": "/home/plgrid/plgtodrzygozdz/subgoal_chess/database.pgn",
-    "ChessCLLPDataGenerator.chess_filter": "@filters.NoFilter",
-    "ChessCLLPDataGenerator.p_sample": 0.1,
-    "ChessCLLPDataGenerator.n_data": 5*10**7,
-    "ChessCLLPDataGenerator.log_samples_limit": 100,
-    "ChessCLLPDataGenerator.p_log_sample": 0.01,
+    "PandasSubgoalDataProvider.paths_provider_cls": "@data.TrainOnLeelaPathsProvider",
 
-    "TrainModel.save_model_path": f"/home/plgrid/plgtodrzygozdz/chess_models/cllp_k={k}/",
+    "TrainOnLeelaPathsProvider.pickle_df_path": f"/save_data/full_dataset",
+    "TrainOnLeelaPathsProvider.save_models_to": "/leela_models/medium",
+    "TrainOnLeelaPathsProvider.k": 6,
 
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
@@ -22,9 +20,9 @@ base_config = {
     "BartConfig.decoder_layers": 12,
     "BartConfig.encoder_attention_heads": 16,
     "BartConfig.decoder_attention_heads": 16,
-    "BartConfig.decoder_ffn_dim": 1024,
-    "BartConfig.encoder_ffn_dim": 1024,
-    "BartConfig.d_model": 512,
+    "BartConfig.decoder_ffn_dim": 4096,
+    "BartConfig.encoder_ffn_dim": 4096,
+    "BartConfig.d_model": 1024,
     "BartConfig.dropout": 0.01,
 
     "TrainingArguments.num_train_epochs": 1,
@@ -35,24 +33,25 @@ base_config = {
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
-    "TrainingArguments.learning_rate": 0.0001,
+    "TrainingArguments.learning_rate": 0.0003,
 
     "use_neptune": True,
 }
 
 params_grid = {
     "idx": [0],
+    "TrainOnLeelaPathsProvider.k":[1, 2, 3, 4]
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"CLLP-train_k={k}",
+    experiment_name=f"2-medium-leela-gen-train",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["CLLP", "train", f"k={k}"],
+    tags=["leela", "train", "medium"],
     with_neptune=True,
     env={},
 )

@@ -1,5 +1,6 @@
 from typing import Type, Union
 
+# import evaluate
 from transformers.integrations import NeptuneCallback
 
 from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
@@ -15,6 +16,7 @@ from transformers import (
 from metric_logging import log_param, source_files_register, pytorch_callback_loggers
 
 source_files_register.register(__file__)
+
 
 
 class TrainModel(Job):
@@ -37,11 +39,16 @@ class TrainModel(Job):
         self.training_args = training_args_cls(output_dir=output_dir + "/out")
 
         self.model = BartForConditionalGeneration(self.model_config)
+
+        # accuracy_metric = evaluate.load("accuracy")
+        # exact_match_metric = evaluate.load("exact_match")
+
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
             train_dataset=chess_database.get_train_set_generator(),
             eval_dataset=chess_database.get_eval_set_generator(),
+            # compute_metrics=[accuracy_metric, exact_match_metric]
         )
 
         for callback_logger in pytorch_callback_loggers:

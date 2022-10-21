@@ -135,14 +135,20 @@ class SubgoalMCGamesDataGenerator:
         self.logged_samples = 0
         self.paths_to_trees = []
 
-        self.game_over_states = 0
+        self.extra_game_over_states = 0
 
         log_param("save_data_path", self.save_data_path)
 
     def get_paths(self):
+        total_paths = 0
         for dir_data in os.walk(self.input_data_dir):
             if self.input_file_name in dir_data[-1]:
                 self.paths_to_trees.append(os.path.join(dir_data[0], self.input_file_name))
+                total_paths += 1
+        log_value("total_leela_tree_files", 0, total_paths)
+        log_param("total_leela_tree_files", total_paths)
+        for path in self.paths_to_trees:
+            log_object("leela_tree_file", path)
         # print(f"Found paths: {self.paths_to_trees}")
 
     def generate_data(self):
@@ -164,7 +170,7 @@ class SubgoalMCGamesDataGenerator:
 
     def leela_tree_to_datapoints(self, leela_tree: LeelaGMLTree):
         subgoals, stats = self.nodes_selector.find_subgoals(0, leela_tree, self.k, self.n_subgoals, 200)
-        self.game_over_states += stats["game_over_states"]
+        self.extra_game_over_states += stats["game_over_states"]
         new_data_all = list_of_subgoals_to_df(subgoals)
         # new_data_selected = new_data_all[list(self.columns_to_save)]
         self.data = pd.concat([self.data, new_data_all], ignore_index=True)
@@ -175,7 +181,7 @@ class SubgoalMCGamesDataGenerator:
         log_value("processed_trees", self.processed_trees, self.processed_trees)
         if self.save_data_path is not None and self.processed_trees % self.save_data_every == 0:
             self.data.to_pickle(self.save_data_path)
-        log_value("game_over_states", self.processed_trees, self.game_over_states)
+        log_value("extra_game_over_states", self.processed_trees, self.extra_game_over_states)
         return subgoals
 
     def log_subgoals_stats(self, subgoals: List[LeelaSubgoal]):

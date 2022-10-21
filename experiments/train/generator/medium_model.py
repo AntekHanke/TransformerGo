@@ -1,5 +1,6 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+#Lizard: shallower or wider
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
@@ -16,14 +17,14 @@ base_config = {
 
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
-    "BartConfig.encoder_layers": 10,
-    "BartConfig.decoder_layers": 10,
-    "BartConfig.encoder_attention_heads": 4,
-    "BartConfig.decoder_attention_heads": 4,
-    "BartConfig.decoder_ffn_dim": 256,
-    "BartConfig.encoder_ffn_dim": 256,
+    "BartConfig.encoder_layers": 6,
+    "BartConfig.decoder_layers": 6,
+    "BartConfig.encoder_attention_heads": 8,
+    "BartConfig.decoder_attention_heads": 8,
+    "BartConfig.decoder_ffn_dim": 2048,
+    "BartConfig.encoder_ffn_dim": 2048,
     "BartConfig.d_model": 512,
-    "BartConfig.dropout": 0.01,
+    "BartConfig.dropout": 0.1,
 
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 512,
@@ -40,7 +41,7 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "TrainOnLeelaPathsProvider.k":[1, 2, 3, 4]
+    "TrainOnLeelaPathsProvider.k": [1]
 }
 
 experiments_list = create_experiments_helper(

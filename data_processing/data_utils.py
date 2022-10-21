@@ -75,3 +75,14 @@ class TrainOnLeelaPathsProvider(PathsProvider):
 
     def get_out_dir(self):
         return self.save_models_to + f"_k={self.k}"
+
+class TrainCLLPOnPGNPathsProvider(PathsProvider):
+    def __init__(self, pgn_path: str, save_models_to: str):
+        self.pgn_path = pgn_path
+        self.save_models_to = save_models_to
+
+    def get_data_path(self):
+        return self.pgn_path
+
+    def get_out_dir(self):
+        return self.save_models_to

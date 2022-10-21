@@ -8,9 +8,10 @@ from data_processing.chess_data_generator import (
     ChessSubgoalGamesDataGenerator,
     PolicyGamesDataGenerator, PandasSubgoalDataProvider,
 )
-from data_processing.data_utils import TrainOnLeelaPathsProvider
+from data_processing.data_utils import TrainOnLeelaPathsProvider, TrainCLLPOnPGNPathsProvider
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.any_job import AnyJob
+from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.job_leela_dataset import LeelaDatasetGenerator
 from jobs.train_model import TrainModel
 
@@ -24,7 +25,7 @@ def configure_classes(classes, module=None) -> None:
         configure_class(cls, module)
 
 
-configure_classes([AnyJob, TrainModel, LeelaDatasetGenerator], "jobs")
+configure_classes([AnyJob, TrainModel, LeelaDatasetGenerator, CreatePGNDataset], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
 configure_classes(
@@ -34,7 +35,8 @@ configure_classes(
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
         PandasSubgoalDataProvider,
-        TrainOnLeelaPathsProvider
+        TrainOnLeelaPathsProvider,
+        TrainCLLPOnPGNPathsProvider
     ],
     "data",
 )

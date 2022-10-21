@@ -8,11 +8,4 @@ class LeelaDatasetGenerator(Job):
         self.mcts_gen = mcts_gen_class()
 
     def execute(self):
-        # with open("/tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman/leela-dataset-part-1_35l1_146/leela/trees_of_leela/all_trees.txt", "r") as f:
-        #     lines =  f.readlines()
-        #     for line in lines:
-        #         print(line)
-        #         break
-        for x in os.walk("/tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman"):
-            print(x)
         self.mcts_gen.generate_data()
