@@ -84,8 +84,10 @@ class ChessDataProvider:
         raise NotImplementedError
 
 class PandasDataProvider(ChessDataProvider):
-    def __init__(self, paths_provider_cls: Type[PathsProvider], eval_datapoints: int = 10000):
-        df = pd.read_pickle(paths_provider_cls().get_data_path())
+    def __init__(self, paths_provider: Type[PathsProvider], eval_datapoints: int = 10000):
+        if not isinstance(paths_provider, PathsProvider):
+            paths_provider = paths_provider()
+        df = pd.read_pickle(paths_provider.get_data_path())
         processed_df = self.process_df(df)
         self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
         self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
@@ -106,7 +108,7 @@ class PandasSubgoalDataProvider(PandasDataProvider):
         return df[['input_ids', 'labels']]
 
 
-class PandasCLLPDataProvider(ChessDataProvider):
+class PandasCLLPDataProvider(PandasDataProvider):
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[['input_ids', 'labels']]
 

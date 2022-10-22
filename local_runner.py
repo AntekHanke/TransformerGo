@@ -5,10 +5,12 @@ from mrunner_utils import mrunner_client
 from mrunner_utils.mrunner_client import get_configuration
 from runner import run
 
-import configures.gin_configurable_classes #keep this import
+import configures.gin_configurable_classes  # keep this import
 
-LOCAL_PATH_BINDING ={"/leela_data_processed": "/home/tomasz/Research/subgoal_chess_data/local_leela_datasets/",
-                     "/leela_models": "/home/tomasz/Research/subgoal_chess_data/local_leela_models/"}
+LOCAL_PATH_BINDING = {
+    "/leela_data_processed": "/home/tomasz/Research/subgoal_chess_data/local_leela_datasets/",
+    "/leela_models": "/home/tomasz/Research/subgoal_chess_data/local_leela_models/",
+}
 
 EXPERIMENT_PATH = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/small_model.py"
 USE_NEPTUNE = False
@@ -19,8 +21,8 @@ for binding in gin_bindings:
     for general_path, local_path in LOCAL_PATH_BINDING.items():
         binding = binding.replace(general_path, local_path)
         corrected_bindings.append(binding)
-print(f'specification: {specification}')
-print(f'gin_bindings: {corrected_bindings}')
+print(f"specification: {specification}")
+print(f"gin_bindings: {corrected_bindings}")
 
 if USE_NEPTUNE:
     neptune_logger = mrunner_client.configure_neptune(specification)
