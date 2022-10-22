@@ -101,7 +101,7 @@ class PandasDataProvider(ChessDataProvider):
     def get_eval_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_eval)
 
-class PandasSubgoalDataProvider(ChessDataProvider):
+class PandasSubgoalDataProvider(PandasDataProvider):
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[['input_ids', 'labels']]
 
