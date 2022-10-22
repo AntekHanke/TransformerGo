@@ -4,7 +4,6 @@ from typing import Type, Union
 from transformers.integrations import NeptuneCallback
 
 from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
-from data_processing.data_utils import PathsProvider
 from jobs.core import Job
 from transformers import (
     Trainer,

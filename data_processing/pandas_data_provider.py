@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 
@@ -30,5 +30,9 @@ class PandasSubgoalDataProvider(ChessDataProvider):
 
 
 class PandasCLLPDataProvider(ChessDataProvider):
+    def __init__(self, data_path: List[str], eval_datapoints: int = 10000):
+        if data_path is None:
+            data_path = GlobalParamsHandler().get_data_path()
+        self.data_path = data_path
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[['input_ids', 'labels']]

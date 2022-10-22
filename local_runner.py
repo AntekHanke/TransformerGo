@@ -12,7 +12,7 @@ LOCAL_PATH_BINDING = {
     "/leela_models": "/home/tomasz/Research/subgoal_chess_data/local_leela_models/",
 }
 
-EXPERIMENT_PATH = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/small_model.py"
+EXPERIMENT_PATH = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
 USE_NEPTUNE = False
 
 specification, gin_bindings = get_configuration(EXPERIMENT_PATH)

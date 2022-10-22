@@ -4,7 +4,6 @@ import evaluate
 from transformers.integrations import NeptuneCallback
 
 from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
-from data_processing.data_utils import PathsProvider
 from jobs.core import Job
 from transformers import (
     Trainer,
@@ -19,18 +18,16 @@ from utils.global_params_handler import GlobalParamsHandler
 source_files_register.register(__file__)
 
 
-
 class TrainModel(Job):
     def __init__(
         self,
+        # global_params_handler: Type[GlobalParams],
         chess_database_cls: Type[ChessDataProvider],
         model_config_cls: Type[BartConfig] = None,
         training_args_cls: Type[TrainingArguments] = None,
-        paths_provider_cls: Union[Type[PathsProvider], None] = None,
         output_dir: str = None,
     ):
 
-        self.paths_provider = paths_provider_cls()
         if output_dir is None:
             output_dir = GlobalParamsHandler().get_out_dir()
 
@@ -51,14 +48,14 @@ class TrainModel(Job):
             args=self.training_args,
             train_dataset=chess_database.get_train_set_generator(),
             eval_dataset=chess_database.get_eval_set_generator(),
-            compute_metrics=[accuracy_metric, exact_match_metric]
+            compute_metrics=[accuracy_metric, exact_match_metric],
         )
 
         for callback_logger in pytorch_callback_loggers:
             self.trainer.add_callback(callback_logger.get_pytorch_callback())
         self.trainer.pop_callback(NeptuneCallback)
         assert self.paths_provider is not None
-        self.save_model_path = output_dir + '/final_model'
+        self.save_model_path = output_dir + "/final_model"
         log_param("Save model path", self.save_model_path)
 
     def execute(self) -> None:
