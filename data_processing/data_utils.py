@@ -36,9 +36,11 @@ def get_split(arg: Union[str, int], train_eval_split: float) -> str:
     else:
         return "eval"
 
+
 def is_fen_game_over(fen: str) -> bool:
     board = chess.Board(fen)
     return board.is_game_over()
+
 
 def immutable_boards_to_img(
     immutable_boards: List[ImmutableBoard], descriptions: List[str], size: int = 5
@@ -56,33 +58,3 @@ def immutable_boards_to_img(
         ax.set_title(title)
         plt.imshow(img)
     return fig
-
-class PathsProvider:
-    def get_data_path(self):
-        raise NotImplementedError
-
-    def get_out_dir(self):
-        raise NotImplementedError
-
-class TrainOnLeelaPathsProvider(PathsProvider):
-    def __init__(self, pickle_df_path: str, save_models_to: str, k: int):
-        self.pickle_df_path = pickle_df_path
-        self.save_models_to = save_models_to
-        self.k = k
-
-    def get_data_path(self):
-        return self.pickle_df_path + f"_k={self.k}.pkl"
-
-    def get_out_dir(self):
-        return self.save_models_to + f"_k={self.k}"
-
-class TrainCLLPOnPGNPathsProvider(PathsProvider):
-    def __init__(self, pgn_path: str, save_models_to: str):
-        self.pgn_path = pgn_path
-        self.save_models_to = save_models_to
-
-    def get_data_path(self):
-        return self.pgn_path
-
-    def get_out_dir(self):
-        return self.save_models_to

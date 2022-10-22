@@ -14,6 +14,7 @@ from transformers import (
 )
 
 from metric_logging import log_param, source_files_register, pytorch_callback_loggers
+from utils.global_params_handler import GlobalParamsHandler
 
 source_files_register.register(__file__)
 
@@ -26,10 +27,12 @@ class TrainModel(Job):
         model_config_cls: Type[BartConfig] = None,
         training_args_cls: Type[TrainingArguments] = None,
         paths_provider_cls: Union[Type[PathsProvider], None] = None,
+        output_dir: str = None,
     ):
 
         self.paths_provider = paths_provider_cls()
-        output_dir = self.paths_provider.get_out_dir()
+        if output_dir is None:
+            output_dir = GlobalParamsHandler().get_out_dir()
 
         chess_database = chess_database_cls()
         if isinstance(chess_database, ChessGamesDataGenerator):

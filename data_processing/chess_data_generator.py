@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
-from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER, PathsProvider
+from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
 
@@ -77,40 +77,13 @@ class ChessDataset(torch.utils.data.Dataset):
         return len(self.data)
 
 class ChessDataProvider:
+    """General class for providing data for training and evaluation."""
     def get_train_set_generator(self) -> ChessDataset:
         raise NotImplementedError
 
     def get_eval_set_generator(self) -> ChessDataset:
         raise NotImplementedError
 
-class PandasDataProvider(ChessDataProvider):
-    def __init__(self, paths_provider: Type[PathsProvider], eval_datapoints: int = 10000):
-        if not isinstance(paths_provider, PathsProvider):
-            paths_provider = paths_provider()
-        df = pd.read_pickle(paths_provider.get_data_path())
-        processed_df = self.process_df(df)
-        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
-        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        raise NotImplementedError
-
-    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
-        return df.to_dict(orient="records")
-
-    def get_train_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_train)
-
-    def get_eval_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_eval)
-
-class PandasSubgoalDataProvider(PandasDataProvider):
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[['input_ids', 'labels']]
-
-
-class PandasCLLPDataProvider(PandasDataProvider):
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[['input_ids', 'labels']]
 
 class ChessGamesDataGenerator(ChessDataProvider):
     """Reads PGN file and creates data."""
