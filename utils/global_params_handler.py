@@ -1,6 +1,9 @@
 from typing import Union, List
 
+import gin
 
+
+@gin.configurable
 class GlobalParamsHandler:
     """Some parameters affect many parts of the code. This class is a
     centralized place to store and access those parameters. This is also used to perform simple grid-search by mrunner.
@@ -23,13 +26,13 @@ class GlobalParamsHandler:
             if self.k is not None:
                 if isinstance(self.k, list):
                     return [self.data_location + f"_k={i}.pkl" for i in self.k]
-            else:
-                return self.data_location + f"_k={self.k}.pkl"
+                else:
+                    return self.data_location + f"_k={self.k}.pkl"
 
     def get_out_dir(self):
         if self.k is not None:
             if isinstance(self.k, list):
                 return self.out_dir
-        else:
-            return self.out_dir + f"_k={self.k}"
+            else:
+                return self.out_dir + f"_k={self.k}"
 

@@ -12,9 +12,8 @@ from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.pandas_data_provider import PandasSubgoalDataProvider
 from jobs.any_job import AnyJob
 from jobs.create_pgn_dataset import CreatePGNDataset
-from jobs.job_leela_dataset import LeelaDatasetGenerator
+# from jobs.job_leela_dataset import LeelaDatasetGenerator
 from jobs.train_model import TrainModel
-from utils.global_params_handler import GlobalParamsHandler
 
 
 def configure_class(cls, module=None) -> None:
@@ -26,8 +25,8 @@ def configure_classes(classes, module=None) -> None:
         configure_class(cls, module)
 
 
-configure_classes([GlobalParamsHandler], "params")
-configure_classes([AnyJob, TrainModel, LeelaDatasetGenerator, CreatePGNDataset], "jobs")
+# configure_classes([GlobalParamsHandler], "params")
+configure_classes([AnyJob, TrainModel, CreatePGNDataset], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
 configure_classes(

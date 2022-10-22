@@ -7,9 +7,10 @@ from utils.global_params_handler import GlobalParamsHandler
 
 
 class PandasSubgoalDataProvider(ChessDataProvider):
-    def __init__(self, data_path, eval_datapoints: int = 10000):
+    def __init__(self, data_path = None, eval_datapoints: int = 10000):
         if data_path is None:
-            GlobalParamsHandler().get_data_path()
+            data_path = GlobalParamsHandler().get_data_path()
+            print(f"Data path: {data_path}")
 
         df = pd.read_pickle(data_path)
         processed_df = self.process_df(df)

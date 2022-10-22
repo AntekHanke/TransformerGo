@@ -12,6 +12,7 @@ import metric_logging
 
 import configures.gin_configurable_classes #keep this import
 from configures.global_config import NEPTUNE_PROJECT
+from utils.global_params_handler import GlobalParamsHandler
 
 
 def _parse_args():

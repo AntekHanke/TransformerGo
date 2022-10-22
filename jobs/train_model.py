@@ -54,7 +54,6 @@ class TrainModel(Job):
         for callback_logger in pytorch_callback_loggers:
             self.trainer.add_callback(callback_logger.get_pytorch_callback())
         self.trainer.pop_callback(NeptuneCallback)
-        assert self.paths_provider is not None
         self.save_model_path = output_dir + "/final_model"
         log_param("Save model path", self.save_model_path)
 
