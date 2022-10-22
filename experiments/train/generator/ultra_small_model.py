@@ -9,7 +9,7 @@ base_config = {
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
     "GlobalParamsHandler.k": 3,
-    "GlobalParamsHandler.out_dir": "experiments/train/generator/small_model",
+    "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/ultra_small_model",
     "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
 
 
@@ -31,10 +31,10 @@ base_config = {
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 200,
+    "TrainingArguments.eval_steps": 5,
     "TrainingArguments.learning_rate": 0.0002,
 
-    "use_neptune": False,
+    "use_neptune": True,
 }
 
 params_grid = {
@@ -43,7 +43,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"small-leela-gen-train",
+    experiment_name=f"ultra-small-leela-gen-train",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

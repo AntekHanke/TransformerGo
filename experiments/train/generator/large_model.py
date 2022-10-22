@@ -4,15 +4,14 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.chess_database_cls": "@data.PandasSubgoalDataProvider",
-    "TrainModel.paths_provider_cls": "@data.TrainOnLeelaPathsProvider",
+
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "PandasSubgoalDataProvider.paths_provider_cls": "@data.TrainOnLeelaPathsProvider",
+    "GlobalParamsHandler.k": 3,
+    "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/large_model",
+    "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
 
-    "TrainOnLeelaPathsProvider.pickle_df_path": f"/save_data/full_dataset",
-    "TrainOnLeelaPathsProvider.save_models_to": "/leela_models/medium",
-    "TrainOnLeelaPathsProvider.k": 6,
 
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
@@ -40,7 +39,7 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "TrainOnLeelaPathsProvider.k":[1, 2, 3, 4]
+    "GlobalParamsHandler.k": [3]
 }
 
 experiments_list = create_experiments_helper(

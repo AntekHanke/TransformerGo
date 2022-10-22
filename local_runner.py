@@ -7,13 +7,14 @@ from runner import run
 
 import configures.gin_configurable_classes  # keep this import
 
+EXPERIMENT_PATH = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
+USE_NEPTUNE = True
+
 LOCAL_PATH_BINDING = {
     "/leela_data_processed": "/home/tomasz/Research/subgoal_chess_data/local_leela_datasets",
     "/leela_models": "/home/tomasz/Research/subgoal_chess_data/local_leela_models",
 }
 
-EXPERIMENT_PATH = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
-USE_NEPTUNE = False
 
 specification, gin_bindings = get_configuration(EXPERIMENT_PATH)
 corrected_bindings = []

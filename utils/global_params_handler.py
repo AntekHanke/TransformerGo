@@ -18,7 +18,6 @@ class GlobalParamsHandler:
         self.out_dir = out_dir
         self.data_type = data_type
 
-        print(f"GlobalParamsHandler: {self.__dict__}")
 
     def get_data_path(self):
         if self.data_type == "leela":

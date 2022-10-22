@@ -5,12 +5,12 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.chess_database_cls": "@data.PandasSubgoalDataProvider",
 
-    "GlobalParamsHandler.k": 3,
-    "GlobalParamsHandler.out_dir": "experiments/train/generator/small_model",
-    "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
-
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
+
+    "GlobalParamsHandler.k": 3,
+    "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/small_model",
+    "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
 
 
     "BartConfig.vocab_size": 512,
@@ -39,7 +39,7 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "TrainOnLeelaPathsProvider.k": [3]
+    "GlobalParamsHandler.k": [3]
 }
 
 experiments_list = create_experiments_helper(
