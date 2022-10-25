@@ -12,6 +12,7 @@ base_config = {
     "GlobalParamsHandler.k": 3,
     "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/medium_model",
     "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
+    "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
 
     "BartConfig.vocab_size": 512,
@@ -40,11 +41,12 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "GlobalParamsHandler.k": [3]
+    "GlobalParamsHandler.k": [3],
+    "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003, 0.001],
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"medium-leela-gen-train-1024",
+    experiment_name=f"medium-leela-gen-train",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

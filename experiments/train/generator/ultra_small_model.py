@@ -52,7 +52,7 @@ experiments_list = create_experiments_helper(
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "small"],
+    tags=["leela", "train", "ultra-small"],
     with_neptune=True,
     env={},
 )

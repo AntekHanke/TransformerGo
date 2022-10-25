@@ -11,23 +11,22 @@ base_config = {
     "GlobalParamsHandler.k": 3,
     "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/large_model",
     "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
-    "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
 
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
-    "BartConfig.encoder_layers": 16,
-    "BartConfig.decoder_layers": 16,
+    "BartConfig.encoder_layers": 12,
+    "BartConfig.decoder_layers": 12,
     "BartConfig.encoder_attention_heads": 16,
     "BartConfig.decoder_attention_heads": 16,
-    "BartConfig.decoder_ffn_dim": 2048,
-    "BartConfig.encoder_ffn_dim": 2048,
-    "BartConfig.d_model": 512,
+    "BartConfig.decoder_ffn_dim": 4096,
+    "BartConfig.encoder_ffn_dim": 4096,
+    "BartConfig.d_model": 1024,
     "BartConfig.dropout": 0.01,
 
     "TrainingArguments.num_train_epochs": 1,
-    "TrainingArguments.per_device_train_batch_size": 256,
-    "TrainingArguments.per_device_eval_batch_size": 256,
+    "TrainingArguments.per_device_train_batch_size": 128,
+    "TrainingArguments.per_device_eval_batch_size": 128,
     "TrainingArguments.warmup_steps": 500,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
@@ -40,8 +39,7 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "GlobalParamsHandler.k": [3],
-    "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003, 0.001]
+    "GlobalParamsHandler.k": [3]
 }
 
 experiments_list = create_experiments_helper(
@@ -52,7 +50,7 @@ experiments_list = create_experiments_helper(
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "large"],
+    tags=["leela", "train", "ultra-large"],
     with_neptune=True,
     env={},
 )

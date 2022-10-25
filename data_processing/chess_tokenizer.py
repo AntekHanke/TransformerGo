@@ -116,6 +116,18 @@ class ChessTokenizer:
         return move_tokens
 
     @classmethod
+    def encode_leela_move(cls, chess_move_as_string: str) -> List[int]:
+        move_tokens = [
+            cls.vocab_to_tokens[chess_move_as_string[0:2]],
+            cls.vocab_to_tokens[chess_move_as_string[2:4]],
+        ]
+        if len(chess_move_as_string) == 5:
+            move_tokens.append(cls.vocab_to_tokens[chess_move_as_string[4]])
+        else:
+            move_tokens.append(cls.vocab_to_tokens["-"])
+        return move_tokens
+
+    @classmethod
     def decode_move(cls, output_tokens: List[int]) -> Move:
         promotion_str = cls.tokens_to_vocab[output_tokens[2]]
         if promotion_str == "-":
