@@ -44,7 +44,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"medium-leela-gen-train",
+    experiment_name=f"medium-leela-gen-train-1024",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

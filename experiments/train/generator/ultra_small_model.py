@@ -9,8 +9,10 @@ base_config = {
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
     "GlobalParamsHandler.k": 3,
+    "GlobalParamsHandler.path_format": ["k", "learning_rate"],
     "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/ultra_small_model",
     "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
+    "GlobalParamsHandler.learning_rate": 0.0003,
 
 
     "BartConfig.vocab_size": 512,

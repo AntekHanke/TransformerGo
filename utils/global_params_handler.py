@@ -7,17 +7,27 @@ import gin
 class GlobalParamsHandler:
     """Some parameters affect many parts of the code. This class is a
     centralized place to store and access those parameters. This is also used to perform simple grid-search by mrunner.
+    Parameters which are set here, override each class gin specification.
     """
 
-    def __init__(self, k: Union[int, List[int]] = None, data_location: str = None, out_dir: str = None, data_type: str = "leela"):
+    def __init__(
+        self,
+        k: Union[int, List[int]] = None,
+        learning_rate: float = None,
+        data_location: str = None,
+        out_dir: str = None,
+        data_type: str = "leela",
+        path_format: List[str] = None,
+    ):
         """All parameters can be set here by gin"""
         assert data_type in ["leela", "pgn"], "data_type must be either leela or pgn"
 
         self.k = k
+        self.learning_rate = learning_rate
         self.data_location = data_location
         self.out_dir = out_dir
         self.data_type = data_type
-
+        self.path_format = path_format
 
     def get_data_path(self):
         if self.data_type == "leela":
@@ -29,9 +39,20 @@ class GlobalParamsHandler:
                     return self.data_location + f"_k={self.k}.pkl"
 
     def get_out_dir(self):
-        if self.k is not None:
-            if isinstance(self.k, list):
-                return self.out_dir
-            else:
-                return self.out_dir + f"_k={self.k}"
+        if self.path_format is None:
+            if self.out_dir is not None:
+                if self.k is not None:
+                    if isinstance(self.k, list):
+                        return self.out_dir
+                    else:
+                        return self.out_dir + f"_k={self.k}"
+        else:
+            for param_name in self.path_format:
+                self.out_dir += f"/{self.insert_path_element(param_name)}"
+            return self.out_dir
 
+    def insert_path_element(self, param_name):
+        if param_name == "k":
+            return f"_k={self.k}"
+        elif param_name == "learning_rate":
+            return f"_lr={self.learning_rate}"

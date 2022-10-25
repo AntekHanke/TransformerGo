@@ -25,8 +25,8 @@ base_config = {
     "BartConfig.dropout": 0.01,
 
     "TrainingArguments.num_train_epochs": 1,
-    "TrainingArguments.per_device_train_batch_size": 256,
-    "TrainingArguments.per_device_eval_batch_size": 256,
+    "TrainingArguments.per_device_train_batch_size": 128,
+    "TrainingArguments.per_device_eval_batch_size": 128,
     "TrainingArguments.warmup_steps": 500,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
@@ -43,7 +43,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"2-medium-leela-gen-train",
+    experiment_name=f"lerge-leela-gen-train",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

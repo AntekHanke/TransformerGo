@@ -109,7 +109,7 @@ def configure_neptune(specification):
         name=specification["name"],
         tags=specification["tags"],
     )
-    run["job_params/params"] = specification["parameters"]
+    run["job_params"] = specification["parameters"]
     run["path_to_experimant/properties"] = properties
     run["git_info/git_info"] = git_info
 

@@ -3,6 +3,7 @@ from typing import Dict, List
 import pandas as pd
 
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
+from metric_logging import log_param
 from utils.global_params_handler import GlobalParamsHandler
 
 
@@ -16,6 +17,9 @@ class PandasSubgoalDataProvider(ChessDataProvider):
         processed_df = self.process_df(df)
         self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
         self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+
+        log_param("Train set size", len(self.data_train))
+        log_param("Eval set size", len(self.data_eval))
 
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[['input_ids', 'labels']]

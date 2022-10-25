@@ -29,7 +29,8 @@ class TrainModel(Job):
         output_dir: str = None,
     ):
 
-        if output_dir is None:
+
+        if GlobalParamsHandler().get_out_dir() is not None:
             output_dir = GlobalParamsHandler().get_out_dir()
 
         chess_database = chess_database_cls()
@@ -39,8 +40,12 @@ class TrainModel(Job):
         self.model_config = model_config_cls()
         self.training_args = training_args_cls(output_dir=output_dir + "/out")
 
+        if GlobalParamsHandler().learning_rate is not None:
+            self.training_args.learning_rate = GlobalParamsHandler().learning_rate
+
         self.model = BartForConditionalGeneration(self.model_config)
 
+        log_param("real learning rate", self.training_args.learning_rate)
 
         # def compute_metrics(eval_preds):
         #     metric = evaluate.load("accuracy", "exact_match")
@@ -54,6 +59,7 @@ class TrainModel(Job):
             args=self.training_args,
             train_dataset=chess_database.get_train_set_generator(),
             eval_dataset=chess_database.get_eval_set_generator(),
+            # compute_metrics=compute_metrics,
         )
 
         for callback_logger in pytorch_callback_loggers:

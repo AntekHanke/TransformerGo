@@ -8,7 +8,7 @@ from runner import run
 import configures.gin_configurable_classes  # keep this import
 
 EXPERIMENT_PATH = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
-USE_NEPTUNE = True
+USE_NEPTUNE = False
 
 LOCAL_PATH_BINDING = {
     "/leela_data_processed": "/home/tomasz/Research/subgoal_chess_data/local_leela_datasets",
@@ -31,4 +31,5 @@ if USE_NEPTUNE:
     metric_logging.register_pytorch_callback_logger(neptune_logger)
 
 gin.parse_config_files_and_bindings(None, corrected_bindings)
+
 run()
