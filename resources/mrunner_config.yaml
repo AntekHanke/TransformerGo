@@ -193,8 +193,8 @@ contexts:
     backend_type: slurm
     cmd_type: sbatch
     time: 50
-    cpu: 8
-    mem: 100G
+    cpu: 4
+    mem: 120G
     modules_to_load:
      - plgrid/tools/singularity/stable
     nodes: 1
@@ -204,7 +204,8 @@ contexts:
     storage_dir: /net/scratch/people/plgtodrzygozdz/
     singularity_container: -H $PWD:/homeplaceholder
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
-                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/save_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/leela_generator_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/cllp_data/:/leela_cllp_data
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
                            -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
