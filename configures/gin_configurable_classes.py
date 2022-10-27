@@ -9,7 +9,8 @@ from data_processing.chess_data_generator import (
     PolicyGamesDataGenerator,
 )
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
-from data_processing.pandas_data_provider import PandasSubgoalDataProvider, PandasCLLPDataGenerator
+from data_processing.pandas_data_provider import PandasSubgoalDataProvider, PandasCLLPDataGenerator, \
+    PandasCLLPDataProvider
 from jobs.any_job import AnyJob
 from jobs.create_pgn_dataset import CreatePGNDataset
 
@@ -38,7 +39,8 @@ configure_classes(
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
         PandasSubgoalDataProvider,
-        PandasCLLPDataGenerator
+        PandasCLLPDataGenerator,
+        PandasCLLPDataProvider
     ],
     "data",
 )

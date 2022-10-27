@@ -39,11 +39,18 @@ class PandasSubgoalDataProvider(ChessDataProvider):
 
 # @gin.configurable
 class PandasCLLPDataGenerator(ChessDataProvider):
-    def __init__(self, data_path: str = None, save_final_df_path: str = None, crop_df: int = 4*10**6, use_one_move=True):
+    def __init__(
+        self,
+        data_path: str = None,
+        save_final_df_path: str = None,
+        crop_df: int = 3 * 10**6,
+        use_one_move=True,
+        padding_len=20,
+    ):
 
         print(f"Data path: {data_path}")
 
-        if  GlobalParamsHandler().get_data_path() is not None:
+        if GlobalParamsHandler().get_data_path() is not None:
             self.data_path = GlobalParamsHandler().get_data_path()
         else:
             self.data_path = data_path
@@ -51,6 +58,7 @@ class PandasCLLPDataGenerator(ChessDataProvider):
         self.save_final_df_path = save_final_df_path
         self.crop_df = crop_df
         self.use_one_move = use_one_move
+        self.padding_len = padding_len
 
     def create_data(self):
         self.paths_to_data = []
@@ -85,6 +93,8 @@ class PandasCLLPDataGenerator(ChessDataProvider):
                 tokenized_moves.extend(
                     ChessTokenizer.encode_leela_move(move) + [ChessTokenizer.special_vocab_to_tokens["<SEP>"]]
                 )
+            # tokenized_moves.append(ChessTokenizer.special_vocab_to_tokens["<EOS>"])
+
             return tokenized_moves
 
         data_for_model = {"input_ids": [], "labels": []}
@@ -101,3 +111,30 @@ class PandasCLLPDataGenerator(ChessDataProvider):
         data_df = pd.DataFrame(data_for_model)
 
         return data_df
+
+
+class PandasCLLPDataProvider(ChessDataProvider):
+    def __init__(self, data_path=None, eval_datapoints: int = 10000):
+        if data_path is None:
+            data_path = GlobalParamsHandler().get_data_path()
+            print(f"Data path: {data_path}")
+
+        df = pd.read_pickle(data_path)
+        processed_df = self.process_df(df)
+        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
+        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+
+        log_param("Train set size", len(self.data_train))
+        log_param("Eval set size", len(self.data_eval))
+
+    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
+        return df.to_dict(orient="records")
+
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[["input_ids", "labels"]]
+
+    def get_train_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_train)
+
+    def get_eval_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_eval)

@@ -13,7 +13,7 @@ base_config = {
 params_grid = {"idx": [0]}
 
 experiments_list = create_experiments_helper(
-    experiment_name="cllp form Leela one move",
+    experiment_name="cllp form Leela",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

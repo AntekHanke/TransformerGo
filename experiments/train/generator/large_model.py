@@ -11,6 +11,7 @@ base_config = {
     "GlobalParamsHandler.k": 3,
     "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/large_model",
     "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
+    "GlobalParamsHandler.data_type": "generator",
     "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
 

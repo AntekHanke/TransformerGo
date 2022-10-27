@@ -10,7 +10,8 @@ base_config = {
 
     "GlobalParamsHandler.k": 3,
     "GlobalParamsHandler.out_dir": "/leela_models/v1/generator/small_model",
-    "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
+    "GlobalParamsHandler.data_location": "/leela_generator_data/full_dataset",
+    "GlobalParamsHandler.data_type": "generator",
     "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
     "BartConfig.vocab_size": 512,
