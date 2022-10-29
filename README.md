@@ -45,3 +45,7 @@ Simple self-play example is in file:
 ## Singularity sandbox:
 
 ``` sudo singularity build --sandbox my_sbox my_image.sif```
+
+## Building Lichess Bots:
+
+Install Banksia (https://banksiagui.com/)

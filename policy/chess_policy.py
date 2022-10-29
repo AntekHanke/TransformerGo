@@ -26,4 +26,5 @@ class BasicChessPolicy(ChessPolicy):
         ]
         input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
         outputs = self.model.generate(input_tensor, num_beams=16, max_new_tokens=4).tolist()
+        print(f"outputs: {outputs}")
         return ChessTokenizer.decode_move(outputs[0])

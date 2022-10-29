@@ -9,7 +9,8 @@ import configures.gin_configurable_classes  # keep this import
 
 EXPERIMENT_TRAIN_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
 EXPERIMENT_CLLP_DATA_MAKE = "/home/tomasz/Research/subgoal_search_chess/experiments/data_generation/cllp_from_leela.py"
-EXPERIMENT_TRAIN_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/train/cllp/small_model.py"
+EXPERIMENT_TRAIN_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/train/cllp/ultra_small_model.py"
+EXPERIMENT_TRAIN_POLICY = "/home/tomasz/Research/subgoal_search_chess/experiments/train/policy/ultra_small_model.py"
 
 USE_NEPTUNE = False
 
@@ -21,7 +22,7 @@ LOCAL_PATH_BINDING = {
 }
 
 
-specification, gin_bindings = get_configuration(EXPERIMENT_TRAIN_CLLP)
+specification, gin_bindings = get_configuration(EXPERIMENT_TRAIN_POLICY)
 corrected_bindings = set()
 for binding in gin_bindings:
     keep_unchanged = True

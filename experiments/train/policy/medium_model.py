@@ -1,5 +1,6 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+VERSION = "2"
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
@@ -7,8 +8,9 @@ base_config = {
 
     "PolicyGamesDataGenerator.pgn_file": "/pgn/solved_games.pgn",
     "PolicyGamesDataGenerator.chess_filter": "@filters.NoFilter",
-    "PolicyGamesDataGenerator.n_data": 10**4,
+    "PolicyGamesDataGenerator.n_data": 5*10**6,
     "PolicyGamesDataGenerator.log_samples_limit": 0.1,
+    "PolicyGamesDataGenerator.p_sample": 0.1,
 
 
     # "ResultFilter.winner_or_looser": "winner",
@@ -16,24 +18,24 @@ base_config = {
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": "/leela_models/v1/policy/small_model",
-    # "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
+    "GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/policy/medium_model",
+    "GlobalParamsHandler.learning_rate": 0.0003,
     "GlobalParamsHandler.path_format": ["learning_rate"],
 
     "BartConfig.vocab_size": 512,
-    "BartConfig.max_position_embeddings": 128,
-    "BartConfig.encoder_layers": 12,
-    "BartConfig.decoder_layers": 12,
-    "BartConfig.encoder_attention_heads": 16,
-    "BartConfig.decoder_attention_heads": 16,
-    "BartConfig.decoder_ffn_dim": 4096,
-    "BartConfig.encoder_ffn_dim": 4096,
-    "BartConfig.d_model": 1024,
-    "BartConfig.dropout": 0.01,
+    "BartConfig.max_position_embeddings": 256,
+    "BartConfig.encoder_layers": 8,
+    "BartConfig.decoder_layers": 8,
+    "BartConfig.encoder_attention_heads": 8,
+    "BartConfig.decoder_attention_heads": 8,
+    "BartConfig.decoder_ffn_dim": 2048,
+    "BartConfig.encoder_ffn_dim": 2048,
+    "BartConfig.d_model": 512,
+    "BartConfig.dropout": 0.1,
 
     "TrainingArguments.num_train_epochs": 1,
-    "TrainingArguments.per_device_train_batch_size": 128,
-    "TrainingArguments.per_device_eval_batch_size": 128,
+    "TrainingArguments.per_device_train_batch_size": 512,
+    "TrainingArguments.per_device_eval_batch_size": 512,
     "TrainingArguments.warmup_steps": 500,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
@@ -51,14 +53,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra-small-leela-policy-train",
+    experiment_name=f"medium-pgn-policy-train-v{VERSION}",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "small"],
+    tags=["pgn", "train", "small", f"v{VERSION}"],
     with_neptune=True,
     env={},
 )

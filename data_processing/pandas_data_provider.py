@@ -44,8 +44,8 @@ class PandasCLLPDataGenerator(ChessDataProvider):
         data_path: str = None,
         save_final_df_path: str = None,
         crop_df: int = 3 * 10**6,
-        use_one_move=True,
-        padding_len=20,
+        use_one_move=None,
+        padding_len=40,
     ):
 
         print(f"Data path: {data_path}")
@@ -93,7 +93,11 @@ class PandasCLLPDataGenerator(ChessDataProvider):
                 tokenized_moves.extend(
                     ChessTokenizer.encode_leela_move(move) + [ChessTokenizer.special_vocab_to_tokens["<SEP>"]]
                 )
-            # tokenized_moves.append(ChessTokenizer.special_vocab_to_tokens["<EOS>"])
+
+            tokenized_moves.append(ChessTokenizer.special_vocab_to_tokens["<EOS>"])
+            if not self.use_one_move:
+                if len(tokenized_moves) < self.padding_len:
+                    tokenized_moves.extend([ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (self.padding_len - len(tokenized_moves)))
 
             return tokenized_moves
 
@@ -115,12 +119,16 @@ class PandasCLLPDataGenerator(ChessDataProvider):
 
 class PandasCLLPDataProvider(ChessDataProvider):
     def __init__(self, data_path=None, eval_datapoints: int = 10000):
-        if data_path is None:
+        if GlobalParamsHandler().get_data_path() is not None:
             data_path = GlobalParamsHandler().get_data_path()
             print(f"Data path: {data_path}")
 
+        print(f"Reading pickle")
         df = pd.read_pickle(data_path)
+        print(f"Finished reading pickle")
+        print(f"Processing df")
         processed_df = self.process_df(df)
+        print(f"Finished processing df")
         self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
         self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
 

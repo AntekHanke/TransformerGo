@@ -33,6 +33,8 @@ class TrainModel(Job):
         if GlobalParamsHandler().get_out_dir() is not None:
             output_dir = GlobalParamsHandler().get_out_dir()
 
+        log_param("output_dir", output_dir)
+
         chess_database = chess_database_cls()
         if isinstance(chess_database, ChessGamesDataGenerator):
             chess_database.create_data()

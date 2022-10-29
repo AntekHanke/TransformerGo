@@ -16,11 +16,10 @@ class MoveDocodingException(Exception):
 
 class ChessTokenizer:
     """Custom tokenizer for chess data."""
+
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [
-        f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)
-    ]
+    algebraic_fields = [f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)]
 
     castlings = [
         "KQkq",
@@ -43,10 +42,7 @@ class ChessTokenizer:
     players = ["w", "b"]
     non_special_vocab = pieces + integers + algebraic_fields + players + castlings
     special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
-    vocab_to_tokens = {
-        symbol: i + NON_SPECIAL_TOKENS_START
-        for i, symbol in enumerate(non_special_vocab)
-    }
+    vocab_to_tokens = {symbol: i + NON_SPECIAL_TOKENS_START for i, symbol in enumerate(non_special_vocab)}
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
 
@@ -82,7 +78,7 @@ class ChessTokenizer:
     def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
         board_string_with_dots = ""
         board_tokens = [token for token in board_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()]
-        board_tokens = board_tokens[:cls.TOKENIZED_BOARD_LENGTH]
+        board_tokens = board_tokens[: cls.TOKENIZED_BOARD_LENGTH]
         for i, token in enumerate(board_tokens):
             if i >= 71:
                 board_string_with_dots += " "
@@ -108,9 +104,7 @@ class ChessTokenizer:
             cls.vocab_to_tokens[str(chess_move.to_square)],
         ]
         if chess_move.promotion is not None:
-            move_tokens.append(
-                cls.vocab_to_tokens[INT_TO_PIECE_SYMBOL[chess_move.promotion]]
-            )
+            move_tokens.append(cls.vocab_to_tokens[INT_TO_PIECE_SYMBOL[chess_move.promotion]])
         else:
             move_tokens.append(cls.vocab_to_tokens["-"])
         return move_tokens
@@ -129,6 +123,9 @@ class ChessTokenizer:
 
     @classmethod
     def decode_move(cls, output_tokens: List[int]) -> Move:
+        output_tokens = [
+            token for token in output_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()
+        ]
         promotion_str = cls.tokens_to_vocab[output_tokens[2]]
         if promotion_str == "-":
             promotion = None

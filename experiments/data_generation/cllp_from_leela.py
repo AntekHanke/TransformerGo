@@ -4,8 +4,8 @@ base_config = {
     "run.job_class": "@jobs.LeelaCCLPDataProcessing",
     "LeelaCCLPDataProcessing.pandas_data_provider_class": "@data.PandasCLLPDataGenerator",
     "PandasCLLPDataGenerator.data_path": "/leela_generator_data",
-    "PandasCLLPDataGenerator.save_final_df_path": "/leela_cllp_data/cllp_one_move.pkl",
-    "PandasCLLPDataGenerator.use_one_move": True,
+    "PandasCLLPDataGenerator.save_final_df_path": "/leela_cllp_data/cllp_all_moves_final.pkl",
+    "PandasCLLPDataGenerator.use_one_move": False,
 
     "use_neptune": True,
 }
@@ -13,7 +13,7 @@ base_config = {
 params_grid = {"idx": [0]}
 
 experiments_list = create_experiments_helper(
-    experiment_name="cllp form Leela",
+    experiment_name="cllp form Leela all moves padding",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

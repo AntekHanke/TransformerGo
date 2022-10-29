@@ -92,7 +92,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
         self,
         pgn_file: str = None,
         chess_filter: ChessFilter = None,
-        p_sample: float = 1.0,
+        p_sample: float = None,
         n_data: int = None,
         train_eval_split: float = 0.95,
         log_samples_limit: int = None,

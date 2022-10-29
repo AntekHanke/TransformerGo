@@ -238,7 +238,7 @@ contexts:
     cmd_type: sbatch
     time: 1-00:00:00
     cpu: 4
-    mem: 20G
+    mem: 120G
     gpu: 1
     modules_to_load:
     - plgrid/tools/singularity/stable
@@ -249,9 +249,10 @@ contexts:
     slurm_url: plgtodrzygozdz@pro.cyfronet.pl
     storage_dir: /net/scratch/people/plgtodrzygozdz/
     singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/pgn:/pgn
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
-                           -B /net/scratch/people/plgtodrzygozdz/chess_data/small_train_leela_data/:/save_data
-                           -B /net/scratch/people/plgtodrzygozdz/chess_data/small_train_leela_data/:/leela_data_processed
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/leela_generator_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/cllp_data/:/leela_cllp_data
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
                            -B $TMPDIR:/tmp --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif

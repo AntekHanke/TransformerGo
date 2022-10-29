@@ -13,6 +13,7 @@ class ChessSubgoalGenerator:
         raise NotImplementedError
 
 
+
 class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
     def __init__(self, checkpoint_path_or_model):
         if isinstance(checkpoint_path_or_model, str):
