@@ -136,3 +136,21 @@ class ChessTokenizer:
             int(cls.tokens_to_vocab[output_tokens[1]]),
             promotion,
         )
+
+    @classmethod
+    def decode_sequence(cls, tokens):
+        return [cls.tokens_to_vocab[token] for token in tokens]
+
+
+    # @classmethod
+    # def decode_many_moves(cls, output_tokens: List[int]) -> List[Move]:
+    #     output_tokens = [x for x in output_tokens if x != ChessTokenizer.special_vocab_to_tokens["<PAD>"]]
+    #     moves = []
+    #     tokens_to_decode = []
+    #     for token in output_tokens:
+    #         if token != cls.special_vocab_to_tokens["<SEP>"]:
+    #             tokens_to_decode.append(token)
+    #         else:
+    #             moves.append(cls.decode_move(tokens_to_decode))
+    #             tokens_to_decode = []
+    #     return moves

@@ -4,8 +4,8 @@ base_config = {
     "run.job_class": "@jobs.LeelaCCLPDataProcessing",
     "LeelaCCLPDataProcessing.pandas_data_provider_class": "@data.PandasCLLPDataGenerator",
     "PandasCLLPDataGenerator.data_path": "/leela_generator_data",
-    "PandasCLLPDataGenerator.save_final_df_path": "/leela_cllp_data/cllp_all_moves_final.pkl",
-    "PandasCLLPDataGenerator.use_one_move": False,
+    "PandasCLLPDataGenerator.save_final_df_path": "/leela_cllp_data/cllp_one_moves_test.pkl",
+    "PandasCLLPDataGenerator.use_one_move": True,
 
     "use_neptune": True,
 }

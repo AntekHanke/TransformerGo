@@ -1,5 +1,8 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+#Lizard: shallower or wider
+
+VERSION = "3"
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
@@ -9,8 +12,8 @@ base_config = {
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
     "GlobalParamsHandler.k": 3,
-    "GlobalParamsHandler.out_dir": "/leela_models/v0/generator/large_model",
-    "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
+    "GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/generator/large_model",
+    "GlobalParamsHandler.data_location": "/leela_generator_data/full_dataset",
     "GlobalParamsHandler.data_type": "generator",
     "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
@@ -27,22 +30,22 @@ base_config = {
     "BartConfig.dropout": 0.01,
 
     "TrainingArguments.num_train_epochs": 1,
-    "TrainingArguments.per_device_train_batch_size": 256,
-    "TrainingArguments.per_device_eval_batch_size": 256,
+    "TrainingArguments.per_device_train_batch_size": 200,
+    "TrainingArguments.per_device_eval_batch_size": 200,
     "TrainingArguments.warmup_steps": 500,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
-    "TrainingArguments.learning_rate": 0.0003,
+    "TrainingArguments.learning_rate": 0.0001,
 
     "use_neptune": True,
 }
 
 params_grid = {
     "idx": [0],
-    "GlobalParamsHandler.k": [3],
-    "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003]
+    "GlobalParamsHandler.k": [2,3,4,5,6],
+    # "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003],
 }
 
 experiments_list = create_experiments_helper(
@@ -53,7 +56,7 @@ experiments_list = create_experiments_helper(
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "large"],
+    tags=["leela", "train", "medium", "generator", f"v{VERSION}"],
     with_neptune=True,
     env={},
 )

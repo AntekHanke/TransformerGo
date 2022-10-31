@@ -1,6 +1,6 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-VERSION = "2"
+VERSION = "3"
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
@@ -8,7 +8,7 @@ base_config = {
 
     "PolicyGamesDataGenerator.pgn_file": "/pgn/solved_games.pgn",
     "PolicyGamesDataGenerator.chess_filter": "@filters.NoFilter",
-    "PolicyGamesDataGenerator.n_data": 5*10**6,
+    "PolicyGamesDataGenerator.n_data": 10**7,
     "PolicyGamesDataGenerator.log_samples_limit": 0.1,
     "PolicyGamesDataGenerator.p_sample": 0.1,
 

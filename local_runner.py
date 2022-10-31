@@ -22,7 +22,7 @@ LOCAL_PATH_BINDING = {
 }
 
 
-specification, gin_bindings = get_configuration(EXPERIMENT_TRAIN_POLICY)
+specification, gin_bindings = get_configuration(EXPERIMENT_CLLP_DATA_MAKE)
 corrected_bindings = set()
 for binding in gin_bindings:
     keep_unchanged = True
