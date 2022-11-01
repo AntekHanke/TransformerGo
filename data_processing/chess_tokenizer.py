@@ -138,9 +138,14 @@ class ChessTokenizer:
         )
 
     @classmethod
-    def decode_sequence(cls, tokens):
+    def decode(cls, tokens):
+        """General decode method"""
         return [cls.tokens_to_vocab[token] for token in tokens]
 
+    @classmethod
+    def decode_leela_moves(cls, output_tokens):
+        """Decode Leela moves"""
+        decoded_tokens = "".join(cls.decode(output_tokens))
 
     # @classmethod
     # def decode_many_moves(cls, output_tokens: List[int]) -> List[Move]:

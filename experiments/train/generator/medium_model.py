@@ -44,7 +44,7 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "GlobalParamsHandler.k": [2,3,4,5,6],
+    "GlobalParamsHandler.k": [1],
     # "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003],
 }
 
