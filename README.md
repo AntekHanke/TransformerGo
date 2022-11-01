@@ -49,3 +49,7 @@ Simple self-play example is in file:
 ## Building Lichess Bots:
 
 Install Banksia (https://banksiagui.com/)
+
+If you have troubles connecting Banksiagui to Lichess, follow this instruction (tested on Ubuntu 22.04):
+
+https://linuxpip.org/install-openssl-linux/

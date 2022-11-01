@@ -146,6 +146,11 @@ class ChessTokenizer:
     def decode_leela_moves(cls, output_tokens):
         """Decode Leela moves"""
         decoded_tokens = "".join(cls.decode(output_tokens))
+        decoded_tokens = decoded_tokens.replace("<EOS>", "").replace("-", "")
+        moves_str = decoded_tokens.split("<SEP>")
+        moves_str = [move for move in moves_str if move != ""]
+        return [Move.from_uci(move_str) for move_str in moves_str]
+
 
     # @classmethod
     # def decode_many_moves(cls, output_tokens: List[int]) -> List[Move]:

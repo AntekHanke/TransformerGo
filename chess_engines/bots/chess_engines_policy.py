@@ -1,4 +1,5 @@
 import copy
+import random
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
@@ -19,7 +20,15 @@ def log(s: str, prefix: str = ">>> ") -> None:
 class ChessEngine(ABC):
     @abstractmethod
     def policy(self, current_state: chess.Board) -> str:
-        pass
+        legal_moves = list(current_state.legal_moves)
+        proposed_move = self.propose_best_move(current_state)
+        if proposed_move in legal_moves:
+            return proposed_move
+        else:
+            return random.choice(legal_moves)
+
+    def propose_best_move(self, current_state: chess.Board) -> str:
+        raise NotImplementedError
 
 
 class RandomChessEngine(ChessEngine):
@@ -27,7 +36,7 @@ class RandomChessEngine(ChessEngine):
         self.name = "Random Chess Engine 2"
         self.debug = False
 
-    def policy(self, current_state: chess.Board) -> str:
+    def propose_best_move(self, current_state: chess.Board) -> str:
         board = copy.deepcopy(current_state)
         moves: List[chess.Move] = list(board.legal_moves)
         best_move: str = np.random.choice(moves).uci()
@@ -52,7 +61,7 @@ class StockfishChessEngine(ChessEngine):
         self.name = "Stockfish Engine"
         self.debug = False
 
-    def policy(self, current_state: chess.Board) -> str:
+    def propose_best_move(self, current_state: chess.Board) -> str:
         board = copy.deepcopy(current_state)
         available_moves: List[chess.Move] = list(board.legal_moves)
         best_move: chess.Move = self.engine.analyse(board, limit=self.depth_limit, multipv=1)[0]["pv"]
@@ -68,17 +77,15 @@ class StockfishChessEngine(ChessEngine):
 
 
 class PolicyChess(ChessEngine):
-
-
     def __init__(self) -> None:
         self.name = "Policy Engine"
         POLICY_CHECKPOINT = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/policy/final_model"
         self.chess_policy = BasicChessPolicy(POLICY_CHECKPOINT)
 
-    def policy(self, current_state: chess.Board) -> str:
-        move =  self.chess_policy.get_best_move(ImmutableBoard.from_board(current_state)).uci()
-        log(f"Pawn promotion: current move {move}")
+    def propose_best_move(self, current_state: chess.Board) -> str:
+        move = self.chess_policy.get_best_move(ImmutableBoard.from_board(current_state)).uci()
         return move
+
 
 class CLLPChess(ChessEngine):
     def __init__(self, engine) -> None:

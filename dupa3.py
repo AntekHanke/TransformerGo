@@ -1,10 +1,10 @@
 import chess
 
 from data_structures.data_structures import ImmutableBoard
-from policy.cllp import CLLP, CLLP_am
+from policy.cllp import CLLP
 
-x = CLLP("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp_one_move/final_model")
-y = CLLP_am("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp_all_moves/final_model")
+# x = CLLP("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp_one_move/final_model")
+y = CLLP("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp_all_moves/final_model")
 
 board = chess.Board()
 b1 = ImmutableBoard.from_board(board)
