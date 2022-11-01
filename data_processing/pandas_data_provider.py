@@ -91,7 +91,7 @@ class PandasCLLPDataGenerator(ChessDataProvider):
                 moves = [moves[0]]
             for move in moves:
                 tokenized_moves.extend(
-                    ChessTokenizer.encode_leela_move(move) + [ChessTokenizer.special_vocab_to_tokens["<SEP>"]]
+                    ChessTokenizer.encode_uci_move(move) + [ChessTokenizer.special_vocab_to_tokens["<SEP>"]]
                 )
 
             tokenized_moves.append(ChessTokenizer.special_vocab_to_tokens["<EOS>"])

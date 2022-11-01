@@ -11,6 +11,7 @@ EXPERIMENT_TRAIN_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experim
 EXPERIMENT_CLLP_DATA_MAKE = "/home/tomasz/Research/subgoal_search_chess/experiments/data_generation/cllp_from_leela.py"
 EXPERIMENT_TRAIN_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/train/cllp/ultra_small_model.py"
 EXPERIMENT_TRAIN_POLICY = "/home/tomasz/Research/subgoal_search_chess/experiments/train/policy/ultra_small_model.py"
+EXPERIMENT_EVAL_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/evaluation/cllp/evaluate_cllp.py"
 
 USE_NEPTUNE = False
 
@@ -19,10 +20,11 @@ LOCAL_PATH_BINDING = {
     "/leela_cllp_data": "/home/tomasz/Research/subgoal_chess_data/cllp_leela_datasets",
     "/leela_models": "/home/tomasz/Research/subgoal_chess_data/local_leela_models",
     "/pgn": "/home/tomasz/Research/subgoal_chess_data/pgn",
+    "/trees": "/home/tomasz/Research/subgoal_chess_data/leela_eval_trees",
 }
 
 
-specification, gin_bindings = get_configuration(EXPERIMENT_CLLP_DATA_MAKE)
+specification, gin_bindings = get_configuration(EXPERIMENT_EVAL_CLLP)
 corrected_bindings = set()
 for binding in gin_bindings:
     keep_unchanged = True

@@ -110,7 +110,7 @@ class ChessTokenizer:
         return move_tokens
 
     @classmethod
-    def encode_leela_move(cls, chess_move_as_string: str) -> List[int]:
+    def encode_uci_move(cls, chess_move_as_string: str) -> List[int]:
         move_tokens = [
             cls.vocab_to_tokens[chess_move_as_string[0:2]],
             cls.vocab_to_tokens[chess_move_as_string[2:4]],
@@ -143,7 +143,7 @@ class ChessTokenizer:
         return [cls.tokens_to_vocab[token] for token in tokens]
 
     @classmethod
-    def decode_leela_moves(cls, output_tokens):
+    def decode_uci_moves(cls, output_tokens):
         """Decode Leela moves"""
         decoded_tokens = "".join(cls.decode(output_tokens))
         decoded_tokens = decoded_tokens.replace("<EOS>", "").replace("-", "")

@@ -18,9 +18,8 @@ def log(s: str, prefix: str = ">>> ") -> None:
 
 
 class ChessEngine(ABC):
-    @abstractmethod
     def policy(self, current_state: chess.Board) -> str:
-        legal_moves = list(current_state.legal_moves)
+        legal_moves = [x.uci() for x in  current_state.legal_moves]
         proposed_move = self.propose_best_move(current_state)
         if proposed_move in legal_moves:
             return proposed_move

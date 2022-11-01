@@ -119,7 +119,10 @@ class SubgoalMCGamesDataGenerator:
         self.log_samples_limit = log_samples_limit
         self.input_data_dir = input_data_dir
         self.input_file_name = input_file_name
-        self.save_data_path = save_data_path + f"_k={self.k}.pkl"
+        if save_data_path is not None:
+            self.save_data_path = save_data_path + f"_k={self.k}.pkl"
+        else:
+            self.save_data_path = None
         self.save_data_every = save_data_every
         # self.columns_to_save = columns_to_save
 
@@ -162,11 +165,8 @@ class SubgoalMCGamesDataGenerator:
                         break
                 self.processed_files += 1
                 log_value("processed_files", self.processed_files, self.processed_files)
-        self.data.to_pickle(self.save_data_path)
-
-    # def get_chess_dataset(self) -> ChessDataset:
-    #     assert self.data_constructed, "Data not constructed, call .create_data() first"
-    #     return ChessDataset(self.data)
+        if self.save_data_path is not None:
+            self.data.to_pickle(self.save_data_path)
 
     def leela_tree_to_datapoints(self, leela_tree: LeelaGMLTree):
         subgoals, stats = self.nodes_selector.find_subgoals(0, leela_tree, self.k, self.n_subgoals, 200)
