@@ -35,3 +35,29 @@ class CLLP(ChessPolicy):
         input_tensor = torch.IntTensor([model_input]).to(self.model.device)
         output = self.model.generate(input_tensor, max_length=40).tolist()
         return ChessTokenizer.decode_uci_moves(output[0])
+
+    def get_batch_path(self, queries_list):
+        inputs_tokenized = []
+        targets_tokenized = []
+        moves_batch = []
+
+        for input_immutable_board, target_immutable_board in queries_list:
+            inputs_tokenized.append(
+                ChessTokenizer.encode_immutable_board(input_immutable_board)
+                + [ChessTokenizer.special_vocab_to_tokens["<SEP>"]]
+                + [
+                    ChessTokenizer.special_vocab_to_tokens["<SEP>"]
+                ]  # This is not mistake, it is the correction for the bug in train data
+                + ChessTokenizer.encode_immutable_board(target_immutable_board)
+            )
+
+        input_tensor = torch.IntTensor(inputs_tokenized).to(self.model.device)
+        output = self.model.generate(input_tensor, max_length=40).tolist()
+
+        for out in output:
+            try:
+                moves_batch.append(ChessTokenizer.decode_uci_moves(out))
+            except:
+                moves_batch.append(None)
+
+        return moves_batch

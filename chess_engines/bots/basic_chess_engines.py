@@ -105,35 +105,65 @@ class SubgoalWithCLLP(ChessEngine):
 
 
 class SubgoalWithCLLPStockfish(ChessEngine):
+    #TODO: code in progress
     def __init__(self, generator_checkpoint: str, cllp_checkpoint: str, n_subgoals: int) -> None:
-        super().__init__("Four subgoals CLLP + Stockfish")
+        super().__init__(f"{n_subgoals} subgoals CLLP + Stockfish")
         self.generator = BasicChessSubgoalGenerator(generator_checkpoint)
         self.cllp = CLLP(cllp_checkpoint)
-        self.stockfish = StockfishEngine(depth_limit=15)
+        self.stockfish = StockfishEngine(depth_limit=20)
 
         self.n_subgoals = n_subgoals
 
         self.n_moves = 0
 
+    def choose_move_idx(self, move_values, moves, active_player, legal_moves):
+        sorted_moves = np.argsort(move_values)
+
+        for i in range(len(move_values)):
+            if active_player == "w":
+                move = moves[sorted_moves[-(i+1)]]
+            else:
+                move = moves[sorted_moves[i]]
+            if move in legal_moves:
+                return move, i
+
+        else:
+            raise Exception("No legal move found")
+
+
+
     def propose_best_move(self, current_state: chess.Board) -> str:
         self.n_moves += 1
-        try:
-            subgoals = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state), self.n_subgoals)
-            subgoal_values = self.stockfish.evaluate_boards_in_parallel(subgoals)
-            fig = immutable_boards_to_img(
-                [ImmutableBoard.from_board(current_state)] + subgoals, ["input"] + [str(x) for x in subgoal_values]
-            )
-            fig.savefig(f"/home/tomasz/Research/subgoal_chess_data/bot_logs/subgoal_cllp_stockfish/subgoal_{self.n_moves}.png")
-            if ImmutableBoard.from_board(current_state).active_player == "w":
-                best_idx = np.argmax(subgoal_values)
-            else:
-                best_idx = np.argmin(subgoal_values)
 
-            best_subgoal = subgoals[best_idx]
-            move = self.cllp.get_path(ImmutableBoard.from_board(current_state), best_subgoal)[0].uci()
-            return move
-        except Exception as e:
-            print(e)
-            log(f"Exception in SubgoalWithCLLPStockfish {e}")
-            assert False
-            return ""
+        subgoals = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state), self.n_subgoals)
+        subgoal_values = self.stockfish.evaluate_boards_in_parallel(subgoals)
+
+
+        batch_to_predict = []
+        for subgoal in subgoals:
+            batch_to_predict.append((ImmutableBoard.from_board(current_state), subgoal))
+        paths = self.cllp.get_batch_path(batch_to_predict)
+        sorted_moves = np.argsort(subgoal_values)
+        moves = [path[0].uci() for path in paths]
+
+        immutable_current = ImmutableBoard.from_board(current_state)
+
+        legal_moves = [x.uci() for x in current_state.legal_moves]
+        move, i = self.choose_move_idx(subgoal_values, moves, immutable_current.active_player, legal_moves)
+        # move = self.cllp.get_path(ImmutableBoard.from_board(current_state), best_subgoal)[0].uci()
+
+        is_legal = move in legal_moves
+
+        descriptions = [f"input move[{i}] = {move} l = {move in legal_moves}"]
+        for i in range(self.n_subgoals):
+            descriptions.append(f"val {subgoal_values[i]} moves = {[str(x) for x in paths[i]]}")
+
+        fig = immutable_boards_to_img(
+            [ImmutableBoard.from_board(current_state)] + subgoals, descriptions
+        )
+
+        fig.savefig(
+            f"/home/tomasz/Research/subgoal_chess_data/bot_logs/subgoal_cllp_stockfish/subgoal_{self.n_moves}.png")
+
+        return move
+

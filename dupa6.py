@@ -1,17 +1,14 @@
-#!/home/tomasz/anaconda3/envs/subgoal_search_chess/bin/python -u
+import chess
 
-from set_root_path import set_root_path
-
-set_root_path()
-
-from chess_engines.banksia_gui_uci.banksia_gui_core import main_uci_loop
 from chess_engines.bots.basic_chess_engines import SubgoalWithCLLPStockfish
 
 engine = SubgoalWithCLLPStockfish(
     "/home/tomasz/Research/subgoal_chess_data/local_leela_models/generator/medium_k=1/final_model",
     "/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp_all_moves/final_model",
-    3
+    6
 )
 
-if __name__ == "__main__":
-    main_uci_loop(engine)
+board = chess.Board()
+
+move = engine.propose_best_move(board)
+print(move)

@@ -31,9 +31,9 @@ class StockfishEngine:
             return result.relative.cp
         else:
             if immutable_board.active_player == "w":
-                return -VALUE_FOR_MATE
-            elif immutable_board.active_player == "b":
                 return VALUE_FOR_MATE
+            elif immutable_board.active_player == "b":
+                return -VALUE_FOR_MATE
 
     @staticmethod
     def absolute_v(player, v):
