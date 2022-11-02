@@ -7,9 +7,12 @@ import chess
 import chess.engine
 import numpy as np
 
+from chess_engines.third_party.stockfish import StockfishEngine
+from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
 from policy.chess_policy import BasicChessPolicy
 from policy.cllp import CLLP
+from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 
 
 def log(s: str, prefix: str = ">>> ") -> None:
@@ -81,7 +84,7 @@ class StockfishChessEngine(ChessEngine):
 
 class PolicyChess(ChessEngine):
     def __init__(self, policy_checkpoint) -> None:
-        super().__init__("Policy Engine")
+        super().__init__("Policy Engine v2")
         self.chess_policy = BasicChessPolicy(policy_checkpoint)
 
     def propose_best_move(self, current_state: chess.Board) -> str:
@@ -89,11 +92,48 @@ class PolicyChess(ChessEngine):
         return move
 
 
-class CLLPChess(ChessEngine):
+class SubgoalWithCLLP(ChessEngine):
     def __init__(self, generator_checkpoint: str, cllp_checkpoint: str) -> None:
         super().__init__("One subgoal with CLLP")
-        self.generator = BasicChessPolicy(generator_checkpoint)
+        self.generator = BasicChessSubgoalGenerator(generator_checkpoint)
         self.cllp = CLLP(cllp_checkpoint)
 
-    def policy(self, current_state: chess.Board) -> str:
-        pass
+    def propose_best_move(self, current_state: chess.Board) -> str:
+        subgoal = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state), 1)[0]
+        move = self.cllp.get_path(ImmutableBoard.from_board(current_state), subgoal)[0].uci()
+        return move
+
+
+class SubgoalWithCLLPStockfish(ChessEngine):
+    def __init__(self, generator_checkpoint: str, cllp_checkpoint: str, n_subgoals: int) -> None:
+        super().__init__("Four subgoals CLLP + Stockfish")
+        self.generator = BasicChessSubgoalGenerator(generator_checkpoint)
+        self.cllp = CLLP(cllp_checkpoint)
+        self.stockfish = StockfishEngine(depth_limit=15)
+
+        self.n_subgoals = n_subgoals
+
+        self.n_moves = 0
+
+    def propose_best_move(self, current_state: chess.Board) -> str:
+        self.n_moves += 1
+        try:
+            subgoals = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state), self.n_subgoals)
+            subgoal_values = self.stockfish.evaluate_boards_in_parallel(subgoals)
+            fig = immutable_boards_to_img(
+                [ImmutableBoard.from_board(current_state)] + subgoals, ["input"] + [str(x) for x in subgoal_values]
+            )
+            fig.savefig(f"/home/tomasz/Research/subgoal_chess_data/bot_logs/subgoal_cllp_stockfish/subgoal_{self.n_moves}.png")
+            if ImmutableBoard.from_board(current_state).active_player == "w":
+                best_idx = np.argmax(subgoal_values)
+            else:
+                best_idx = np.argmin(subgoal_values)
+
+            best_subgoal = subgoals[best_idx]
+            move = self.cllp.get_path(ImmutableBoard.from_board(current_state), best_subgoal)[0].uci()
+            return move
+        except Exception as e:
+            print(e)
+            log(f"Exception in SubgoalWithCLLPStockfish {e}")
+            assert False
+            return ""

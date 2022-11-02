@@ -75,6 +75,3 @@ def main_uci_loop(engine: ChessEngine):
             output("bestmove" + " " + best_move)
         elif commands[0] == UCI_QUIT_COMMAND:
             break
-
-
-
