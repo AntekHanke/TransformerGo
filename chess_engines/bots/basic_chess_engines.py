@@ -9,6 +9,7 @@ import numpy as np
 
 from data_structures.data_structures import ImmutableBoard
 from policy.chess_policy import BasicChessPolicy
+from policy.cllp import CLLP
 
 
 def log(s: str, prefix: str = ">>> ") -> None:
@@ -18,8 +19,11 @@ def log(s: str, prefix: str = ">>> ") -> None:
 
 
 class ChessEngine(ABC):
+    def __init__(self, name: str):
+        self.name = name
+
     def policy(self, current_state: chess.Board) -> str:
-        legal_moves = [x.uci() for x in  current_state.legal_moves]
+        legal_moves = [x.uci() for x in current_state.legal_moves]
         proposed_move = self.propose_best_move(current_state)
         if proposed_move in legal_moves:
             return proposed_move
@@ -32,7 +36,7 @@ class ChessEngine(ABC):
 
 class RandomChessEngine(ChessEngine):
     def __init__(self) -> None:
-        self.name = "Random Chess Engine 2"
+        super().__init__("Random Chess Engine")
         self.debug = False
 
     def propose_best_move(self, current_state: chess.Board) -> str:
@@ -55,9 +59,9 @@ class RandomChessEngine(ChessEngine):
 
 class StockfishChessEngine(ChessEngine):
     def __init__(self, engine) -> None:
+        super().__init__("Stockfish Chess Engine")
         self.engine = engine
         self.depth_limit = chess.engine.Limit(depth=30)
-        self.name = "Stockfish Engine"
         self.debug = False
 
     def propose_best_move(self, current_state: chess.Board) -> str:
@@ -76,10 +80,9 @@ class StockfishChessEngine(ChessEngine):
 
 
 class PolicyChess(ChessEngine):
-    def __init__(self) -> None:
-        self.name = "Policy Engine"
-        POLICY_CHECKPOINT = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/policy/final_model"
-        self.chess_policy = BasicChessPolicy(POLICY_CHECKPOINT)
+    def __init__(self, policy_checkpoint) -> None:
+        super().__init__("Policy Engine")
+        self.chess_policy = BasicChessPolicy(policy_checkpoint)
 
     def propose_best_move(self, current_state: chess.Board) -> str:
         move = self.chess_policy.get_best_move(ImmutableBoard.from_board(current_state)).uci()
@@ -87,8 +90,10 @@ class PolicyChess(ChessEngine):
 
 
 class CLLPChess(ChessEngine):
-    def __init__(self, engine) -> None:
-        self.engine = engine
+    def __init__(self, generator_checkpoint: str, cllp_checkpoint: str) -> None:
+        super().__init__("One subgoal with CLLP")
+        self.generator = BasicChessPolicy(generator_checkpoint)
+        self.cllp = CLLP(cllp_checkpoint)
 
     def policy(self, current_state: chess.Board) -> str:
         pass

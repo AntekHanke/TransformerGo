@@ -4,7 +4,7 @@ from typing import Union, Tuple, List
 import chess
 from matplotlib import pyplot as plt
 
-from chess_engines.stockfish import StockfishEngine
+from chess_engines.third_party.stockfish import StockfishEngine
 from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
 

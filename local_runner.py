@@ -13,7 +13,7 @@ EXPERIMENT_TRAIN_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/
 EXPERIMENT_TRAIN_POLICY = "/home/tomasz/Research/subgoal_search_chess/experiments/train/policy/ultra_small_model.py"
 EXPERIMENT_EVAL_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/evaluation/cllp/evaluate_cllp.py"
 
-USE_NEPTUNE = False
+USE_NEPTUNE = True
 
 LOCAL_PATH_BINDING = {
     "/leela_generator_data": "/home/tomasz/Research/subgoal_chess_data/generator_leela_datasets",

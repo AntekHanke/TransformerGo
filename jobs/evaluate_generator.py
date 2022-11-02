@@ -1,18 +1,12 @@
 import random
 
-from chess_engines.stockfish import StockfishEngine
-from data_processing.chess_data_generator import ChessGamesDataGenerator, NoFilter, ChessSubgoalGamesDataGenerator
+from chess_engines.third_party.stockfish import StockfishEngine
+from data_processing.chess_data_generator import NoFilter, ChessSubgoalGamesDataGenerator
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
 from jobs.core import Job
-from transformers import (
-    Trainer,
-    BartForConditionalGeneration,
-    BartConfig,
-    TrainingArguments,
-)
 
-from metric_logging import log_param, source_files_register, log_object
+from metric_logging import source_files_register, log_object
 from subgoal_generator.subgoal_generator import ChessSubgoalGenerator
 
 source_files_register.register(__file__)
