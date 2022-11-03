@@ -77,9 +77,10 @@ def main_uci_loop(engine: ChessEngine):
             best_move = engine.policy(baord)
             output("bestmove" + " " + best_move)
 
-        elif commands[0] == UCI_NEW_GAME:
-            log("New game")
-            engine.new_game()
+        # elif commands[0] == UCI_NEW_GAME:
+        #     log("New game")
+        #     move_list = ""
+        #     engine.new_game()
 
         elif commands[0] == UCI_QUIT_COMMAND:
             break

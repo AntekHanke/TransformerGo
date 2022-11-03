@@ -28,6 +28,8 @@ class ChessEngine(ABC):
         self.name = name
         self.log_dir = log_dir
 
+        self.current_game = {"move": [], "board": []}
+
     def new_game(self):
         today = date.today()
         now = datetime.now()
@@ -167,7 +169,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         fig = immutable_boards_to_img([ImmutableBoard.from_board(current_state)] + subgoals, descriptions)
 
         fig.savefig(
-            f"/home/tomasz/Research/subgoal_chess_data/bot_logs/subgoal_cllp_stockfish/subgoal_{self.n_moves}.png"
+            os.path.join(self.log_dir, f"subgoal_{self.n_moves}.png")
         )
 
         return move
