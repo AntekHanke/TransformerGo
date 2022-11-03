@@ -15,6 +15,7 @@ UCI_POSITION_COMMAND: str = "position"
 UCI_MOVES_COMMAND: str = "moves"
 UCI_GO_COMMAND: str = "go"
 UCI_QUIT_COMMAND: str = "quit"
+UCI_NEW_GAME: str = "ucinewgame"
 
 
 def get_move_list(s: str) -> str:
@@ -49,22 +50,24 @@ def main_uci_loop(engine: ChessEngine):
     log("Starting chess engine")
     log(f"Engine type {type(engine)}")
     log("Chess engine started")
-    # engine: RandomChessEngine = RandomChessEngine()
+
     move_list: str = ""
 
     while True:
         s = input()
         commands: List[str] = s.split(" ")
+        log(f"Received command {s}")
+
         if len(commands) == 0:
             continue
 
         if commands[0] == UCI_COMMAND:
             output("id name " + str(engine.name))
             output("id authors Tomek and Gracjan")
-            output("uciok")
+            output(UCI_OK_COMMAND)
 
         elif commands[0] == UCI_IS_READY_COMMAND:
-            output("readyok")
+            output(UCI_READY_OK_COMMAND)
 
         elif commands[0] == UCI_POSITION_COMMAND:
             move_list = get_move_list(s)
@@ -73,5 +76,10 @@ def main_uci_loop(engine: ChessEngine):
             baord: chess.Board = curent_state(move_list)
             best_move = engine.policy(baord)
             output("bestmove" + " " + best_move)
+
+        elif commands[0] == UCI_NEW_GAME:
+            log("New game")
+            engine.new_game()
+
         elif commands[0] == UCI_QUIT_COMMAND:
             break
