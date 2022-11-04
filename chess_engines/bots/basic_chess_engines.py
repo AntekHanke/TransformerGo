@@ -150,7 +150,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         batch_to_predict = []
         for subgoal in subgoals:
             batch_to_predict.append((ImmutableBoard.from_board(current_state), subgoal))
-        paths = self.cllp.get_batch_path(batch_to_predict)
+        paths = self.cllp.get_paths_batch(batch_to_predict)
         sorted_moves = np.argsort(subgoal_values)
         moves = [path[0].uci() for path in paths]
 

@@ -9,5 +9,17 @@ Fix in modules:
 
 
 Modules cleaning:
-TO: experiments, configures, local_runner, policy
+TO: experiments, configures, local_runner (DONE), policy
 GG: chess_engines, jobs,  assets
+
+
+
+propes_best_moves(state, self.n_best-moves)
+
+[m1, m2, m3]
+for move in moves:
+    if move in legal_moves:
+        return move
+else:
+    if replave_
+    return random.choice(legal_moves)
