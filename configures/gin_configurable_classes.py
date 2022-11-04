@@ -14,11 +14,8 @@ from data_processing.pandas_data_provider import (
     PandasCLLPDataGenerator,
     PandasCLLPDataProvider,
 )
-from jobs.any_job import AnyJob
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.evaluate_cllp import EvaluateCLLP
-
-# from jobs.job_leela_dataset import LeelaDatasetGenerator
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing
 from jobs.train_model import TrainModel
 
@@ -33,7 +30,7 @@ def configure_classes(classes, module=None) -> None:
 
 
 # configure_classes([GlobalParamsHandler], "params")
-configure_classes([AnyJob, TrainModel, CreatePGNDataset, LeelaCCLPDataProcessing, EvaluateCLLP], "jobs")
+configure_classes([TrainModel, CreatePGNDataset, LeelaCCLPDataProcessing, EvaluateCLLP], "jobs")
 configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
 configure_classes(
