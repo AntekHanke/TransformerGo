@@ -6,14 +6,11 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-# from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
+from data_processing.leela.leela_graph_data_loader import LeelaGMLTree, data_trees_generator
+from data_structures.data_structures import LeelaSubgoal
 
-# from data_structures.data_structures import ImmutableBoard
-
-# from leela.leela_graph_data_loader import LeelaGMLTree
-from data_processing.leela import LeelaGMLTree, data_trees_generator, LeelaSubgoal
 from metric_logging import log_value, log_object, log_param
 
 

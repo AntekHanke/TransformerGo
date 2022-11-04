@@ -1,3 +1,5 @@
+from typing import Optional
+
 import gin
 
 import metric_logging
@@ -7,44 +9,33 @@ from runner import run
 
 import configures.gin_configurable_classes  # keep this import
 
-EXPERIMENT_TRAIN_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
-EXPERIMENT_CLLP_DATA_MAKE = "/home/tomasz/Research/subgoal_search_chess/experiments/data_generation/cllp_from_leela.py"
-EXPERIMENT_TRAIN_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/train/cllp/ultra_small_model.py"
-EXPERIMENT_TRAIN_POLICY = "/home/tomasz/Research/subgoal_search_chess/experiments/train/policy/ultra_small_model.py"
-EXPERIMENT_EVAL_CLLP = "/home/tomasz/Research/subgoal_search_chess/experiments/evaluation/cllp/evaluate_cllp.py"
 
-USE_NEPTUNE = True
+def local_run(experiment_path: str, use_neptune: bool, local_path_bindings: Optional[dict] = None):
+    """Runs experiment locally, replacing paths in gin_bindings with local paths."""
 
-LOCAL_PATH_BINDING = {
-    "/leela_generator_data": "/home/tomasz/Research/subgoal_chess_data/generator_leela_datasets",
-    "/leela_cllp_data": "/home/tomasz/Research/subgoal_chess_data/cllp_leela_datasets",
-    "/leela_models": "/home/tomasz/Research/subgoal_chess_data/local_leela_models",
-    "/pgn": "/home/tomasz/Research/subgoal_chess_data/pgn",
-    "/trees": "/home/tomasz/Research/subgoal_chess_data/leela_eval_trees",
-}
+    specification, gin_bindings = get_configuration(experiment_path)
+    corrected_bindings = set()
+    for binding in gin_bindings:
+        keep_unchanged = True
+        if local_path_bindings:
+            for general_path, local_path in local_path_bindings.items():
+                if general_path in binding:
+                    corrected_bindings.add(binding.replace(general_path, local_path))
+                    keep_unchanged = False
+                    print(f"Corrected path for local execution: {binding} -> {corrected_bindings}")
+            if keep_unchanged:
+                corrected_bindings.add(binding)
+        else:
+            corrected_bindings = gin_bindings
 
+    corrected_bindings = list(corrected_bindings)
+    print(f"specification: {specification}")
+    print(f"gin_bindings: {corrected_bindings}")
 
-specification, gin_bindings = get_configuration(EXPERIMENT_EVAL_CLLP)
-corrected_bindings = set()
-for binding in gin_bindings:
-    keep_unchanged = True
-    for general_path, local_path in LOCAL_PATH_BINDING.items():
-        if general_path in binding:
-            corrected_bindings.add(binding.replace(general_path, local_path))
-            keep_unchanged = False
-            print(f"Corrected binding: {binding} -> {corrected_bindings}")
-    if keep_unchanged:
-        corrected_bindings.add(binding)
+    if use_neptune:
+        neptune_logger = mrunner_client.configure_neptune(specification)
+        metric_logging.register_logger(neptune_logger)
+        metric_logging.register_pytorch_callback_logger(neptune_logger)
 
-corrected_bindings = list(corrected_bindings)
-print(f"specification: {specification}")
-print(f"gin_bindings: {corrected_bindings}")
-
-if USE_NEPTUNE:
-    neptune_logger = mrunner_client.configure_neptune(specification)
-    metric_logging.register_logger(neptune_logger)
-    metric_logging.register_pytorch_callback_logger(neptune_logger)
-
-gin.parse_config_files_and_bindings(None, corrected_bindings)
-
-run()
+    gin.parse_config_files_and_bindings(None, corrected_bindings)
+    run()
