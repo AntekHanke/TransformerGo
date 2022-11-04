@@ -1,0 +1,13 @@
+1. Typing
+2. Remove unused code
+3. Reformat code
+
+
+Fix in modules:
+- policy: remove random moves
+- chess_engines: handle random moves in chess engines, debug
+
+
+Modules cleaning:
+TO: experiments, configures, local_runner, policy
+GG: chess_engines, jobs,  assets

@@ -22,13 +22,11 @@ source_files_register.register(__file__)
 class TrainModel(Job):
     def __init__(
         self,
-        # global_params_handler: Type[GlobalParams],
         chess_database_cls: Type[ChessDataProvider],
         model_config_cls: Type[BartConfig] = None,
         training_args_cls: Type[TrainingArguments] = None,
         output_dir: str = None,
     ):
-
 
         if GlobalParamsHandler().get_out_dir() is not None:
             output_dir = GlobalParamsHandler().get_out_dir()
@@ -48,13 +46,6 @@ class TrainModel(Job):
         self.model = BartForConditionalGeneration(self.model_config)
 
         log_param("real learning rate", self.training_args.learning_rate)
-
-        # def compute_metrics(eval_preds):
-        #     metric = evaluate.load("accuracy", "exact_match")
-        #     logits, labels = eval_preds
-        #     predictions = np.argmax(logits, axis=-1)
-        #     return metric.compute(predictions=predictions, references=labels)
-
 
         self.trainer = Trainer(
             model=self.model,
