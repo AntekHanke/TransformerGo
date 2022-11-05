@@ -50,6 +50,7 @@ def main_uci_loop(engine: ChessEngine):
     log("Starting chess engine")
     log(f"Engine type {type(engine)}")
     log("Chess engine started")
+    engine.new_game()
 
     move_list: str = ""
 
@@ -74,13 +75,8 @@ def main_uci_loop(engine: ChessEngine):
 
         elif commands[0] == UCI_GO_COMMAND:
             baord: chess.Board = curent_state(move_list)
-            best_move = engine.policy(baord)
+            best_move = engine.propose_best_moves(baord, number_of_moves=2)
             output("bestmove" + " " + best_move)
-
-        # elif commands[0] == UCI_NEW_GAME:
-        #     log("New game")
-        #     move_list = ""
-        #     engine.new_game()
 
         elif commands[0] == UCI_QUIT_COMMAND:
             break
