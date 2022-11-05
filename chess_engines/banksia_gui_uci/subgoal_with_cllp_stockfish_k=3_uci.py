@@ -1,4 +1,4 @@
-#!/home/tomasz/anaconda3/envs/subgoal_search_chess/bin/python -u
+#!/home/gracjan/anaconda3/envs/subgoal_chess/bin/python -u
 
 from set_root_path import set_root_path
 

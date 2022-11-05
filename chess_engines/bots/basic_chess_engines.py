@@ -35,6 +35,22 @@ class ChessEngine(ABC):
         raise NotImplementedError
 
 
+class RandomChessEngine(ChessEngine):
+
+    def __init__(self):
+        self.name = "RANDOM"
+
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int = 0) -> Optional[str]:
+        board = copy.deepcopy(current_state)
+        moves: List[chess.Move] = list(board.legal_moves)
+        best_move: str = np.random.choice(moves).uci()
+
+        return best_move
+
+    def new_game(self) -> None:
+        pass
+
+
 class PolicyChess(ChessEngine):
     def __init__(
             self, policy_checkpoint, log_dir: str, debug_mode: bool = False,
@@ -130,7 +146,8 @@ class SubgoalWithCLLPStockfish(ChessEngine):
             log_engine_specific_info(f"SET NUMBER OF GENERATED SUBGOALS: {self.n_subgoals}", self.log_dir)
 
     @staticmethod
-    def choose_move_idx(move_values: List[float], moves: List[chess.Move], active_player: str, legal_moves: List[chess.Move]) -> Tuple[Optional[chess.Move], Optional[int]]:
+    def choose_move_idx(move_values: List[float], moves: List[chess.Move], active_player: str,
+                        legal_moves: List[chess.Move]) -> Tuple[Optional[chess.Move], Optional[int]]:
         sorted_moves = np.argsort(move_values)
 
         for i in range(len(move_values)):
@@ -163,6 +180,8 @@ class SubgoalWithCLLPStockfish(ChessEngine):
             log_engine_specific_info(f"STOCKSFISH VALUE OF SUBGOALDS: {subgoal_values}", self.log_dir)
             log_engine_specific_info("JUST BEFORE PRODUCING MOVES BY CLLP", self.log_dir)
 
+        log_engine_specific_info(f"BATCH TO PREDICT: {batch_to_predict}", self.log_dir)
+
         paths: List[List[chess.Move]] = self.cllp.get_batch_path(batch_to_predict)
         moves: List[chess.Move] = [path[0] for path in paths]
         legal_moves: List[chess.Move] = list(current_state.legal_moves)
@@ -183,7 +202,8 @@ class SubgoalWithCLLPStockfish(ChessEngine):
                 best_move = random.choice(legal_moves)
             if self.debug_mode:
                 log_engine_specific_info(
-                    f"THERE IS NO LEGALL MOVES (BY USING CLLP). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {best_move.uci()}", self.log_dir
+                    f"THERE IS NO LEGALL MOVES (BY USING CLLP). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {best_move.uci()}",
+                    self.log_dir
                 )
 
         descriptions: List[str] = [f"input move[{i}] = {best_move} l = {best_move in legal_moves}"]

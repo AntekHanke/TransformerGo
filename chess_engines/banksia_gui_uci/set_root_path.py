@@ -8,4 +8,5 @@ def set_root_path():
         )
     import sys
 
-    sys.path.append(os.environ["SUBGOAL_PROJECT_ROOT"])
+    # TODO: Fix sys env
+    sys.path.append("/home/gracjan/subgoal/subgoal_search_chess-uci_engines")
