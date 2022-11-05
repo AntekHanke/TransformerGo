@@ -3,7 +3,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import chess
 import chess.engine
@@ -17,117 +17,120 @@ from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 
 
-def log(s: str, prefix: str = ">>> ") -> None:
-    f = open("logs_inside_engine.txt", "a")
+def log_engine_specific_info(s: str, path_to_log_dir: str, prefix: str = ">>> ") -> None:
+    f = open(path_to_log_dir + '/log_engine_specific_info.txt', "a")
     f.write(prefix + s + "\n")
     f.close()
 
 
 class ChessEngine(ABC):
-    def __init__(self, name: str, log_dir: str):
-        self.name = name
-        self.log_dir = log_dir
+    """Core class for chess engine"""
 
-        self.current_game = {"move": [], "board": []}
+    @abstractmethod
+    def new_game(self) -> None:
+        raise NotImplementedError
 
-    def new_game(self):
-        today = date.today()
-        now = datetime.now()
-        self.log_dir = os.path.join(self.log_dir, str(today), f"{now.hour}_{now.minute}_{now.second}")
-
-    def policy(self, current_state: chess.Board) -> str:
-        legal_moves = [x.uci() for x in current_state.legal_moves]
-        proposed_move = self.propose_best_move(current_state)
-        if proposed_move in legal_moves:
-            return proposed_move
-        else:
-            return random.choice(legal_moves)
-
-    def propose_best_move(self, current_state: chess.Board) -> str:
+    @abstractmethod
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
         raise NotImplementedError
 
 
-class RandomChessEngine(ChessEngine):
-    def __init__(self, log_dir: str) -> None:
-        super().__init__("Random Chess Engine", log_dir)
-        self.debug = False
-
-    def propose_best_move(self, current_state: chess.Board) -> str:
-        board = copy.deepcopy(current_state)
-        moves: List[chess.Move] = list(board.legal_moves)
-        best_move: str = np.random.choice(moves).uci()
-
-        if self.debug:
-            log("current board: " + board.fen())
-            log("best move: " + best_move)
-
-        if best_move[-1] in {"n", "r", "b"}:
-            best_move = best_move[:-1] + "q"
-            if self.debug:
-                current_move: str = best_move
-                log(f"Pawn promotion: current move {current_move} ---> {best_move}")
-
-        return best_move
-
-
-class StockfishChessEngine(ChessEngine):
-    def __init__(self, engine, log_dir: str) -> None:
-        super().__init__("Stockfish Chess Engine", log_dir)
-        self.engine = engine
-        self.depth_limit = chess.engine.Limit(depth=30)
-        self.debug = False
-
-    def propose_best_move(self, current_state: chess.Board) -> str:
-        board = copy.deepcopy(current_state)
-        available_moves: List[chess.Move] = list(board.legal_moves)
-        best_move: chess.Move = self.engine.analyse(board, limit=self.depth_limit, multipv=1)[0]["pv"]
-
-        if best_move not in available_moves:
-            best_move = np.random.choice(available_moves)
-
-        if self.debug:
-            log("current board: " + board.fen())
-            log("best move: " + best_move.uci())
-
-        return best_move.uci()
-
-
 class PolicyChess(ChessEngine):
-    def __init__(self, policy_checkpoint, log_dir: str) -> None:
-        super().__init__("Policy Engine", log_dir)
-        self.chess_policy = BasicChessPolicy(policy_checkpoint)
+    def __init__(
+            self, policy_checkpoint, log_dir: str, debug_mode: bool = False,
+            replace_legall_move_with_random: bool = False
+    ) -> None:
 
-    def propose_best_move(self, current_state: chess.Board) -> str:
-        move = self.chess_policy.get_best_move(ImmutableBoard.from_board(current_state)).uci()
-        return move
+        self.name: str = "POLICY ENGINE"
+        self.log_dir = log_dir
+        self.debug_mode = debug_mode
+        self.replace_legall_move_with_random = replace_legall_move_with_random
+        self.policy_checkpoint = policy_checkpoint
+        self.chess_policy = BasicChessPolicy(self.policy_checkpoint)
 
+    def new_game(self) -> None:
+        today: datetime.date = date.today()
+        now: datetime.date = datetime.now()
+        self.log_dir = os.path.join(self.log_dir, str(today), f"{now.hour}_{now.minute}_{now.second}", f"{self.name}")
+        os.makedirs(self.log_dir)
 
-class SubgoalWithCLLP(ChessEngine):
-    def __init__(self, generator_checkpoint: str, cllp_checkpoint: str, log_dir: str) -> None:
-        super().__init__("One subgoal with CLLP", log_dir)
-        self.generator = BasicChessSubgoalGenerator(generator_checkpoint)
-        self.cllp = CLLP(cllp_checkpoint)
+        if self.debug_mode:
+            log_engine_specific_info(f"NAME OF ENGINE: {self.name}", self.log_dir)
+            log_engine_specific_info(
+                f"REPLACE LEGALL MOVE WITH RANDOM STATE: {self.replace_legall_move_with_random}", self.log_dir
+            )
+            log_engine_specific_info(f"PATH TO CHECKPOINT OF POLICY: {self.policy_checkpoint}", self.log_dir)
+            log_engine_specific_info(f"PATH TO FOLDER WITH ALL DATA OF ENGINE: {self.log_dir}", self.log_dir)
 
-    def propose_best_move(self, current_state: chess.Board) -> str:
-        subgoal = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state), 1)[0]
-        move = self.cllp.get_path(ImmutableBoard.from_board(current_state), subgoal)[0].uci()
-        return move
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
+        if self.debug_mode:
+            log_engine_specific_info("\n", self.log_dir)
+            log_engine_specific_info(f"CURRENT STATE:{current_state.fen()}", self.log_dir)
+            log_engine_specific_info(f"NUMBER OF GENERATED MOVES: {number_of_moves}", self.log_dir)
+            log_engine_specific_info("JUST BEFORE SELECTING BEST MOVES", self.log_dir)
+
+        moves = self.chess_policy.get_best_moves(ImmutableBoard.from_board(current_state), number_of_moves)
+
+        if self.debug_mode:
+            log_engine_specific_info(f"AFTER SELECTING BEST MOVES. BEST MOVES: {moves}", self.log_dir)
+
+        legall_moves: List[chess.Move] = list(current_state.legal_moves)
+        for move in moves:
+            if move in legall_moves:
+                if self.debug_mode:
+                    log_engine_specific_info(f"BEST MOVE CHOOSEN FROM LIST OF LEAGL MOVES: {move.uci()}", self.log_dir)
+                return move.uci()
+            else:
+                if self.replace_legall_move_with_random:
+                    move = random.choice(legall_moves)
+                    if self.debug_mode:
+                        log_engine_specific_info(
+                            f"THERE IS NO LEGALL MOVES (BY USING POLICY). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {move.uci()}"
+                        )
+                    return move.uci()
+
+        if self.debug_mode:
+            log_engine_specific_info(f"THERE IS NO LEGALL MOVES (BY USING POLICY): {None}", self.log_dir)
+        return None
 
 
 class SubgoalWithCLLPStockfish(ChessEngine):
-    # TODO: code in progress
-    def __init__(
-        self, generator_checkpoint: str, cllp_checkpoint: str, n_subgoals: int, stockfish_depth: int, log_dir: str
-    ) -> None:
-        super().__init__(f"{n_subgoals} subgoals CLLP + Stockfish", log_dir)
+    def __init__(self, generator_checkpoint: str, cllp_checkpoint: str, n_subgoals: int, stockfish_depth: int,
+                 log_dir: str, debug_mode: bool = False,
+                 replace_legall_move_with_random: bool = False) -> None:
+        self.name: str = "POLICY SubgoalWithCLLPStockfish"
+        self.generator_checkpoint = generator_checkpoint
+        self.cllp_checkpoint = cllp_checkpoint
+        self.n_subgoals = n_subgoals
+        self.stockfish_depth = stockfish_depth
+        self.log_dir = log_dir
+        self.debug_mode = debug_mode
+        self.replace_legall_move_with_random = replace_legall_move_with_random
+        self.n_moves: int = 0
+
         self.generator = BasicChessSubgoalGenerator(generator_checkpoint)
         self.cllp = CLLP(cllp_checkpoint)
         self.stockfish = StockfishEngine(depth_limit=stockfish_depth)
 
-        self.n_subgoals = n_subgoals
-        self.n_moves = 0
+    def new_game(self) -> None:
+        today: datetime.date = date.today()
+        now: datetime.date = datetime.now()
+        self.log_dir = os.path.join(self.log_dir, str(today), f"{now.hour}_{now.minute}_{now.second}", f"{self.name}")
+        os.makedirs(self.log_dir)
 
-    def choose_move_idx(self, move_values, moves, active_player, legal_moves):
+        if self.debug_mode:
+            log_engine_specific_info(f"NAME OF ENGINE: {self.name}", self.log_dir)
+            log_engine_specific_info(
+                f"REPLACE LEGALL MOVE WITH RANDOM STATE: {self.replace_legall_move_with_random}", self.log_dir
+            )
+            log_engine_specific_info(f"PATH TO CHECKPOINT OF GENERATOR: {self.generator_checkpoint}", self.log_dir)
+            log_engine_specific_info(f"PATH TO CHECKPOINT OF CLLP: {self.cllp_checkpoint}", self.log_dir)
+            log_engine_specific_info(f"PATH TO FOLDER WITH ALL DATA OF ENGINE: {self.log_dir}", self.log_dir)
+            log_engine_specific_info(f"STOCKFISH ENGINE DEPTH: {self.stockfish_depth}", self.log_dir)
+            log_engine_specific_info(f"SET NUMBER OF GENERATED SUBGOALS: {self.n_subgoals}", self.log_dir)
+
+    @staticmethod
+    def choose_move_idx(move_values: List[float], moves: List[chess.Move], active_player: str, legal_moves: List[chess.Move]) -> Tuple[Optional[chess.Move], Optional[int]]:
         sorted_moves = np.argsort(move_values)
 
         for i in range(len(move_values)):
@@ -138,38 +141,56 @@ class SubgoalWithCLLPStockfish(ChessEngine):
             if move in legal_moves:
                 return move, i
 
-        else:
-            raise Exception("No legal move found")
+        return None, None
 
-    def propose_best_move(self, current_state: chess.Board) -> str:
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
         self.n_moves += 1
+        immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
+        batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
 
-        subgoals = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state), self.n_subgoals)
-        subgoal_values = self.stockfish.evaluate_boards_in_parallel(subgoals)
+        subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state),
+                                                                          self.n_subgoals)
+        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals)
 
-        batch_to_predict = []
         for subgoal in subgoals:
-            batch_to_predict.append((ImmutableBoard.from_board(current_state), subgoal))
-        paths = self.cllp.get_batch_path(batch_to_predict)
-        sorted_moves = np.argsort(subgoal_values)
-        moves = [path[0].uci() for path in paths]
+            batch_to_predict.append((immutable_current, subgoal))
 
-        immutable_current = ImmutableBoard.from_board(current_state)
+        if self.debug_mode:
+            log_engine_specific_info("\n", self.log_dir)
+            log_engine_specific_info(f"CURRENT STATE:{current_state.fen()}", self.log_dir)
+            log_engine_specific_info(f"NUMBER OF GENERATED SUBGOALS: {len(subgoals)}", self.log_dir)
+            log_engine_specific_info(f"SUBGOALS: {subgoals}", self.log_dir)
+            log_engine_specific_info(f"STOCKSFISH VALUE OF SUBGOALDS: {subgoal_values}", self.log_dir)
+            log_engine_specific_info("JUST BEFORE PRODUCING MOVES BY CLLP", self.log_dir)
 
-        legal_moves = [x.uci() for x in current_state.legal_moves]
-        move, i = self.choose_move_idx(subgoal_values, moves, immutable_current.active_player, legal_moves)
-        # move = self.cllp.get_path(ImmutableBoard.from_board(current_state), best_subgoal)[0].uci()
+        paths: List[List[chess.Move]] = self.cllp.get_batch_path(batch_to_predict)
+        moves: List[chess.Move] = [path[0] for path in paths]
+        legal_moves: List[chess.Move] = list(current_state.legal_moves)
 
-        is_legal = move in legal_moves
+        if self.debug_mode:
+            log_engine_specific_info(f"AFTER PRODUCING MOVES BY CLLP. MOVES: {moves}", self.log_dir)
 
-        descriptions = [f"input move[{i}] = {move} l = {move in legal_moves}"]
+        if self.debug_mode:
+            log_engine_specific_info("JUST BEFORE SELECTING BEST MOVE", self.log_dir)
+
+        best_move, i = self.choose_move_idx(subgoal_values, moves, immutable_current.active_player, legal_moves)
+
+        if self.debug_mode:
+            log_engine_specific_info(f"AFTER SELECTING BEST MOVE: BEST MOVE {best_move}", self.log_dir)
+
+        if self.replace_legall_move_with_random:
+            if best_move is None:
+                best_move = random.choice(legal_moves)
+            if self.debug_mode:
+                log_engine_specific_info(
+                    f"THERE IS NO LEGALL MOVES (BY USING CLLP). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {best_move.uci()}", self.log_dir
+                )
+
+        descriptions: List[str] = [f"input move[{i}] = {best_move} l = {best_move in legal_moves}"]
         for i in range(self.n_subgoals):
             descriptions.append(f"val {subgoal_values[i]} moves = {[str(x) for x in paths[i]]}")
 
         fig = immutable_boards_to_img([ImmutableBoard.from_board(current_state)] + subgoals, descriptions)
+        fig.savefig(os.path.join(self.log_dir, f"subgoal_{self.n_moves}.png"))
 
-        fig.savefig(
-            os.path.join(self.log_dir, f"subgoal_{self.n_moves}.png")
-        )
-
-        return move
+        return best_move.uci()
