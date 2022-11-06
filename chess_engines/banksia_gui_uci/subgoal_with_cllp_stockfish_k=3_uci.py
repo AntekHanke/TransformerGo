@@ -1,8 +1,9 @@
 #!/home/gracjan/anaconda3/envs/subgoal_chess/bin/python -u
+import os
+import sys
 
-from set_root_path import set_root_path
-
-set_root_path()
+sys.path.append("/home/gracjan/subgoal/subgoal_search_chess-uci_engines")
+os.environ["SUBGOAL_PROJECT_ROOT"] = "/home/gracjan/subgoal/subgoal_search_chess-uci_engines"
 
 from chess_engines.banksia_gui_uci.banksia_gui_core import main_uci_loop
 from chess_engines.bots.basic_chess_engines import SubgoalWithCLLPStockfish
