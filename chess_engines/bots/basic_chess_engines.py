@@ -3,7 +3,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import date, datetime
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Set
 
 import chess
 import chess.engine
@@ -145,9 +145,14 @@ class SubgoalWithCLLPStockfish(ChessEngine):
             log_engine_specific_info(f"STOCKFISH ENGINE DEPTH: {self.stockfish_depth}", self.log_dir)
             log_engine_specific_info(f"SET NUMBER OF GENERATED SUBGOALS: {self.n_subgoals}", self.log_dir)
 
-    @staticmethod
-    def choose_move_idx(move_values: List[float], moves: List[chess.Move], active_player: str,
-                        legal_moves: List[chess.Move]) -> Tuple[Optional[chess.Move], Optional[int]]:
+    def choose_move_idx(self, move_values: List[float], moves: List[chess.Move], active_player: str,
+                        current_state: chess.Board) -> Tuple[Optional[chess.Move], Optional[int]]:
+        log_engine_specific_info("==========================================================", self.log_dir)
+        log_engine_specific_info(str(move_values), self.log_dir)
+        log_engine_specific_info(str(moves), self.log_dir)
+        log_engine_specific_info("=========================================================", self.log_dir)
+        legal_moves: Set[chess.Move] = set(current_state.legal_moves)
+        legal_moves_960: Set[chess.Move] = set(chess.Board(current_state.fen(), chess960=True).legal_moves)
         sorted_moves = np.argsort(move_values)
 
         for i in range(len(move_values)):
@@ -155,10 +160,32 @@ class SubgoalWithCLLPStockfish(ChessEngine):
                 move = moves[sorted_moves[-(i + 1)]]
             else:
                 move = moves[sorted_moves[i]]
-            if move in legal_moves:
+            if move in legal_moves.union(legal_moves_960):
+                log_engine_specific_info("-------------------------------------------------", self.log_dir)
+                log_engine_specific_info(move.uci(), self.log_dir)
+                log_engine_specific_info(str(legal_moves_960.difference(legal_moves)), self.log_dir)
+                if move in legal_moves_960.difference(legal_moves):
+                    move = legal_moves.difference(legal_moves_960).pop()
+                    log_engine_specific_info(str(move), self.log_dir)
                 return move, i
 
         return None, None
+
+    def subgoal_filter(self, subgoals: List[ImmutableBoard], subgoals_valus: List[Optional[float]]) -> Tuple[List[ImmutableBoard], List[float]]:
+        subgoals_and_values: List[Tuple[ImmutableBoard, Optional[float]]] = list(zip(subgoals, subgoals_valus))
+        subgoals_and_values = [sub_and_val for sub_and_val in subgoals_and_values if sub_and_val[1] is not None]
+        filtred_subgoals: List[ImmutableBoard] = [sub[0] for sub in subgoals_and_values]
+        filterd_values: List[float] = [val[1] for val in subgoals_and_values]
+
+        if len(filtred_subgoals) < self.n_subgoals:
+            new_subgoals = copy.deepcopy(filtred_subgoals)
+            new_value = copy.deepcopy(filterd_values)
+            while len(new_subgoals) < self.n_subgoals:
+                new_subgoals.append(filtred_subgoals[0])
+                new_value.append(filterd_values[0])
+            return new_subgoals, new_value
+
+        return filtred_subgoals, filterd_values
 
     def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
         self.n_moves += 1
@@ -168,6 +195,8 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state),
                                                                           self.n_subgoals)
         subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals)
+
+        subgoals, subgoal_values = self.subgoal_filter(subgoals, subgoal_values)
 
         for subgoal in subgoals:
             batch_to_predict.append((immutable_current, subgoal))
@@ -184,7 +213,6 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         paths: List[List[chess.Move]] = self.cllp.get_batch_path(batch_to_predict)
         moves: List[chess.Move] = [path[0] for path in paths]
-        legal_moves: List[chess.Move] = list(current_state.legal_moves)
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER PRODUCING MOVES BY CLLP. MOVES: {moves}", self.log_dir)
@@ -192,19 +220,21 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         if self.debug_mode:
             log_engine_specific_info("JUST BEFORE SELECTING BEST MOVE", self.log_dir)
 
-        best_move, i = self.choose_move_idx(subgoal_values, moves, immutable_current.active_player, legal_moves)
+        best_move, i = self.choose_move_idx(subgoal_values, moves, immutable_current.active_player, current_state)
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER SELECTING BEST MOVE: BEST MOVE {best_move}", self.log_dir)
 
+        legal_moves: List[chess.Move] = list(current_state.legal_moves)
+
         if self.replace_legall_move_with_random:
             if best_move is None:
                 best_move = random.choice(legal_moves)
-            if self.debug_mode:
-                log_engine_specific_info(
-                    f"THERE IS NO LEGALL MOVES (BY USING CLLP). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {best_move.uci()}",
-                    self.log_dir
-                )
+                if self.debug_mode:
+                    log_engine_specific_info(
+                        f"THERE IS NO LEGALL MOVES (BY USING CLLP). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {best_move.uci()}",
+                        self.log_dir
+                    )
 
         descriptions: List[str] = [f"input move[{i}] = {best_move} l = {best_move in legal_moves}"]
         for i in range(self.n_subgoals):
