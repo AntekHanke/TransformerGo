@@ -26,14 +26,12 @@ class StockfishEngine:
 
         self.depth_limit = depth_limit
 
-    def get_result_score(self, immutable_board, result):
+    @staticmethod
+    def get_result_score(immutable_board, result):
         if not result.is_mate():
             return result.relative.cp
         else:
-            if immutable_board.active_player == "w":
-                return VALUE_FOR_MATE
-            elif immutable_board.active_player == "b":
-                return -VALUE_FOR_MATE
+            return VALUE_FOR_MATE
 
     @staticmethod
     def absolute_v(player, v):

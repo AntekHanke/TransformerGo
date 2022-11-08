@@ -18,7 +18,7 @@ from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 
 
 def log_engine_specific_info(s: str, path_to_log_dir: str, prefix: str = ">>> ") -> None:
-    f = open(path_to_log_dir + '/log_engine_specific_info.txt', "a")
+    f = open(path_to_log_dir + "/log_engine_specific_info.txt", "a")
     f.write(prefix + s + "\n")
     f.close()
 
@@ -36,7 +36,6 @@ class ChessEngine(ABC):
 
 
 class RandomChessEngine(ChessEngine):
-
     def __init__(self):
         self.name = "RANDOM"
 
@@ -53,8 +52,7 @@ class RandomChessEngine(ChessEngine):
 
 class PolicyChess(ChessEngine):
     def __init__(
-            self, policy_checkpoint, log_dir: str, debug_mode: bool = False,
-            replace_legall_move_with_random: bool = False
+        self, policy_checkpoint, log_dir: str, debug_mode: bool = False, replace_legall_move_with_random: bool = False
     ) -> None:
 
         self.name: str = "POLICY ENGINE"
@@ -73,7 +71,7 @@ class PolicyChess(ChessEngine):
         if self.debug_mode:
             log_engine_specific_info(f"NAME OF ENGINE: {self.name}", self.log_dir)
             log_engine_specific_info(
-                f"REPLACE LEGALL MOVE WITH RANDOM STATE: {self.replace_legall_move_with_random}", self.log_dir
+                f"REPLACE LEGALL MOVE WITH RANDOM MOVE: {self.replace_legall_move_with_random}", self.log_dir
             )
             log_engine_specific_info(f"PATH TO CHECKPOINT OF POLICY: {self.policy_checkpoint}", self.log_dir)
             log_engine_specific_info(f"PATH TO FOLDER WITH ALL DATA OF ENGINE: {self.log_dir}", self.log_dir)
@@ -111,10 +109,18 @@ class PolicyChess(ChessEngine):
 
 
 class SubgoalWithCLLPStockfish(ChessEngine):
-    def __init__(self, generator_checkpoint: str, cllp_checkpoint: str, n_subgoals: int, stockfish_depth: int,
-                 log_dir: str, debug_mode: bool = False,
-                 replace_legall_move_with_random: bool = False) -> None:
-        self.name: str = "POLICY SubgoalWithCLLPStockfish"
+    def __init__(
+        self,
+        name: str,
+        generator_checkpoint: str,
+        cllp_checkpoint: str,
+        n_subgoals: int,
+        stockfish_depth: int,
+        log_dir: str,
+        debug_mode: bool = False,
+        replace_legall_move_with_random: bool = False,
+    ) -> None:
+        self.name = name
         self.generator_checkpoint = generator_checkpoint
         self.cllp_checkpoint = cllp_checkpoint
         self.n_subgoals = n_subgoals
@@ -137,7 +143,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         if self.debug_mode:
             log_engine_specific_info(f"NAME OF ENGINE: {self.name}", self.log_dir)
             log_engine_specific_info(
-                f"REPLACE LEGALL MOVE WITH RANDOM STATE: {self.replace_legall_move_with_random}", self.log_dir
+                f"REPLACE LEGALL MOVE WITH RANDOM MOVE: {self.replace_legall_move_with_random}", self.log_dir
             )
             log_engine_specific_info(f"PATH TO CHECKPOINT OF GENERATOR: {self.generator_checkpoint}", self.log_dir)
             log_engine_specific_info(f"PATH TO CHECKPOINT OF CLLP: {self.cllp_checkpoint}", self.log_dir)
@@ -145,8 +151,9 @@ class SubgoalWithCLLPStockfish(ChessEngine):
             log_engine_specific_info(f"STOCKFISH ENGINE DEPTH: {self.stockfish_depth}", self.log_dir)
             log_engine_specific_info(f"SET NUMBER OF GENERATED SUBGOALS: {self.n_subgoals}", self.log_dir)
 
-    def choose_move_idx(self, move_values: List[float], moves: List[chess.Move], active_player: str,
-                        current_state: chess.Board) -> Tuple[Optional[chess.Move], Optional[int]]:
+    def choose_move_idx(
+        self, move_values: List[float], moves: List[chess.Move], active_player: str, current_state: chess.Board
+    ) -> Tuple[Optional[chess.Move], Optional[int]]:
         log_engine_specific_info("==========================================================", self.log_dir)
         log_engine_specific_info(str(move_values), self.log_dir)
         log_engine_specific_info(str(moves), self.log_dir)
@@ -171,7 +178,9 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         return None, None
 
-    def subgoal_filter(self, subgoals: List[ImmutableBoard], subgoals_valus: List[Optional[float]]) -> Tuple[List[ImmutableBoard], List[float]]:
+    def subgoal_filter(
+        self, subgoals: List[ImmutableBoard], subgoals_valus: List[Optional[float]]
+    ) -> Tuple[List[ImmutableBoard], List[float]]:
         subgoals_and_values: List[Tuple[ImmutableBoard, Optional[float]]] = list(zip(subgoals, subgoals_valus))
         subgoals_and_values = [sub_and_val for sub_and_val in subgoals_and_values if sub_and_val[1] is not None]
         filtred_subgoals: List[ImmutableBoard] = [sub[0] for sub in subgoals_and_values]
@@ -192,8 +201,9 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
         batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
 
-        subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(ImmutableBoard.from_board(current_state),
-                                                                          self.n_subgoals)
+        subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(
+            ImmutableBoard.from_board(current_state), self.n_subgoals
+        )
         subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals)
 
         subgoals, subgoal_values = self.subgoal_filter(subgoals, subgoal_values)
@@ -233,7 +243,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
                 if self.debug_mode:
                     log_engine_specific_info(
                         f"THERE IS NO LEGALL MOVES (BY USING CLLP). USING A RANDOM MOVE FROM THE LITS OF LEAGL MOVES: {best_move.uci()}",
-                        self.log_dir
+                        self.log_dir,
                     )
 
         descriptions: List[str] = [f"input move[{i}] = {best_move} l = {best_move in legal_moves}"]

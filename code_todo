@@ -3,9 +3,12 @@
 3. Reformat code
 
 
-Fix in modules:
-- policy: remove random moves
-- chess_engines: handle random moves in chess engines, debug
+Fix:
+verify CLLP paths (and tune CLLP generation)
+tune CLLP hyperparams
+tune generator hyperparams
+generator lr grid + 1 or 2 epochs
+code refactor / cleanup
 
 
 Modules cleaning:
