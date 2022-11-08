@@ -1,11 +1,11 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {"run.job_class": "@jobs.EvaluateCLLP",
-               "EvaluateCLLP.k": [1,2,3,4,5,6],
+               "EvaluateCLLP.k": [5],
                "EvaluateCLLP.n_subgoals": 3,
                "EvaluateCLLP.cllp_checkpoint": "/leela_models/cllp_all_moves/final_model",
                "EvaluateCLLP.trees_file_path": "/trees",
-               "EvaluateCLLP.n_eval_datapoints": 1000,
+               "EvaluateCLLP.n_eval_datapoints": 200,
                }
 
 params_grid = {
