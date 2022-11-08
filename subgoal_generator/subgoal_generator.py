@@ -24,11 +24,16 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         encoded_board = ChessTokenizer.encode_immutable_board(input_board) + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
         input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
         outputs = self.model.generate(
-            input_tensor, num_return_sequences=n_subgoals, num_beams=16, max_new_tokens=80
+            input_tensor,
+            num_return_sequences=n_subgoals,
+            num_beams=16,
+            max_new_tokens=80,
+            return_dict_in_generate=True,
+            return_scores=True,
         ).tolist()
         subgoals = []
-        for output in outputs:
-            subgoals.append(ChessTokenizer.decode_board(output))
+        for sequence in outputs:
+            subgoals.append(ChessTokenizer.decode_board(sequence))
 
         subgoals = [subgoal for subgoal in subgoals if subgoal.board != input_board.board]
         return subgoals

@@ -12,7 +12,7 @@ from data_structures.data_structures import ImmutableBoard
 class CLLP:
     """Basic policy based on generation from the model"""
 
-    def __init__(self, checkpoint_path_or_model, num_beams=8, num_return_sequences=2):
+    def __init__(self, checkpoint_path_or_model, num_beams: int = None, num_return_sequences: int = None):
         if isinstance(checkpoint_path_or_model, str):
             self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
         else:
@@ -21,8 +21,9 @@ class CLLP:
         self.num_beams = num_beams
         self.num_return_sequences = num_return_sequences
 
+    @staticmethod
     def input_and_target_to_list_of_tokens(
-        self, input_immutable_board: ImmutableBoard, target_immutable_board: ImmutableBoard
+        input_immutable_board: ImmutableBoard, target_immutable_board: ImmutableBoard
     ):
         return (
             ChessTokenizer.encode_immutable_board(input_immutable_board)
@@ -35,7 +36,12 @@ class CLLP:
 
     def generate_moves_batch_from_model(self, input_tokens):
         input_tensor = torch.IntTensor(input_tokens).to(self.model.device)
-        output = self.model.generate(input_tensor, max_length=40, num_beams=self.num_beams, num_return_sequences=self.num_return_sequences)
+        output = self.model.generate(
+            input_tensor,
+            max_length=40,
+            num_beams=self.num_beams,
+            num_return_sequences=self.num_return_sequences,
+        )
         output = output.tolist()
         moves_batch = []
         moves_for_one_query = []
@@ -61,3 +67,42 @@ class CLLP:
                 self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
             )
         return self.generate_moves_batch_from_model(inputs_tokenized)
+
+
+class CLLPOneMove:
+    def __init__(self, checkpoint_path_or_model, moves_limit: int = 6):
+        if isinstance(checkpoint_path_or_model, str):
+            self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
+        else:
+            self.model = checkpoint_path_or_model
+
+        self.moves_limit = moves_limit
+
+    def get_move(self, input_immutable_board: ImmutableBoard, target_immutable_board: ImmutableBoard):
+        input_tokens = CLLP.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
+        input_tensor = torch.IntTensor([input_tokens]).to(self.model.device)
+        output = self.model.generate(input_tensor, max_length=40).tolist()
+        return ChessTokenizer.decode_uci_moves(output[0], 1)
+
+    def get_path(self, input_immutable_board: ImmutableBoard, target_immutable_board: ImmutableBoard):
+        path = []
+        n_moves = 0
+        board = input_immutable_board.to_board()
+        while input_immutable_board != target_immutable_board:
+            moves = self.get_move(input_immutable_board, target_immutable_board)
+            move = moves[0]
+            n_moves += 1
+            path.append(move)
+            board.push(move)
+            input_immutable_board = ImmutableBoard.from_board(board)
+            if input_immutable_board == target_immutable_board:
+                break
+            if n_moves > self.moves_limit:
+                break
+        return path
+
+    def get_paths_batch(self, queries_list: List[Tuple[ImmutableBoard, ImmutableBoard]]):
+        paths = []
+        for input_immutable_board, target_immutable_board in queries_list:
+            paths.append([self.get_path(input_immutable_board, target_immutable_board)])
+        return paths

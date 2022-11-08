@@ -143,12 +143,18 @@ class ChessTokenizer:
         return [cls.tokens_to_vocab[token] for token in tokens]
 
     @classmethod
-    def decode_uci_moves(cls, output_tokens):
+    def decode_uci_moves(cls, output_tokens, moves_limit=None):
         """Decode Leela moves"""
         decoded_tokens = "".join(cls.decode(output_tokens))
         decoded_tokens = decoded_tokens.replace("<EOS>", "").replace("<PAD>", "").replace("-", "")
         moves_str = decoded_tokens.split("<SEP>")
         moves_str = [move for move in moves_str if move != ""]
-        return [Move.from_uci(move_str) for move_str in moves_str]
+        if moves_limit is not None:
+            moves_str = moves_str[:moves_limit]
+        # return [Move.from_uci(move_str) for move_str in moves_str]
+        try:
+            return [Move.from_uci(move_str) for move_str in moves_str]
+        except ValueError:
+            return None
 
 
