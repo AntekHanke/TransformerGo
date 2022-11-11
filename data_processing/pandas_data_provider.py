@@ -97,7 +97,9 @@ class PandasCLLPDataGenerator(ChessDataProvider):
             tokenized_moves.append(ChessTokenizer.special_vocab_to_tokens["<EOS>"])
             if not self.use_one_move:
                 if len(tokenized_moves) < self.padding_len:
-                    tokenized_moves.extend([ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (self.padding_len - len(tokenized_moves)))
+                    tokenized_moves.extend(
+                        [ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (self.padding_len - len(tokenized_moves))
+                    )
 
             return tokenized_moves
 
@@ -140,6 +142,43 @@ class PandasCLLPDataProvider(ChessDataProvider):
 
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[["input_ids", "labels"]]
+
+    def get_train_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_train)
+
+    def get_eval_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_eval)
+
+
+class PandasBertForSequenceDataProvider(ChessDataProvider):
+    def __init__(self, data_path=None, eval_datapoints: int = 10000):
+        # if GlobalParamsHandler().get_data_path() is not None:
+        #     data_path = GlobalParamsHandler().get_data_path()
+        #     print(f"Data path: {data_path}")
+
+        print(f"Reading pickle")
+        df = pd.read_pickle(data_path)
+        print(f"Finished reading pickle")
+        print(f"Processing df")
+        processed_df = self.process_df(df)
+        print(f"Finished processing df")
+        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
+        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+
+        log_param("Train set size", len(self.data_train))
+        log_param("Eval set size", len(self.data_eval))
+
+    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
+        data = {}
+        for (id, (_, row)) in enumerate(df[["input_ids", "Q"]].iterrows()):
+            data_for_model = {"input_ids": None, "labels": None}
+            data_for_model["input_ids"] = row["input_ids"]
+            data_for_model["labels"] = row["Q"]
+            data[id] = data_for_model
+        return data
+
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[["input_ids", "Q"]]
 
     def get_train_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_train)

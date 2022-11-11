@@ -1,5 +1,5 @@
 import gin
-from transformers import Trainer, TrainingArguments, BartConfig
+from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 
 from data_processing.chess_data_generator import (
     NoFilter,
@@ -13,10 +13,12 @@ from data_processing.pandas_data_provider import (
     PandasSubgoalDataProvider,
     PandasCLLPDataGenerator,
     PandasCLLPDataProvider,
+    PandasBertForSequenceDataProvider,
 )
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.evaluate_cllp import EvaluateCLLP
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing
+from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
 
 
@@ -30,8 +32,17 @@ def configure_classes(classes, module=None) -> None:
 
 
 # configure_classes([GlobalParamsHandler], "params")
-configure_classes([TrainModel, CreatePGNDataset, LeelaCCLPDataProcessing, EvaluateCLLP], "jobs")
-configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
+configure_classes(
+    [
+        TrainModel,
+        CreatePGNDataset,
+        LeelaCCLPDataProcessing,
+        EvaluateCLLP,
+        TrainBertForSequenceModel,
+    ],
+    "jobs",
+)
+configure_classes([Trainer, TrainingArguments, BartConfig, BertConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
 configure_classes(
     [
@@ -40,6 +51,7 @@ configure_classes(
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
         PandasSubgoalDataProvider,
+        PandasBertForSequenceDataProvider,
         PandasCLLPDataGenerator,
         PandasCLLPDataProvider,
     ],
