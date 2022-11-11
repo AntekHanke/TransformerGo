@@ -8,7 +8,7 @@ import chess.engine
 from metric_logging import log_value
 
 
-class LeelaTressGenerator:
+class LeelaTreesGenerator:
     """
     exaple of leela parmas
     ['/home/gracjan/lc0_for_lct/build/release/lc0',
