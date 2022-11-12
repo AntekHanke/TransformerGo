@@ -152,9 +152,6 @@ class PandasCLLPDataProvider(ChessDataProvider):
 
 class PandasBertForSequenceDataProvider(ChessDataProvider):
     def __init__(self, data_path=None, eval_datapoints: int = 10000):
-        # if GlobalParamsHandler().get_data_path() is not None:
-        #     data_path = GlobalParamsHandler().get_data_path()
-        #     print(f"Data path: {data_path}")
 
         print(f"Reading pickle")
         df = pd.read_pickle(data_path)
@@ -171,10 +168,10 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
     def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
         data = {}
         for (id, (_, row)) in enumerate(df[["input_ids", "Q"]].iterrows()):
-            data_for_model = {"input_ids": None, "labels": None}
-            data_for_model["input_ids"] = row["input_ids"]
-            data_for_model["labels"] = row["Q"]
-            data[id] = data_for_model
+            data[id] = {
+                "input_ids": row["input_ids"],
+                "labels": row["Q"]
+            }
         return data
 
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
