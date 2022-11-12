@@ -167,15 +167,15 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
 
     def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
         data = {}
-        for (id, (_, row)) in enumerate(df[["input_ids", "Q"]].iterrows()):
+        for (id, (_, row)) in enumerate(df[["target_immutable_board", "Q"]].iterrows()):
             data[id] = {
-                "input_ids": row["input_ids"],
+                "input_ids": ChessTokenizer.encode_immutable_board(row["target_immutable_board"]),
                 "labels": row["Q"]
             }
         return data
 
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[["input_ids", "Q"]]
+        return df[["target_immutable_board", "Q"]]
 
     def get_train_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_train)
