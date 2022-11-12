@@ -51,13 +51,6 @@ class TrainBertForSequenceModel(Job):
 
         self.model = BertForSequenceClassification(self.model_config)
 
-        tokenizer = BertTokenizer.from_pretrained("textattack/bert-base-uncased-yelp-polarity")
-        model = BertForSequenceClassification.from_pretrained(
-            "textattack/bert-base-uncased-yelp-polarity", problem_type="multi_label_classification"
-        )
-
-        inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
-
         log_param("real learning rate", self.training_args.learning_rate)
 
         self.trainer = Trainer(
