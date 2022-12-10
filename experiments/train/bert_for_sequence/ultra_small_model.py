@@ -6,7 +6,7 @@ base_config = {
     "TrainBertForSequenceModel.chess_database_cls": "@data.PandasBertForSequenceDataProvider",
     "TrainBertForSequenceModel.model_config_cls": "@transformers.BertConfig",
     "TrainBertForSequenceModel.training_args_cls": "@transformers.TrainingArguments",
-    "PandasBertForSequenceDataProvider.data_path": "/leela_bert_data/prom_full_dataset_k=4.pkl",
+    "PandasBertForSequenceDataProvider.data_path": "/leela_generator_data/full_dataset_k=2.pkl",
     "PandasBertForSequenceDataProvider.eval_datapoints": 1000,
     "GlobalParamsHandler.out_dir": "/leela_models/v1/bert_for_sequence/small_model",
     # "GlobalParamsHandler.data_location": "/leela_bert_data/prom_full_dataset_k=3.pkl",
@@ -25,6 +25,7 @@ base_config = {
     "BertConfig.layer_norm_eps": 1e-12,
     "BertConfig.position_embedding_type": "absolute",
     "BertConfig.classifier_dropout": 0.1,
+
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 1024,
     "TrainingArguments.per_device_eval_batch_size": 1024,

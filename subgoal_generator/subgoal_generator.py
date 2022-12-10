@@ -27,9 +27,7 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
             input_tensor,
             num_return_sequences=n_subgoals,
             num_beams=16,
-            max_new_tokens=80,
-            return_dict_in_generate=True,
-            return_scores=True,
+            max_new_tokens=80
         ).tolist()
         subgoals = []
         for sequence in outputs:
