@@ -10,7 +10,7 @@ from data_structures.data_structures import ImmutableBoard
 
 
 class CLLP:
-    """Basic policy based on generation from the model"""
+    """Basic pgn_policy based on generation from the model"""
 
     def __init__(self, checkpoint_path_or_model, num_beams: int = None, num_return_sequences: int = None):
         if isinstance(checkpoint_path_or_model, str):

@@ -13,7 +13,7 @@ from data_processing.pandas_data_provider import (
     PandasSubgoalDataProvider,
     PandasCLLPDataGenerator,
     PandasCLLPDataProvider,
-    PandasBertForSequenceDataProvider,
+    PandasBertForSequenceDataProvider, PandasPolicyDataProvider,
 )
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.evaluate_cllp import EvaluateCLLP
@@ -54,6 +54,7 @@ configure_classes(
         PandasBertForSequenceDataProvider,
         PandasCLLPDataGenerator,
         PandasCLLPDataProvider,
+        PandasPolicyDataProvider
     ],
     "data",
 )

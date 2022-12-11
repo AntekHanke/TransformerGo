@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Dict, List
 
 import gin
@@ -6,7 +7,8 @@ import pandas as pd
 
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
-from metric_logging import log_param, log_value
+from data_processing.data_utils import immutable_boards_to_img
+from metric_logging import log_param, log_value, log_object
 from utils.global_params_handler import GlobalParamsHandler
 
 
@@ -168,10 +170,7 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
     def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
         data = {}
         for (id, (_, row)) in enumerate(df[["target_immutable_board", "Q"]].iterrows()):
-            data[id] = {
-                "input_ids": ChessTokenizer.encode_immutable_board(row["target_immutable_board"]),
-                "labels": row["Q"]
-            }
+            data[id] = {"input_ids": row["target_immutable_board"], "labels": row["Q"]}
         return data
 
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -182,3 +181,47 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
 
     def get_eval_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_eval)
+
+
+class PandasPolicyDataProvider(ChessDataProvider):
+    def __init__(self, data_path=None, eval_datapoints: int = 10000):
+        print(f"Reading pickle")
+        df = pd.read_pickle(data_path)
+        print(f"Finished reading pickle")
+        print(f"Processing df")
+        processed_df = self.process_df(df)
+        print(f"Finished processing df")
+        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
+        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+
+        log_param("Train set size", len(self.data_train))
+        log_param("Eval set size", len(self.data_eval))
+
+        self.log_samples()
+
+    @staticmethod
+    def pandas_to_dict(df: pd.DataFrame) -> Dict:
+        data = {}
+        for (id, (_, row)) in enumerate(df[["input_ids", "moves"]].iterrows()):
+            if len(row["moves"]) > 0:
+                data[id] = {"input_ids": row["input_ids"], "labels": ChessTokenizer.encode(row["moves"][0])}
+        return data
+
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[["input_ids", "moves"]]
+
+    def get_train_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_train)
+
+    def get_eval_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_eval)
+
+    def log_samples(self, n_samples=10):
+        for i in range(n_samples):
+            sample = random.choice(list(self.data_train.values()))
+            log_object("text_sample", f"input_ids: {sample['input_ids']}, labels: {sample['labels']}")
+            sample_immutable_board = ChessTokenizer.decode_board(sample["input_ids"])
+            fig = immutable_boards_to_img(
+                [sample_immutable_board], [f"Move: {ChessTokenizer.decode_move(sample['labels'])}"]
+            )
+            log_object(f"sample", fig)

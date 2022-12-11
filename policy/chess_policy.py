@@ -10,14 +10,14 @@ from data_structures.data_structures import ImmutableBoard
 
 
 class ChessPolicy:
-    """Core class for policy"""
+    """Core class for pgn_policy"""
 
     def get_best_moves(self, immutable_board: ImmutableBoard, num_return_sequences: int) -> List[chess.Move]:
         raise NotImplementedError
 
 
 class BasicChessPolicy(ChessPolicy):
-    """Basic policy based on generation from the model"""
+    """Basic pgn_policy based on generation from the model"""
 
     # TODO: checkpoint_path_or_model typing
     def __init__(self, checkpoint_path_or_model) -> None:

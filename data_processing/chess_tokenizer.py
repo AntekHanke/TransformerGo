@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from chess import Move, PIECE_SYMBOLS
 
@@ -18,7 +18,7 @@ def is_promotion_possible(algebraic_move: str) -> bool:
     return (
         abs(int(algebraic_move[1]) - int(algebraic_move[3])) == 1
         and algebraic_move[3] in "18"
-        and algebraic_move[0] == algebraic_move[2]
+        and abs(ord(algebraic_move[0]) - ord(algebraic_move[2])) <= 1
     )
 
 
@@ -59,7 +59,7 @@ class ChessTokenizer:
         "-",
     ]
     players = ["w", "b"]
-    non_special_vocab = pieces + integers + algebraic_moves + algebraic_promotions + players + castlings
+    non_special_vocab = pieces + integers + algebraic_fields + players + castlings + algebraic_moves + algebraic_promotions
     special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
     vocab_to_tokens = {symbol: i + NON_SPECIAL_TOKENS_START for i, symbol in enumerate(non_special_vocab)}
     vocab_to_tokens.update(special_vocab_to_tokens)
@@ -118,68 +118,22 @@ class ChessTokenizer:
 
     @classmethod
     def encode_move(cls, chess_move: Move) -> List[int]:
-        return cls.vocab_to_tokens[chess_move.uci()]
+        return [cls.vocab_to_tokens[chess_move.uci()]]
 
     @classmethod
     def decode_move(cls, move_token: List[int]) -> Move:
-        return Move.from_uci(cls.tokens_to_vocab[move_token])
+        return Move.from_uci(cls.tokens_to_vocab[move_token[0]])
 
-    # @classmethod
-    # def encode_move(cls, chess_move: Move) -> List[int]:
-    #     move_tokens = [
-    #         cls.vocab_to_tokens[str(chess_move.from_square)],
-    #         cls.vocab_to_tokens[str(chess_move.to_square)],
-    #     ]
-    #     if chess_move.promotion is not None:
-    #         move_tokens.append(cls.vocab_to_tokens[INT_TO_PIECE_SYMBOL[chess_move.promotion]])
-    #     else:
-    #         move_tokens.append(cls.vocab_to_tokens["-"])
-    #     return move_tokens
-    #
-    # @classmethod
-    # def encode_uci_move(cls, chess_move_as_string: str) -> List[int]:
-    #     move_tokens = [
-    #         cls.vocab_to_tokens[chess_move_as_string[0:2]],
-    #         cls.vocab_to_tokens[chess_move_as_string[2:4]],
-    #     ]
-    #     if len(chess_move_as_string) == 5:
-    #         move_tokens.append(cls.vocab_to_tokens[chess_move_as_string[4]])
-    #     else:
-    #         move_tokens.append(cls.vocab_to_tokens["-"])
-    #     return move_tokens
-    #
-    # @classmethod
-    # def decode_move(cls, output_tokens: List[int]) -> Move:
-    #     output_tokens = [
-    #         token for token in output_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()
-    #     ]
-    #     promotion_str = cls.tokens_to_vocab[output_tokens[2]]
-    #     if promotion_str == "-":
-    #         promotion = None
-    #     else:
-    #         promotion = PIECE_SYMBOL_TO_INT[promotion_str]
-    #     return Move(
-    #         int(cls.tokens_to_vocab[output_tokens[0]]),
-    #         int(cls.tokens_to_vocab[output_tokens[1]]),
-    #         promotion,
-    #     )
+    @classmethod
+    def encode(cls, str_or_str_list: Union[List[str], str]) -> List[int]:
+        if isinstance(str_or_str_list, list):
+            return [cls.vocab_to_tokens[s] for s in str_or_str_list]
+        elif isinstance(str_or_str_list, str):
+            return [cls.vocab_to_tokens[str_or_str_list]]
+        else:
+            raise ValueError("str_or_str_list must be a list of strings or a string")
 
     @classmethod
     def decode(cls, tokens):
         """General decode method"""
         return [cls.tokens_to_vocab[token] for token in tokens]
-
-    # @classmethod
-    # def decode_uci_moves(cls, output_tokens, moves_limit=None):
-    #     """Decode Leela moves"""
-    #     decoded_tokens = "".join(cls.decode(output_tokens))
-    #     decoded_tokens = decoded_tokens.replace("<EOS>", "").replace("<PAD>", "").replace("-", "")
-    #     moves_str = decoded_tokens.split("<SEP>")
-    #     moves_str = [move for move in moves_str if move != ""]
-    #     if moves_limit is not None:
-    #         moves_str = moves_str[:moves_limit]
-    #     # return [Move.from_uci(move_str) for move_str in moves_str]
-    #     try:
-    #         return [Move.from_uci(move_str) for move_str in moves_str]
-    #     except ValueError:
-    #         return None

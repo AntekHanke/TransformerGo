@@ -12,7 +12,7 @@ USE_NEPTUNE = 0
 
 if USE_NEPTUNE:
     run = neptune.init(
-        name="weak policy self play",
+        name="weak pgn_policy self play",
         project=NEPTUNE_PROJECT,
         api_token=NEPTUNE_API_TOKEN,
         source_files=source_files_register.get()
