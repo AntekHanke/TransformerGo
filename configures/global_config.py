@@ -10,3 +10,5 @@ ENTROPY_HOME = "/home/todrzygozdz"
 EAGLE_HOME = "/home/plgrid/plgtodrzygozdz"
 
 MAX_JOBLIB_N_JOBS = 28
+
+MAX_NEW_TOKENS_FOR_POLICY = 2

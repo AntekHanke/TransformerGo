@@ -8,38 +8,39 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.chess_database_cls": "@data.PandasPolicyDataProvider",
 
-    "PandasPolicyDataProvider.data_path": "/leela_generator_data/prom_full_dataset_k=4.pkl",
-    "PandasPolicyDataProvider.eval_datapoints": 64,
+    "PandasPolicyDataProvider.data_path": "/leela_generator_data/full_dataset_k=1.pkl",
+    # "PandasPolicyDataProvider.eval_datapoints": 64,
 
     # "ResultFilter.winner_or_looser": "winner",
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": "/leela_models/v1/policy/ultra_small_model",
+    "GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/policy/medium_small_model",
     # "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
     "GlobalParamsHandler.learning_rate": 0.0003,
     "GlobalParamsHandler.path_format": ["learning_rate"],
 
+
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 128,
-    "BartConfig.encoder_layers": 2,
-    "BartConfig.decoder_layers": 2,
-    "BartConfig.encoder_attention_heads": 2,
-    "BartConfig.decoder_attention_heads": 2,
-    "BartConfig.decoder_ffn_dim": 128,
-    "BartConfig.encoder_ffn_dim": 128,
-    "BartConfig.d_model": 32,
-    "BartConfig.dropout": 0.05,
+    "BartConfig.encoder_layers": 8,
+    "BartConfig.decoder_layers": 8,
+    "BartConfig.encoder_attention_heads": 8,
+    "BartConfig.decoder_attention_heads": 8,
+    "BartConfig.decoder_ffn_dim": 2048,
+    "BartConfig.encoder_ffn_dim": 2048,
+    "BartConfig.d_model": 512,
+    "BartConfig.dropout": 0.1,
 
     "TrainingArguments.num_train_epochs": 1,
-    "TrainingArguments.per_device_train_batch_size": 2,
-    "TrainingArguments.per_device_eval_batch_size": 2,
+    "TrainingArguments.per_device_train_batch_size": 900,
+    "TrainingArguments.per_device_eval_batch_size": 900,
     "TrainingArguments.warmup_steps": 500,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 5,
+    "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 0.0002,
 
     "use_neptune": True,
@@ -47,19 +48,18 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    # "GlobalParamsHandler.k": [3],
-    # "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003, 0.001],
+    # "GlobalParamsHandler.learning_rate": [0.0001, 0.0002, 0.0003],
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra-small-leela-policy-train",
+    experiment_name=f"medium-leela-policy-train-v{VERSION}k1",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "small"],
+    tags=["leela", "train", "medium", "policy", f"v{VERSION}"],
     with_neptune=True,
     env={},
 )

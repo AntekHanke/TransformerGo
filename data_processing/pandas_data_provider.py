@@ -204,7 +204,9 @@ class PandasPolicyDataProvider(ChessDataProvider):
         data = {}
         for (id, (_, row)) in enumerate(df[["input_ids", "moves"]].iterrows()):
             if len(row["moves"]) > 0:
-                data[id] = {"input_ids": row["input_ids"], "labels": ChessTokenizer.encode(row["moves"][0])}
+                data[len(data)] = {"input_ids": row["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]], "labels": ChessTokenizer.encode(row["moves"][0])}
+            if id % 10000 == 0:
+                log_value("pandas_to_dict_progress", id, id / len(df))
         return data
 
     def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
