@@ -60,29 +60,3 @@ class BasicChessPolicy(ChessPolicy):
         num = scores[0,100].tolist()
         print(num)
 
-    # def find_move_probability(self, immutable_board: ImmutableBoard, move: chess.Move):
-    #     encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [
-    #         ChessTokenizer.vocab_to_tokens["<SEP>"]
-    #     ]
-    #     encoded_move: List[int] = ChessTokenizer.encode_move(move)
-    #     input_tensor: torch.Tensor = torch.IntTensor([encoded_board]).to(self.model.device)
-    #     forced_ids = [[0, ChessTokenizer.special_vocab_to_tokens["<EOS>"]]]
-    #     for token_num, token in enumerate(encoded_move):
-    #         forced_ids.append([token_num + 1, token])
-    #     outputs = self.model.generate(
-    #         inputs=input_tensor,
-    #         output_scores=True,
-    #         max_new_tokens=5,
-    #         return_dict_in_generate=True,
-    #         forced_decoder_ids=forced_ids,
-    #     )
-    #     sequence = outputs.sequences.tolist()[0]
-    #     move = ChessTokenizer.decode_move(sequence)
-    #     scores = outputs.scores
-    #     logits_sum = 0
-    #     for num_token in forced_ids[1:]:
-    #         num, token = num_token
-    #         token_scores = scores[num - 1].tolist()[0]
-    #         print(f"score = {token_scores[token+1]}")
-    #         logits_sum += token_scores[token]
-    #     return move, logits_sum
