@@ -1,10 +1,7 @@
-from typing import Type, Union
-
-# import evaluate
-
+from typing import Type
 from transformers.integrations import NeptuneCallback
+from data_processing.pandas_data_provider import IterableSubgoalDataLoader
 
-from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
 from jobs.core import Job
 from transformers import (
     Trainer,
@@ -16,31 +13,46 @@ from transformers import (
 from metric_logging import log_param, source_files_register, pytorch_callback_loggers
 from utils.global_params_handler import GlobalParamsHandler
 
+source_files_register.register(__file__)
 
-class TrainModel(Job):
+
+class TrainSubgoalGeneratorlWithIterableDataloader(Job):
     def __init__(
         self,
-        chess_database_cls: Type[ChessDataProvider],
+        path_to_training_data: str,
+        path_to_eval_data: str,
+        take_random_half_of_training_data: bool = False,
+        take_random_half_of_eval_data: bool = False,
         model_config_cls: Type[BartConfig] = None,
         training_args_cls: Type[TrainingArguments] = None,
         output_dir: str = None,
-    ):
+    ) -> None:
 
         if GlobalParamsHandler().get_out_dir() is not None:
             output_dir = GlobalParamsHandler().get_out_dir()
 
+        self.path_to_training_data = path_to_training_data
+        self.path_to_eval_data = path_to_eval_data
+        self.take_random_half_of_training_data = take_random_half_of_training_data
+        self.take_random_half_of_eval_data = take_random_half_of_eval_data
+
         log_param("output_dir", output_dir)
-
-        chess_database = chess_database_cls()
-        if isinstance(chess_database, ChessGamesDataGenerator):
-            chess_database.create_data()
-
-        self.model_config = model_config_cls()
+        # TODO: How to fix typing and class initialization
         self.training_args = training_args_cls(output_dir=output_dir + "/out")
-
         if GlobalParamsHandler().learning_rate is not None:
             self.training_args.learning_rate = GlobalParamsHandler().learning_rate
 
+        self.iterable_subgoal_dataLoader_train = IterableSubgoalDataLoader(
+            data_path=self.path_to_training_data,
+            take_random_half_of_data=self.take_random_half_of_training_data,
+        )
+
+        self.iterable_subgoal_dataLoader_eval = IterableSubgoalDataLoader(
+            data_path=self.path_to_eval_data,
+            take_random_half_of_data=self.take_random_half_of_eval_data,
+        )
+
+        self.model_config = model_config_cls()
         self.model = BartForConditionalGeneration(self.model_config)
 
         log_param("real learning rate", self.training_args.learning_rate)
@@ -48,8 +60,8 @@ class TrainModel(Job):
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
-            train_dataset=chess_database.get_train_set_generator(),
-            eval_dataset=chess_database.get_eval_set_generator(),
+            train_dataset=self.iterable_subgoal_dataLoader_train,
+            eval_dataset=self.iterable_subgoal_dataLoader_eval,
             # compute_metrics=compute_metrics,
         )
 

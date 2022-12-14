@@ -49,7 +49,7 @@ class NeptunePytorchCallback(TrainerCallback):
     def on_log(self, args, state, control, logs=None, **kwargs):
         _ = logs.pop("total_flos", None)
         if state.is_local_process_zero:
-            step = logs["epoch"]
+            step = state.global_step
             for metric_name, value in logs.items():
                 if metric_name != "epoch":
                     try:

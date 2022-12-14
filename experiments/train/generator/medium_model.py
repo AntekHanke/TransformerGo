@@ -1,8 +1,12 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+from metric_logging import source_files_register
+
 #Lizard: shallower or wider
 
 VERSION = "2"
+
+source_files_register.register(__file__)
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",

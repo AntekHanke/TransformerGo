@@ -15,6 +15,14 @@ class LeelaDatasetGenerator(Job):
         self.mcts_gen.generate_data()
 
 
+class LeelaParallelDatasetGenerator(Job):
+    def __init__(self, mcts_gen_class):
+        self.mcts_gen = mcts_gen_class()
+
+    def execute(self):
+        self.mcts_gen.generate_parallel_data_from_path()
+
+
 # @gin.configurable
 class LeelaCCLPDataProcessing(Job):
     def __init__(self, pandas_data_provider_class=None):

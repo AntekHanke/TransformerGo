@@ -1,36 +1,50 @@
-import os
 import random
-from typing import Dict, List
-
-import gin
-import pandas as pd
-
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_utils import immutable_boards_to_img
-from metric_logging import log_param, log_value, log_object
+from metric_logging import log_param, log_value
+import os
+from os.path import isfile, join
+from typing import List, Dict, Iterator, Optional
+import pandas as pd
+from tqdm import tqdm
+from torch.utils.data import IterableDataset
 from utils.global_params_handler import GlobalParamsHandler
+
+rng = random.Random(0)
 
 
 class PandasSubgoalDataProvider(ChessDataProvider):
-    def __init__(self, data_path=None, eval_datapoints: int = 10000):
+    """
+    This class supports CLLP and Genarator model
+    """
+
+    def __init__(
+        self, data_path: Optional[str] = None, eval_datapoints: int = 100000, random_half: bool = False
+    ) -> None:
+
+        df: pd.DataFrame = pd.DataFrame()
+
         if data_path is None:
             data_path = GlobalParamsHandler().get_data_path()
             print(f"Data path: {data_path}")
 
-        df = pd.read_pickle(data_path)
-        processed_df = self.process_df(df)
-        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
-        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+        for folder_name in tqdm(os.listdir(data_path)):
+            path: str = data_path + "/" + str(folder_name)
+            name_of_files: List[str] = [f for f in os.listdir(path) if isfile(join(path, f))]
+            for name_of_file in tqdm(name_of_files):
+                load_df: pd.DataFrame = pd.read_pickle(path + "/" + name_of_file)
+
+                if random_half:
+                    load_df = load_df.sample(frac=0.5, random_state=1)
+
+                df: pd.DataFrame = pd.concat([df, load_df], ignore_index=True)
+
+        processed_df: pd.DataFrame = self.process_df(df)
+        self.data_train: Dict = self.pandas_to_dict(processed_df.head(-eval_datapoints))
+        self.data_eval: Dict = self.pandas_to_dict(processed_df.tail(eval_datapoints))
 
         log_param("Train set size", len(self.data_train))
         log_param("Eval set size", len(self.data_eval))
-
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[["input_ids", "labels"]]
-
-    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
-        return df.to_dict(orient="records")
 
     def get_train_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_train)
@@ -38,18 +52,24 @@ class PandasSubgoalDataProvider(ChessDataProvider):
     def get_eval_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_eval)
 
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return df[["input_ids", "labels"]]
+
+    @staticmethod
+    def pandas_to_dict(df: pd.DataFrame) -> Dict:
+        return df.to_dict(orient="records")
+
 
 # @gin.configurable
-class PandasCLLPDataGenerator(ChessDataProvider):
+class PandasCLLPDataGenerator:
     def __init__(
         self,
-        data_path: str = None,
-        save_final_df_path: str = None,
-        crop_df: int = 3 * 10**6,
+        data_path: Optional[str] = None,
+        save_final_df_path: Optional[str] = None,
         use_one_move=None,
-        padding_len=40,
-    ):
-
+        padding_len: int = 40,
+    ) -> None:
         print(f"Data path: {data_path}")
 
         if GlobalParamsHandler().get_data_path() is not None:
@@ -58,34 +78,31 @@ class PandasCLLPDataGenerator(ChessDataProvider):
             self.data_path = data_path
 
         self.save_final_df_path = save_final_df_path
-        self.crop_df = crop_df
         self.use_one_move = use_one_move
         self.padding_len = padding_len
+        self.paths_to_data: Optional[List[str]] = None
 
     def create_data(self):
         self.paths_to_data = []
-        self.combined_df = pd.DataFrame()
         for dir_data in os.walk(self.data_path):
             print(dir_data)
             for file in dir_data[-1]:
                 if ".pkl" in file:
                     self.paths_to_data.append(os.path.join(dir_data[0], file))
 
-        for file in self.paths_to_data:
+        for file in tqdm(self.paths_to_data):
             print(f"Processing {file}")
-            df = pd.read_pickle(file)
+            df: pd.DataFrame = pd.read_pickle(file)
             print(f"Read pickle {file}")
-            df = df.head(self.crop_df)
-            processed_df = self.process_df(df, file)
-            self.combined_df = pd.concat([self.combined_df, processed_df], ignore_index=True)
-            del df
+            df = self.process_df(df, file)
 
-        if self.save_final_df_path is not None:
-            self.combined_df.to_pickle(self.save_final_df_path)
+            if self.save_final_df_path is not None:
+                path_elements: List[str] = file.split("/")
+                df.to_pickle(self.save_final_df_path + "/" + "cllp_" + path_elements[-1])
 
     def process_df(self, df: pd.DataFrame, file: str) -> pd.DataFrame:
         processed_df = df[["input_ids", "labels", "moves"]]
-        processed_df.rename(columns={"labels": "subgoal_board", "input_ids": "input_board"}, inplace=True)
+        processed_df = processed_df.rename(columns={"labels": "subgoal_board", "input_ids": "input_board"})
 
         def tokenize_moves(moves: List[str]) -> List[int]:
             tokenized_moves = []
@@ -121,109 +138,46 @@ class PandasCLLPDataGenerator(ChessDataProvider):
         return data_df
 
 
-class PandasCLLPDataProvider(ChessDataProvider):
-    def __init__(self, data_path=None, eval_datapoints: int = 10000):
-        if GlobalParamsHandler().get_data_path() is not None:
-            data_path = GlobalParamsHandler().get_data_path()
-            print(f"Data path: {data_path}")
+class IterableSubgoalDataLoader(IterableDataset):
+    def __init__(
+        self,
+        data_path: str,
+        take_random_half_of_data: bool = False,
+    ) -> None:
+        self.files_names: List[str] = []
+        self.take_random_half_of_data = take_random_half_of_data
+        self.eval = eval
 
-        print(f"Reading pickle")
-        df = pd.read_pickle(data_path)
-        print(f"Finished reading pickle")
-        print(f"Processing df")
-        processed_df = self.process_df(df)
-        print(f"Finished processing df")
-        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
-        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+        for folder_name in tqdm(os.listdir(data_path)):
+            path: str = data_path + "/" + str(folder_name)
+            for file_name in os.listdir(path):
+                path_to_file: str = join(path, file_name)
+                if isfile(path_to_file):
+                    self.files_names.append(path_to_file)
 
-        log_param("Train set size", len(self.data_train))
-        log_param("Eval set size", len(self.data_eval))
+    def __iter__(self) -> Iterator[Dict[str, List[int]]]:
+        return self.process_data()
 
-    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
-        return df.to_dict(orient="records")
+    def __getitem__(self, item):
+        raise NotImplementedError
 
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[["input_ids", "labels"]]
+    def process_data(self) -> Iterator[Dict[str, List[int]]]:
+        for path_to_file in self.files_names:
+            load_df: pd.DataFrame = pd.read_pickle(path_to_file)
 
-    def get_train_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_train)
+            if self.take_random_half_of_data:
+                load_df = load_df.sample(frac=0.5, random_state=1)
 
-    def get_eval_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_eval)
+            processed_df: pd.DataFrame = self.process_df(load_df)
+            data: List[Dict[str, int]] = self.pandas_to_dict(processed_df)
 
-
-class PandasBertForSequenceDataProvider(ChessDataProvider):
-    def __init__(self, data_path=None, eval_datapoints: int = 10000):
-
-        print(f"Reading pickle")
-        df = pd.read_pickle(data_path)
-        print(f"Finished reading pickle")
-        print(f"Processing df")
-        processed_df = self.process_df(df)
-        print(f"Finished processing df")
-        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
-        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
-
-        log_param("Train set size", len(self.data_train))
-        log_param("Eval set size", len(self.data_eval))
-
-    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
-        data = {}
-        for (id, (_, row)) in enumerate(df[["target_immutable_board", "Q"]].iterrows()):
-            data[id] = {"input_ids": row["target_immutable_board"], "labels": row["Q"]}
-        return data
-
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[["target_immutable_board", "Q"]]
-
-    def get_train_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_train)
-
-    def get_eval_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_eval)
-
-
-class PandasPolicyDataProvider(ChessDataProvider):
-    def __init__(self, data_path=None, eval_datapoints: int = 10000):
-        print(f"Reading pickle")
-        df = pd.read_pickle(data_path)
-        print(f"Finished reading pickle")
-        print(f"Processing df")
-        processed_df = self.process_df(df)
-        print(f"Finished processing df")
-        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
-        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
-
-        log_param("Train set size", len(self.data_train))
-        log_param("Eval set size", len(self.data_eval))
-
-        self.log_samples()
+            for x in data:
+                yield x
 
     @staticmethod
-    def pandas_to_dict(df: pd.DataFrame) -> Dict:
-        data = {}
-        for (id, (_, row)) in enumerate(df[["input_ids", "moves"]].iterrows()):
-            if len(row["moves"]) > 0:
-                data[len(data)] = {"input_ids": row["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]], "labels": ChessTokenizer.encode(row["moves"][0])}
-            if id % 10000 == 0:
-                log_value("pandas_to_dict_progress", id, id / len(df))
-        return data
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return df[["input_ids", "labels"]]
 
-    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df[["input_ids", "moves"]]
-
-    def get_train_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_train)
-
-    def get_eval_set_generator(self) -> ChessDataset:
-        return ChessDataset(self.data_eval)
-
-    def log_samples(self, n_samples=10):
-        for i in range(n_samples):
-            sample = random.choice(list(self.data_train.values()))
-            log_object("text_sample", f"input_ids: {sample['input_ids']}, labels: {sample['labels']}")
-            sample_immutable_board = ChessTokenizer.decode_board(sample["input_ids"])
-            fig = immutable_boards_to_img(
-                [sample_immutable_board], [f"Move: {ChessTokenizer.decode_move(sample['labels'])}"]
-            )
-            log_object(f"sample", fig)
+    @staticmethod
+    def pandas_to_dict(df: pd.DataFrame) -> List[Dict[str, int]]:
+        return df.to_dict(orient="records")

@@ -12,12 +12,11 @@ from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.pandas_data_provider import (
     PandasSubgoalDataProvider,
     PandasCLLPDataGenerator,
-    PandasCLLPDataProvider,
-    PandasBertForSequenceDataProvider, PandasPolicyDataProvider,
+    IterableSubgoalDataLoader
 )
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.evaluate_cllp import EvaluateCLLP
-from jobs.job_leela_dataset import LeelaCCLPDataProcessing
+from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
 
@@ -39,6 +38,7 @@ configure_classes(
         LeelaCCLPDataProcessing,
         EvaluateCLLP,
         TrainBertForSequenceModel,
+        LeelaParallelDatasetGenerator
     ],
     "jobs",
 )
@@ -51,10 +51,8 @@ configure_classes(
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
         PandasSubgoalDataProvider,
-        PandasBertForSequenceDataProvider,
         PandasCLLPDataGenerator,
-        PandasCLLPDataProvider,
-        PandasPolicyDataProvider
+        IterableSubgoalDataLoader
     ],
     "data",
 )
