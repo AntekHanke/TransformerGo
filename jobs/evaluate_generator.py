@@ -9,8 +9,6 @@ from jobs.core import Job
 from metric_logging import source_files_register, log_object
 from subgoal_generator.subgoal_generator import ChessSubgoalGenerator
 
-source_files_register.register(__file__)
-
 
 class EvaluateGenerator(Job):
     def __init__(

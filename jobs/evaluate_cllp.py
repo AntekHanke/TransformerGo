@@ -10,8 +10,6 @@ from jobs.core import Job
 from metric_logging import source_files_register, log_object, log_value
 from policy.cllp import CLLP, CLLPOneMove
 
-source_files_register.register(__file__)
-
 
 class EvaluateCLLP(Job):
     def __init__(
