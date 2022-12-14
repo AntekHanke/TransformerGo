@@ -1,18 +1,19 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+
 VERSION = "1"
 
 base_config = {
-    "run.job_class": "@jobs.TrainSubgoalGeneratorlWithIterableDataloader",
+    "run.job_class": "@jobs.TrainModel",
 
     # f"TrainSubgoalGeneratorlWithIterableDataloader.path_to_training_data": "/subgoals_data_train/subgoals_k=1",
     # f"TrainSubgoalGeneratorlWithIterableDataloader.path_to_eval_data": "/subgoals_data_eval/subgoals_k=1",
 
-    "TrainSubgoalGeneratorlWithIterableDataloader.path_to_training_data": "/leela_generator_data/train",
-    "TrainSubgoalGeneratorlWithIterableDataloader.path_to_eval_data": "/leela_generator_data/eval",
+    "TrainModel.path_to_training_data": "/leela_generator_data/train",
+    "TrainModel.path_to_eval_data": "/leela_generator_data/eval",
 
-    "TrainSubgoalGeneratorlWithIterableDataloader.model_config_cls": "@transformers.BartConfig",
-    "TrainSubgoalGeneratorlWithIterableDataloader.training_args_cls": "@transformers.TrainingArguments",
+    "TrainModel.model_config_cls": "@transformers.BartConfig",
+    "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
     "GlobalParamsHandler.k": 1,
     #"GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/generator/small_model",

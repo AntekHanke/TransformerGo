@@ -19,7 +19,6 @@ from jobs.evaluate_cllp import EvaluateCLLP
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
-from jobs.train_subgoal_genarator_with_iterable_dataloader import TrainSubgoalGeneratorlWithIterableDataloader
 
 
 def configure_class(cls, module=None) -> None:
@@ -40,7 +39,6 @@ configure_classes(
         EvaluateCLLP,
         TrainBertForSequenceModel,
         LeelaParallelDatasetGenerator,
-        TrainSubgoalGeneratorlWithIterableDataloader
     ],
     "jobs",
 )
