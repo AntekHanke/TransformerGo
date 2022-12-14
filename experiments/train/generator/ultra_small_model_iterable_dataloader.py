@@ -8,15 +8,15 @@ base_config = {
     # f"TrainSubgoalGeneratorlWithIterableDataloader.path_to_training_data": "/subgoals_data_train/subgoals_k=1",
     # f"TrainSubgoalGeneratorlWithIterableDataloader.path_to_eval_data": "/subgoals_data_eval/subgoals_k=1",
 
-    "TrainSubgoalGeneratorlWithIterableDataloader.path_to_training_data": "/home/gracjan/iterator_test_eval",
-    "TrainSubgoalGeneratorlWithIterableDataloader.path_to_eval_data": "/home/gracjan/iterator_test_train",
+    "TrainSubgoalGeneratorlWithIterableDataloader.path_to_training_data": "/leela_generator_data/train",
+    "TrainSubgoalGeneratorlWithIterableDataloader.path_to_eval_data": "/leela_generator_data/eval",
 
     "TrainSubgoalGeneratorlWithIterableDataloader.model_config_cls": "@transformers.BartConfig",
     "TrainSubgoalGeneratorlWithIterableDataloader.training_args_cls": "@transformers.TrainingArguments",
 
     "GlobalParamsHandler.k": 1,
     #"GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/generator/small_model",
-    "GlobalParamsHandler.out_dir": f"/home/gracjan/test_training_generator/leela_models/v{VERSION}/generator/small_model",
+    "GlobalParamsHandler.out_dir": f"/leela_models/test_training_generator/leela_models/v{VERSION}/generator/small_model",
     "GlobalParamsHandler.data_type": "generator",
     "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
