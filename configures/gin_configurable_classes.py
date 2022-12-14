@@ -1,16 +1,25 @@
 import gin
-from transformers import Trainer, TrainingArguments, BartConfig
+from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 
 from data_processing.chess_data_generator import (
     NoFilter,
     ResultFilter,
-    ChessCLLPDataGenerator,
-    ChessSubgoalDataGenerator,
-    PolicyDataGenerator,
+    ChessCLLPGamesDataGenerator,
+    ChessSubgoalGamesDataGenerator,
+    PolicyGamesDataGenerator,
 )
-from jobs.any_job import AnyJob
+from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
+from data_processing.pandas_data_provider import (
+    PandasSubgoalDataProvider,
+    PandasCLLPDataGenerator,
+    IterableSubgoalDataLoader
+)
+from jobs.create_pgn_dataset import CreatePGNDataset
+from jobs.evaluate_cllp import EvaluateCLLP
+from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator
+from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
-from jobs.job_leela_dataset import LeelaDatasetGenerator
+from jobs.train_subgoal_genarator_with_iterable_dataloader import TrainSubgoalGeneratorlWithIterableDataloader
 
 
 def configure_class(cls, module=None) -> None:
@@ -22,10 +31,30 @@ def configure_classes(classes, module=None) -> None:
         configure_class(cls, module)
 
 
-configure_classes([AnyJob, TrainModel], "jobs")
-configure_classes([Trainer, TrainingArguments, BartConfig], "transformers")
+# configure_classes([GlobalParamsHandler], "params")
+configure_classes(
+    [
+        TrainModel,
+        CreatePGNDataset,
+        LeelaCCLPDataProcessing,
+        EvaluateCLLP,
+        TrainBertForSequenceModel,
+        LeelaParallelDatasetGenerator,
+        TrainSubgoalGeneratorlWithIterableDataloader
+    ],
+    "jobs",
+)
+configure_classes([Trainer, TrainingArguments, BartConfig, BertConfig], "transformers")
 configure_classes([NoFilter, ResultFilter], "filters")
-configure_classes([PolicyDataGenerator,
-                   ChessSubgoalDataGenerator,
-                   ChessCLLPDataGenerator,
-                   LeelaDatasetGenerator], "data")
+configure_classes(
+    [
+        PolicyGamesDataGenerator,
+        ChessSubgoalGamesDataGenerator,
+        ChessCLLPGamesDataGenerator,
+        SubgoalMCGamesDataGenerator,
+        PandasSubgoalDataProvider,
+        PandasCLLPDataGenerator,
+        IterableSubgoalDataLoader
+    ],
+    "data",
+)

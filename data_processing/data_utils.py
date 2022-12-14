@@ -37,6 +37,11 @@ def get_split(arg: Union[str, int], train_eval_split: float) -> str:
         return "eval"
 
 
+def is_fen_game_over(fen: str) -> bool:
+    board = chess.Board(fen)
+    return board.is_game_over()
+
+
 def immutable_boards_to_img(
     immutable_boards: List[ImmutableBoard], descriptions: List[str], size: int = 5
 ) -> plt.Figure:

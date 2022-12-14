@@ -1,18 +1,12 @@
 import random
 
-from chess_engines.stockfish import StockfishEngine
-from data_processing.chess_data_generator import ChessDataGenerator, NoFilter, ChessSubgoalDataGenerator
+from chess_engines.third_party.stockfish import StockfishEngine
+from data_processing.chess_data_generator import NoFilter, ChessSubgoalGamesDataGenerator
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
 from jobs.core import Job
-from transformers import (
-    Trainer,
-    BartForConditionalGeneration,
-    BartConfig,
-    TrainingArguments,
-)
 
-from metric_logging import log_param, source_files_register, log_object
+from metric_logging import source_files_register, log_object
 from subgoal_generator.subgoal_generator import ChessSubgoalGenerator
 
 source_files_register.register(__file__)
@@ -32,7 +26,7 @@ class EvaluateGenerator(Job):
         self.k = k
         self.n_subgoals = n_subgoals
         self.subgoal_generator = subgoal_generator
-        self.chess_database = ChessSubgoalDataGenerator(
+        self.chess_database = ChessSubgoalGamesDataGenerator(
             self.k, pgn_file, NoFilter(), p_sample=0.5, n_data=100 * n_eval_datapoints, only_eval=True
         )
         self.n_eval_datapoints = n_eval_datapoints

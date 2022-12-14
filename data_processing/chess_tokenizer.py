@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from chess import Move, PIECE_SYMBOLS
 
@@ -14,13 +14,31 @@ class MoveDocodingException(Exception):
     pass
 
 
+def is_promotion_possible(algebraic_move: str) -> bool:
+    return (
+        abs(int(algebraic_move[1]) - int(algebraic_move[3])) == 1
+        and algebraic_move[3] in "18"
+        and abs(ord(algebraic_move[0]) - ord(algebraic_move[2])) <= 1
+    )
+
+
 class ChessTokenizer:
     """Custom tokenizer for chess data."""
+
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [
-        f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)
-    ]
+    algebraic_fields = [f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)]
+    algebraic_moves = []
+    for start in algebraic_fields:
+        for end in algebraic_fields:
+            if start != end:
+                algebraic_moves.append(f"{start}{end}")
+
+    algebraic_promotions = []
+    for move in algebraic_moves:
+        if is_promotion_possible(move):
+            for promotion in ["q", "r", "b", "n"]:
+                algebraic_promotions.append(f"{move}{promotion}")
 
     castlings = [
         "KQkq",
@@ -41,12 +59,9 @@ class ChessTokenizer:
         "-",
     ]
     players = ["w", "b"]
-    non_special_vocab = pieces + integers + algebraic_fields + players + castlings
+    non_special_vocab = pieces + integers + algebraic_fields + players + castlings + algebraic_moves + algebraic_promotions
     special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
-    vocab_to_tokens = {
-        symbol: i + NON_SPECIAL_TOKENS_START
-        for i, symbol in enumerate(non_special_vocab)
-    }
+    vocab_to_tokens = {symbol: i + NON_SPECIAL_TOKENS_START for i, symbol in enumerate(non_special_vocab)}
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
 
@@ -82,7 +97,7 @@ class ChessTokenizer:
     def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
         board_string_with_dots = ""
         board_tokens = [token for token in board_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()]
-        board_tokens = board_tokens[:cls.TOKENIZED_BOARD_LENGTH]
+        board_tokens = board_tokens[: cls.TOKENIZED_BOARD_LENGTH]
         for i, token in enumerate(board_tokens):
             if i >= 71:
                 board_string_with_dots += " "
@@ -103,27 +118,22 @@ class ChessTokenizer:
 
     @classmethod
     def encode_move(cls, chess_move: Move) -> List[int]:
-        move_tokens = [
-            cls.vocab_to_tokens[str(chess_move.from_square)],
-            cls.vocab_to_tokens[str(chess_move.to_square)],
-        ]
-        if chess_move.promotion is not None:
-            move_tokens.append(
-                cls.vocab_to_tokens[INT_TO_PIECE_SYMBOL[chess_move.promotion]]
-            )
-        else:
-            move_tokens.append(cls.vocab_to_tokens["-"])
-        return move_tokens
+        return [cls.vocab_to_tokens[chess_move.uci()]]
 
     @classmethod
-    def decode_move(cls, output_tokens: List[int]) -> Move:
-        promotion_str = cls.tokens_to_vocab[output_tokens[2]]
-        if promotion_str == "-":
-            promotion = None
+    def decode_move(cls, move_token: List[int]) -> Move:
+        return Move.from_uci(cls.tokens_to_vocab[move_token[0]])
+
+    @classmethod
+    def encode(cls, str_or_str_list: Union[List[str], str]) -> List[int]:
+        if isinstance(str_or_str_list, list):
+            return [cls.vocab_to_tokens[s] for s in str_or_str_list]
+        elif isinstance(str_or_str_list, str):
+            return [cls.vocab_to_tokens[str_or_str_list]]
         else:
-            promotion = PIECE_SYMBOL_TO_INT[promotion_str]
-        return Move(
-            int(cls.tokens_to_vocab[output_tokens[0]]),
-            int(cls.tokens_to_vocab[output_tokens[1]]),
-            promotion,
-        )
+            raise ValueError("str_or_str_list must be a list of strings or a string")
+
+    @classmethod
+    def decode(cls, tokens):
+        """General decode method"""
+        return [cls.tokens_to_vocab[token] for token in tokens]

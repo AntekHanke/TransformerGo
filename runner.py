@@ -12,6 +12,7 @@ import metric_logging
 
 import configures.gin_configurable_classes #keep this import
 from configures.global_config import NEPTUNE_PROJECT
+from utils.global_params_handler import GlobalParamsHandler
 
 
 def _parse_args():
@@ -35,8 +36,8 @@ def _parse_args():
 
 @gin.configurable()
 def run(job_class):
-    metric_logging.log_object('host_name', platform.node())
-    metric_logging.log_object('n_gpus', str(torch.cuda.device_count()))
+    metric_logging.log_param('host_name', platform.node())
+    metric_logging.log_param('n_gpus', str(torch.cuda.device_count()))
 
     job = job_class()
     return job.execute()

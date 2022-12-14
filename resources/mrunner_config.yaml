@@ -1,6 +1,65 @@
 contexts:
+  ares_quick:
+    account: plgrlresearchgpu-gpu
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: plgrid-bigmem
+    time: 2800
+    cpu: 1
+    ntasks: 1
+    mem: 10G
+    nodes: 1
+    slurm_url: plgtodrzygozdz@ares.cyfronet.pl
+    storage_dir: /net/ascratch/people/plgtodrzygozdz
+    singularity_container:  -H $PWD:/homeplaceholder 
+                            --bind /net:/net --env NEPTUNEPWD=$PWD 
+                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/leela_data/:/save_data
+                            -B /net/ascratch/people/plgtodrzygozdz/leela_all_trees/:/leela_data
+                            -B $TMPDIR:/tmp /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
+
+  ares_gpu:
+    account: plgrlresearchgpu-gpu
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: plgrid-gpu-v100
+    time: 0-00:20:00
+    cpu: 5
+    mem: 100G
+    gpu: 1
+    ntasks: 1
+    nodes: 1
+    slurm_url: plgtodrzygozdz@ares.cyfronet.pl
+    storage_dir: /net/ascratch/people/plgtodrzygozdz
+    singularity_container:  -H $PWD:/homeplaceholder 
+                            --bind /net:/net --env NEPTUNEPWD=$PWD 
+                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
+                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/small_train_leela_data/:/save_data
+                            -B /net/ascratch/people/plgtodrzygozdz/leela_all_trees/:/leela_data
+                            -B $TMPDIR:/tmp /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
 
   eagle_quick_go:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: standard
+    time: 59
+    cpu: 4
+    ntasks: 1
+    mem: 120G
+    nodes: 1
+    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
+    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
+    singularity_container:  -H $PWD:/homeplaceholder
+                            -B $TMPDIR:/tmp
+                            -B /tmp/lustre/plgtodrzygozdz
+                            -B /home/plgrid/plgtodrzygozdz/subgoal_chess
+                            -B /home/plgrid/plgtodrzygozdz/singularity_images
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/tress
+                            -B /home/plgrid/plgtodrzygozdz/chess_models
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  eagle_quick_go2:
     account: plgrlresearch
     backend_type: slurm
     cmd_type: sbatch
@@ -13,12 +72,27 @@ contexts:
     slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
     storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
     singularity_container:  -H $PWD:/homeplaceholder
-                            -B /tmp/lustre/plgtodrzygozdz
-                            -B /home/plgrid/plgtodrzygozdz/subgoal_chess
-                            -B /home/plgrid/plgtodrzygozdz/singularity_images
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data
-                            -B /home/plgrid/plgtodrzygozdz/chess_models
-                            --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_8.08.2022.sif
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  eagle_data:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: standard
+    time: 50
+    cpu: 1
+    ntasks: 1
+    mem: 10G
+    nodes: 1
+    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
+    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
+    singularity_container:  -H $PWD:/homeplaceholder
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/leela_data
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
   eagle_quick_tesla:
     account: plgrlresearch
@@ -68,10 +142,32 @@ contexts:
     nodes: 1
     slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
     storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-    singularity_container: -H $PWD:/homeplaceholder
-      -B /tmp/lustre/plgtodrzygozdz
-      -B /home/plgrid/plgtodrzygozdz/
-      --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_6.09.2022.sif
+    singularity_container:  -H $PWD:/homeplaceholder
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  eagle_tesla_data:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: tesla
+    time: 4300
+    cpu: 4
+    gpu: 1
+    ntasks: 1
+    mem: 120G
+    nodes: 1
+    modules_to_load:
+      - plgrid/tools/singularity/stable
+    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
+    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
+    singularity_container:  -H $PWD:/homeplaceholder
+                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models_2/:/leela_models
+                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
   entropy:
     account: students
@@ -90,3 +186,96 @@ contexts:
     singularity_container: -H $PWD:/homeplaceholder
       -B /home/todrzygozdz/
       --env NEPTUNEPWD=$PWD  --nv /home/todrzygozdz/singularity_images/transformers_5.09.2022.sif
+
+
+  prom:
+    account: plggcontinualrl2
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 50
+    cpu: 4
+    mem: 120G
+    modules_to_load:
+     - plgrid/tools/singularity/stable
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-testing
+    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+    storage_dir: /net/scratch/people/plgtodrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/leela_generator_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/cllp_data/:/leela_cllp_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
+                           -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  prom_long:
+    account: plggcontinualrl2
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 600
+    cpu: 4
+    mem: 120G
+    modules_to_load:
+     - plgrid/tools/singularity/stable
+    nodes: 1
+    ntasks: 1
+    partition: plgrid
+    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+    storage_dir: /net/scratch/people/plgtodrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/leela_generator_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/cllp_data/:/leela_cllp_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
+                           -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+  prom_gpu:
+    account: plgrlresearchgpu
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 1-00:00:00
+    cpu: 4
+    mem: 120G
+    gpu: 1
+    modules_to_load:
+    - plgrid/tools/singularity/stable
+    - plgrid/apps/cuda/11.2
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-gpu-v100
+    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+    storage_dir: /net/scratch/people/plgtodrzygozdz/
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/pgn:/pgn
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/medium_train_leela_data/:/leela_generator_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/cllp_data/:/leela_cllp_data
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+                           -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
+                           -B $TMPDIR:/tmp --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+
+
+#  prom_gpu_continual:
+#    account: plgcontinualrl2gpu
+#    backend_type: slurm
+#    cmd_type: sbatch
+#    time: 1-00:00:00
+#    cpu: 4
+#    mem: 20G
+#    gpu: 1
+#    modules_to_load:
+#    - plgrid/tools/singularity/stable
+#    - plgrid/apps/cuda/11.2
+#    nodes: 1
+#    ntasks: 1
+#    partition: plgrid-gpu-v100
+#    slurm_url: plgtodrzygozdz@pro.cyfronet.pl
+#    storage_dir: /net/scratch/people/plgtodrzygozdz/
+#    singularity_container: -H $PWD:/homeplaceholder
+#                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_all_trees:/leela_data
+#                           -B /net/scratch/people/plgtodrzygozdz/chess_data/small_train_leela_data/:/save_data
+#                           -B /net/scratch/people/plgtodrzygozdz/chess_data/leela_models/:/leela_models
+#                           -B $TMPDIR:/tmp --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif

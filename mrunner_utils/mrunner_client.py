@@ -9,6 +9,8 @@ import neptune.new as neptune
 
 from transformers import TrainerCallback
 
+from configures.global_config import NEPTUNE_API_TOKEN
+
 
 def get_configuration(spec_path):
     """Get mrunner experiment specification and gin-config overrides."""
@@ -47,7 +49,7 @@ class NeptunePytorchCallback(TrainerCallback):
     def on_log(self, args, state, control, logs=None, **kwargs):
         _ = logs.pop("total_flos", None)
         if state.is_local_process_zero:
-            step = logs["epoch"]
+            step = state.global_step
             for metric_name, value in logs.items():
                 if metric_name != "epoch":
                     try:
@@ -102,11 +104,12 @@ def configure_neptune(specification):
     # Set pwd property with path to experiment.
     properties = {"pwd": os.environ.get("NEPTUNEPWD", os.getcwd())}
     run = neptune.init_run(
+        api_token=NEPTUNE_API_TOKEN,
         project=specification["project"],
         name=specification["name"],
         tags=specification["tags"],
     )
-    run["job_params/params"] = specification["parameters"]
+    run["job_params"] = specification["parameters"]
     run["path_to_experimant/properties"] = properties
     run["git_info/git_info"] = git_info
 

@@ -1,11 +1,16 @@
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Tuple
 
 import chess
 
 Transition = namedtuple("Transition", "immutable_board move move_number")
-OneGameData = namedtuple("OneGameData", "metadata, transitions")
+OneGameData = namedtuple("OneGameData", "metadata transitions")
+LeelaSubgoal = namedtuple(
+    "LeelaSubgoal",
+    "input_idx target_idx input_immutable_board target_immutable_board dist_from_input input_level moves N Q D M P input_N",
+)
+# LeelaNodeData = namedtuple("LeelaNodeData", "id state moves_from_root level N Q D M P")
 
 ImmutableBoardData = namedtuple(
     "ImmutableBoard",
@@ -29,6 +34,10 @@ class ImmutableBoard(ImmutableBoardData):
     def from_board(cls, board: chess.Board) -> "ImmutableBoard":
         fen_data = board.fen().split()
         return cls(*fen_data)
+
+    @classmethod
+    def from_fen_str(cls, fen: str) -> "ImmutableBoard":
+        return ImmutableBoard(*fen.split())
 
     def to_board(self) -> chess.Board:
         return chess.Board(fen=" ".join(self))

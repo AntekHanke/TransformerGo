@@ -40,3 +40,16 @@ If You want make vizualistion of Leela's trees, use: https://github.com/jkormu/L
 
 Simple self-play example is in file:
 ```local\experiments\self_play.py```
+
+
+## Singularity sandbox:
+
+``` sudo singularity build --sandbox my_sbox my_image.sif```
+
+## Building Lichess Bots:
+
+Install Banksia (https://banksiagui.com/)
+
+If you have troubles connecting Banksiagui to Lichess, follow this instruction (tested on Ubuntu 22.04):
+
+https://linuxpip.org/install-openssl-linux/

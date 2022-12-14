@@ -4,8 +4,8 @@ from typing import Union, List, Dict
 import pandas
 import pandas as pd
 
-from chess_engines.stockfish import StockfishEngine
-from data_processing.data_utils import immutable_boards_to_img, RESULT_TO_WINNER
+from chess_engines.third_party.stockfish import StockfishEngine
+from data_processing.data_utils import RESULT_TO_WINNER
 from data_processing.exhaustive_search import ExhaustiveSearch
 
 # from jobs.core import Job
@@ -13,7 +13,7 @@ from data_structures.data_structures import OneGameData, ImmutableBoard
 
 from metric_logging import source_files_register, log_value
 from statistics.statistics_dataset_generator import StatisticsDatasetCreator
-from subgoal_generator.subgoal_generator import ChessSubgoalGenerator, BasicChessSubgoalGenerator
+from subgoal_generator.subgoal_generator import ChessSubgoalGenerator
 
 source_files_register.register(__file__)
 

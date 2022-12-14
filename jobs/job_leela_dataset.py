@@ -1,23 +1,32 @@
+import os
+
+import gin
+
+from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
+from data_processing.pandas_data_provider import PandasCLLPDataGenerator
 from jobs.core import Job
-from typing import List
-from leela.leela_data_creator import LeelaTressGenerator
 
 
 class LeelaDatasetGenerator(Job):
-    def __init__(
-            self,
-            path_to_chess_dataset: str,
-            leela_parms: List[str],
-            number_of_searching_nodes: int = 1000
-    ) -> None:
-        self.path_to_chess_dataset = path_to_chess_dataset
-        self.leela_parms = leela_parms
-        self.number_of_searching_nodes = number_of_searching_nodes
+    def __init__(self, mcts_gen_class):
+        self.mcts_gen = mcts_gen_class()
 
     def execute(self):
-        leela_gegenartor = LeelaTressGenerator(
-            self.path_to_chess_dataset,
-            self.leela_parms,
-            self.number_of_searching_nodes
-        )
-        leela_gegenartor.generate_and_save_tress_by_leela()
+        self.mcts_gen.generate_data()
+
+
+class LeelaParallelDatasetGenerator(Job):
+    def __init__(self, mcts_gen_class):
+        self.mcts_gen = mcts_gen_class()
+
+    def execute(self):
+        self.mcts_gen.generate_parallel_data_from_path()
+
+
+# @gin.configurable
+class LeelaCCLPDataProcessing(Job):
+    def __init__(self, pandas_data_provider_class=None):
+        self.pandas_data_provider = pandas_data_provider_class()
+
+    def execute(self):
+        self.pandas_data_provider.create_data()

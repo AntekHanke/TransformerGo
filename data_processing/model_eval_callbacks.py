@@ -32,6 +32,6 @@ class PolicyEvalCallback(TrainerCallback):
                 total_moves += 1
 
 
-        log_value_without_step("policy legal moves", value=legal_moves / total_moves)
-        log_value_without_step("policy decoded moves", value=decoded_moves / total_moves)
-        log_value_without_step("policy total moves", value=total_moves)
+        log_value_without_step("pgn_policy legal moves", value=legal_moves / total_moves)
+        log_value_without_step("pgn_policy decoded moves", value=decoded_moves / total_moves)
+        log_value_without_step("pgn_policy total moves", value=total_moves)

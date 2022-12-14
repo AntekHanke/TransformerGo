@@ -1,7 +1,10 @@
-from typing import Dict, Any, Optional, List
+import pickle
+from typing import Dict, Any, Optional, List, Type
 
 import chess.pgn
 import random
+
+import pandas as pd
 import torch
 from collections import namedtuple
 
@@ -73,20 +76,30 @@ class ChessDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.data)
 
+class ChessDataProvider:
+    """General class for providing data for training and evaluation."""
+    def get_train_set_generator(self) -> ChessDataset:
+        raise NotImplementedError
 
-class ChessDataGenerator:
+    def get_eval_set_generator(self) -> ChessDataset:
+        raise NotImplementedError
+
+
+class ChessGamesDataGenerator(ChessDataProvider):
     """Reads PGN file and creates data."""
 
     def __init__(
         self,
         pgn_file: str = None,
         chess_filter: ChessFilter = None,
-        p_sample: float = 1.0,
+        p_sample: float = None,
         n_data: int = None,
         train_eval_split: float = 0.95,
         log_samples_limit: int = None,
         p_log_sample: float = 0.01,
         only_eval: bool = False,
+        save_data_path: str = None,
+        save_data_every: int = 1000,
     ):
         self.pgn_database = open(pgn_file, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
@@ -98,11 +111,14 @@ class ChessDataGenerator:
         self.p_log_sample = p_log_sample
         self.only_eval = only_eval
 
-        self.data_queue = {}
+        self.train_data_queue = {}
         self.eval_data_queue = {}
         self.logged_samples = 0
         self.n_games = 0
         self.data_constructed = False
+
+        self.save_data_path = save_data_path
+        self.save_data_every = save_data_every
 
     def next_game_to_raw_data(self) -> Optional[OneGameData]:
         """
@@ -133,7 +149,7 @@ class ChessDataGenerator:
 
     def create_data(self):
         n_iterations = 0
-        while len(self.data_queue) + len(self.eval_data_queue) < self.n_data:
+        while len(self.train_data_queue) + len(self.eval_data_queue) < self.n_data:
             n_iterations += 1
             train_eval = get_split(n_iterations, self.train_eval_split)
             if not self.only_eval or train_eval == "eval":
@@ -141,19 +157,29 @@ class ChessDataGenerator:
                 self.game_to_datapoints(self.next_game_to_raw_data(), current_dataset)
                 self.n_games += 1
                 self.log_progress(n_iterations)
+
+            if self.save_data_path is not None and n_iterations % self.save_data_every == 0:
+                self.save_data()
+
         self.data_constructed = True
 
     def get_train_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
-        return ChessDataset(self.data_queue)
+        return ChessDataset(self.train_data_queue)
 
     def get_eval_set_generator(self) -> ChessDataset:
         assert self.data_constructed, "Data not constructed, call .create_data() first"
         return ChessDataset(self.eval_data_queue)
 
+    def save_data(self):
+        with open(self.save_data_path + "train.pkl", 'wb') as handle:
+            pickle.dump(self.train_data_queue, handle)
+        with open(self.save_data_path + "eval.pkl", 'wb') as handle:
+            pickle.dump(self.eval_data_queue, handle)
+
     def select_dataset(self, train_eval) -> Dict:
         if train_eval == "train":
-            current_dataset = self.data_queue
+            current_dataset = self.train_data_queue
         elif train_eval == "eval":
             current_dataset = self.eval_data_queue
         else:
@@ -175,22 +201,22 @@ class ChessDataGenerator:
 
     def log_progress(self, n_iterations: int) -> None:
         if n_iterations % 1000 == 0:
-            log_value("Train dataset points", n_iterations, len(self.data_queue))
+            log_value("Train dataset points", n_iterations, len(self.train_data_queue))
             log_value("Eval dataset points", n_iterations, len(self.eval_data_queue))
             log_value("Dataset games", n_iterations, self.n_games)
             log_value(
                 "Dataset size",
                 n_iterations,
-                len(self.data_queue) + len(self.eval_data_queue),
+                len(self.train_data_queue) + len(self.eval_data_queue),
             )
             log_value(
                 "Dataset progress",
                 n_iterations,
-                (len(self.data_queue) + len(self.eval_data_queue)) / self.n_data,
+                (len(self.train_data_queue) + len(self.eval_data_queue)) / self.n_data,
             )
 
 
-class PolicyDataGenerator(ChessDataGenerator):
+class PolicyGamesDataGenerator(ChessGamesDataGenerator):
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         for num, transition in enumerate(one_game_data.transitions):
             if random.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
@@ -209,7 +235,7 @@ class PolicyDataGenerator(ChessDataGenerator):
         )
 
 
-class ChessSubgoalDataGenerator(ChessDataGenerator):
+class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
     def __init__(self, k, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.k = k
@@ -244,19 +270,20 @@ class ChessSubgoalDataGenerator(ChessDataGenerator):
         )
 
 
-class ChessCLLPDataGenerator(ChessDataGenerator):
-    def __init__(self, k, *args, **kwargs):
+class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
+    def __init__(self, max_k, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.k = k
+        self.max_k = max_k
 
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict) -> None:
         game_length = len(one_game_data.transitions)
         for num in range(game_length - 1):
 
             input_board = one_game_data.transitions[num].immutable_board
-            max_target_board_num = min(game_length - 1, num + self.k)
+            max_target_board_num = min(game_length - 1, num + self.max_k)
             target_board_num = random.randint(num + 1, max_target_board_num)
             move = one_game_data.transitions[num].move
+            all_cllp_moves = [one_game_data.transitions[i].move for i in range(num + 1, target_board_num + 1)]
             target_board = one_game_data.transitions[target_board_num].immutable_board
 
             if random.random() <= self.p_sample:
@@ -272,11 +299,12 @@ class ChessCLLPDataGenerator(ChessDataGenerator):
                 "target_board": target_board,
                 "num": num,
                 "move": move.uci(),
+                "all_cllp_moves": all_cllp_moves,
             }
             self.log_sample(sample, one_game_data.metadata)
 
     def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
         return immutable_boards_to_img(
             [sample["input_board"], sample["target_board"]],
-            [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
+            [f"{sample['num']} : {sample['all_cllp_moves']}, res: {metadata.Result}", ""],
         )
