@@ -54,14 +54,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra-small-leela-policy",
+    experiment_name=f"ultra-small-leela-subgoals_k=1",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "small", "test", "policy"],
+    tags=["leela", "train", "small", "test", "subgoals_k=1"],
     with_neptune=True,
     env={},
 )

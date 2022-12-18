@@ -16,7 +16,7 @@ base_config = {
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/policy/medium_small_model",
+    "GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/subgoals_k=1/medium_small_model",
     # "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
     "GlobalParamsHandler.learning_rate": 0.0003,
     "GlobalParamsHandler.path_format": ["learning_rate"],
@@ -52,14 +52,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"medium-leela-policy-train-v{VERSION}k1",
+    experiment_name=f"medium-leela-subgoals_k=1-train-v{VERSION}k1",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "medium", "policy", f"v{VERSION}"],
+    tags=["leela", "train", "medium", "subgoals_k=1", f"v{VERSION}"],
     with_neptune=True,
     env={},
 )
