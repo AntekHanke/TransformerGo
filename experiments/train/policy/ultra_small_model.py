@@ -1,14 +1,5 @@
 from datetime import date
-
 from mrunner.helpers.specification_helper import create_experiments_helper
-
-from metric_logging import source_files_register
-
-import os
-
-source_files_register.register(os.path.dirname(os.path.abspath('__file__')))
-print(f"__file__ = {os.path.dirname(os.path.abspath('__file__'))}")
-
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
@@ -20,7 +11,7 @@ base_config = {
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": f"/leela_models/test_training_generator/leela_models/generator/ultra_small_model/{date.today()}",
+    "GlobalParamsHandler.out_dir": f"/leela_models/policy/ultra_small_model/{date.today()}",
     "GlobalParamsHandler.path_type": "full_info",
     "GlobalParamsHandler.path_format": ["learning_rate"],
 
@@ -35,10 +26,10 @@ base_config = {
     "BartConfig.d_model": 32,
     "BartConfig.dropout": 0.05,
 
-    "TrainingArguments.max_steps": 100,
+    "TrainingArguments.max_steps": 1000,
     "TrainingArguments.per_device_train_batch_size": 128,
     "TrainingArguments.per_device_eval_batch_size": 128,
-    "TrainingArguments.warmup_steps": 500,
+    "TrainingArguments.warmup_steps": 50,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 2,
     "TrainingArguments.evaluation_strategy": "steps",
