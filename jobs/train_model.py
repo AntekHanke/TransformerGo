@@ -29,6 +29,8 @@ class TrainModel(Job):
         output_dir: str = None,
     ) -> None:
 
+        x = GlobalParamsHandler()
+
         if GlobalParamsHandler().get_out_dir() is not None:
             output_dir = GlobalParamsHandler().get_out_dir()
 

@@ -41,17 +41,10 @@ class GlobalParamsHandler:
             return self.data_location
 
     def get_out_dir(self):
-        if self.path_format is None:
-            if self.out_dir is not None:
-                if self.k is not None:
-                    if isinstance(self.k, list):
-                        return self.out_dir
-                    else:
-                        return self.out_dir + f"_k={self.k}"
-        else:
+        if self.path_format is not None:
             for param_name in self.path_format:
                 self.out_dir += f"/{self.insert_path_element(param_name)}"
-            return self.out_dir
+        return self.out_dir
 
     def insert_path_element(self, param_name):
         if param_name == "k":

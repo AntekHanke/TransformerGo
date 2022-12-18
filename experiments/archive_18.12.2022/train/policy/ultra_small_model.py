@@ -17,7 +17,7 @@ base_config = {
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": "/leela_models/v1/policy/ultra_small_model",
+    "GlobalParamsHandler.out_dir": "/leela_models/v1/subgoals_k=1/ultra_small_model",
     # "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
     "GlobalParamsHandler.learning_rate": 0.0003,
     "GlobalParamsHandler.path_format": ["learning_rate"],
@@ -53,7 +53,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra-small-leela-policy-train",
+    experiment_name=f"ultra-small-leela-subgoals_k=1-train",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
