@@ -53,3 +53,6 @@ Install Banksia (https://banksiagui.com/)
 If you have troubles connecting Banksiagui to Lichess, follow this instruction (tested on Ubuntu 22.04):
 
 https://linuxpip.org/install-openssl-linux/
+
+## Cluster data:
+/net/scratch/people/plggracjangoral/chess_data/subgoals_data_train

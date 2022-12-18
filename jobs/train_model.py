@@ -1,6 +1,6 @@
-from typing import Type
+from typing import Type, Union, List
 from transformers.integrations import NeptuneCallback
-from data_processing.pandas_data_provider import IterableSubgoalDataLoader
+from data_processing.pandas_data_provider import IterableDataLoader
 
 from jobs.core import Job
 from transformers import (
@@ -19,8 +19,9 @@ source_files_register.register(__file__)
 class TrainModel(Job):
     def __init__(
         self,
-        path_to_training_data: str,
-        path_to_eval_data: str,
+        iterable_dataset_class: Type[IterableDataLoader],
+        path_to_training_data: Union[str, List[str]],
+        path_to_eval_data: Union[str, List[str]],
         take_random_half_of_training_data: bool = False,
         take_random_half_of_eval_data: bool = False,
         model_config_cls: Type[BartConfig] = None,
@@ -42,12 +43,12 @@ class TrainModel(Job):
         if GlobalParamsHandler().learning_rate is not None:
             self.training_args.learning_rate = GlobalParamsHandler().learning_rate
 
-        self.iterable_subgoal_dataLoader_train = IterableSubgoalDataLoader(
+        self.iterable_subgoal_dataLoader_train = iterable_dataset_class(
             data_path=self.path_to_training_data,
             take_random_half_of_data=self.take_random_half_of_training_data,
         )
 
-        self.iterable_subgoal_dataLoader_eval = IterableSubgoalDataLoader(
+        self.iterable_subgoal_dataLoader_eval = iterable_dataset_class(
             data_path=self.path_to_eval_data,
             take_random_half_of_data=self.take_random_half_of_eval_data,
         )

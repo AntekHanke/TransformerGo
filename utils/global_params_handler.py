@@ -16,28 +16,28 @@ class GlobalParamsHandler:
         learning_rate: float = None,
         data_location: str = None,
         out_dir: str = None,
-        data_type: str = "generator",
+        path_type: str = "full_info",
         path_format: List[str] = None,
     ):
         """All parameters can be set here by gin"""
-        assert data_type in ["generator", "cllp"]
+        assert path_type in ["full_info", "raw_path"], "Path type must be either full_info or raw_path"
 
         self.k = k
         self.learning_rate = learning_rate
         self.data_location = data_location
         self.out_dir = out_dir
-        self.data_type = data_type
+        self.path_type = path_type
         self.path_format = path_format
 
     def get_data_path(self):
-        if self.data_type == "generator":
+        if self.path_type == "full_info":
             """This is the path to the pickle file containing the data"""
             if self.k is not None:
                 if isinstance(self.k, list):
                     return [self.data_location + f"_k={i}.pkl" for i in self.k]
                 else:
                     return self.data_location + f"_k={self.k}.pkl"
-        if self.data_type == "cllp":
+        if self.path_type == "raw_path":
             return self.data_location
 
     def get_out_dir(self):

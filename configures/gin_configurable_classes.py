@@ -10,9 +10,7 @@ from data_processing.chess_data_generator import (
 )
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.pandas_data_provider import (
-    PandasSubgoalDataProvider,
-    PandasCLLPDataGenerator,
-    IterableSubgoalDataLoader
+    IterableSubgoalDataLoader, IterablePolicyDataLoader
 )
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.evaluate_cllp import EvaluateCLLP
@@ -50,9 +48,8 @@ configure_classes(
         ChessSubgoalGamesDataGenerator,
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
-        PandasSubgoalDataProvider,
-        PandasCLLPDataGenerator,
-        IterableSubgoalDataLoader
+        IterableSubgoalDataLoader,
+        IterablePolicyDataLoader
     ],
     "data",
 )
