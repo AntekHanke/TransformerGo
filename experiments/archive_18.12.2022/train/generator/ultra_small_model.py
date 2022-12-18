@@ -1,13 +1,18 @@
+from datetime import date
+
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+from metric_logging import source_files_register
 
-VERSION = "1"
+import os
+
+source_files_register.register(os.path.dirname(os.path.abspath('__file__')))
+print(f"__file__ = {os.path.dirname(os.path.abspath('__file__'))}")
+
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
-
-    # f"TrainSubgoalGeneratorlWithIterableDataloader.path_to_training_data": "/subgoals_data_train/subgoals_k=1",
-    # f"TrainSubgoalGeneratorlWithIterableDataloader.path_to_eval_data": "/subgoals_data_eval/subgoals_k=1",
+    "TrainModel.iterable_dataset_class": "@data.IterableSubgoalDataLoader",
 
     "TrainModel.path_to_training_data": "/leela_generator_data/train",
     "TrainModel.path_to_eval_data": "/leela_generator_data/eval",
@@ -16,8 +21,7 @@ base_config = {
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
     "GlobalParamsHandler.k": 1,
-    #"GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/generator/small_model",
-    "GlobalParamsHandler.out_dir": f"/leela_models/test_training_generator/leela_models/v{VERSION}/generator/small_model",
+    "GlobalParamsHandler.out_dir": f"/leela_models/test_training_generator/leela_models/generator/ultra_small_model/{date.today()}",
     "GlobalParamsHandler.data_type": "generator",
     "GlobalParamsHandler.path_format": ["k", "learning_rate"],
 
@@ -52,7 +56,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"small-leela-gen-train-v{VERSION}-iterator_dataloader_test",
+    experiment_name=f"small-leela-gen-train-iterator_dataloader_test",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
