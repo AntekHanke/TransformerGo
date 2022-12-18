@@ -196,12 +196,15 @@ class IterableSubgoalDataLoader(IterableDataLoader):
 
 class IterablePolicyDataLoader(IterableDataLoader):
     def process_df(self, df: pd.DataFrame):
+
         df = df[["input_ids", "moves"]]
-        data = []
-        for (id, (_, row)) in enumerate(df[["input_ids", "moves"]].iterrows()):
-            if len(row["moves"]) > 0:
-                data.append({
-                    "input_ids": row["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-                    "labels": ChessTokenizer.encode(row["moves"][0]),
-                })
+        data_list = df.to_dict(orient="records")
+
+        def process_single_datapoint(datapoint):
+            return {
+                "input_ids": datapoint["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                "labels": ChessTokenizer.encode(datapoint["moves"][0]),
+            }
+
+        data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
         return data
