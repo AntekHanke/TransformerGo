@@ -1,6 +1,8 @@
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+batch_size = {'ares': 1024, 'athena': 600}
+
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
@@ -11,7 +13,7 @@ base_config = {
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": f"/leela_models/subgoals_k=1/medium_model/{date.today()}",
+    "GlobalParamsHandler.out_dir": f"/leela_models/subgoals_k=1/medium_large_model/{date.today()}",
     "GlobalParamsHandler.path_type": "raw_path",
 
     "BartConfig.vocab_size": 4600,
@@ -26,8 +28,8 @@ base_config = {
     "BartConfig.dropout": 0.1,
 
     "TrainingArguments.max_steps": 1000000,
-    "TrainingArguments.per_device_train_batch_size": 1024,
-    "TrainingArguments.per_device_eval_batch_size": 1024,
+    "TrainingArguments.per_device_train_batch_size": batch_size["athena"],
+    "TrainingArguments.per_device_eval_batch_size": batch_size["athena"],
     "TrainingArguments.warmup_steps": 5000,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,
@@ -43,14 +45,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"medium-leela-subgoals_k=1",
+    experiment_name=f"{batch_size['athena']}-medium-large-policy",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "medium", "subgoals_k=1"],
+    tags=["leela", "train", "medium-large", "subgoals_k=1"],
     with_neptune=True,
     env={},
 )
