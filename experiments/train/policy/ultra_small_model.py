@@ -7,6 +7,7 @@ base_config = {
 
     "TrainModel.path_to_training_data": "/leela_generator_data_train/subgoals_k=1",
     "TrainModel.path_to_eval_data": "/leela_generator_data_eval/subgoals_k=1",
+    "TrainModel.files_batch_size": 2,
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",

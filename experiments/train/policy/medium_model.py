@@ -1,3 +1,4 @@
+import random
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
@@ -9,15 +10,16 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
 
+    "TrainModel.files_batch_size": 10,
     "TrainModel.path_to_training_data": "/leela_generator_data_train/subgoals_k=1",
     "TrainModel.path_to_eval_data": "/leela_generator_data_eval/subgoals_k=1",
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": f"/leela_models/policy/medium_model/{date.today()}",
+    "GlobalParamsHandler.out_dir": f"/leela_models/policy/medium_model/{date.today()}/{random.randint(0, 100000)}",
     "GlobalParamsHandler.path_type": "raw_path",
-    "GlobalParamsHandler.path_format": ['learning_rate'],
+    # "GlobalParamsHandler.path_format": ['learning_rate'],
 
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 100,
@@ -45,11 +47,11 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "GlobalParamsHandler.learning_rate": [3e-5, 3e-4]
+    # "GlobalParamsHandler.learning_rate": [3e-5, 3e-4]
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"medium-leela-subgoals_k=1",
+    experiment_name=f"medium-policy",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

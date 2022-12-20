@@ -22,6 +22,7 @@ class TrainModel(Job):
         iterable_dataset_class: Type[IterableDataLoader],
         path_to_training_data: Union[str, List[str]],
         path_to_eval_data: Union[str, List[str]],
+        files_batch_size: int = 10,
         take_random_half_of_training_data: bool = False,
         take_random_half_of_eval_data: bool = False,
         model_config_cls: Type[BartConfig] = None,
@@ -47,11 +48,13 @@ class TrainModel(Job):
 
         self.iterable_subgoal_dataLoader_train = iterable_dataset_class(
             data_path=self.path_to_training_data,
+            files_batch_size=files_batch_size,
             take_random_half_of_data=self.take_random_half_of_training_data,
         )
 
         self.iterable_subgoal_dataLoader_eval = iterable_dataset_class(
             data_path=self.path_to_eval_data,
+            files_batch_size=1,
             take_random_half_of_data=self.take_random_half_of_eval_data,
         )
 
