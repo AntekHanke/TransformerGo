@@ -8,6 +8,7 @@ from transformers import BartForConditionalGeneration
 from configures.global_config import MAX_NEW_TOKENS_FOR_POLICY
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
+from utils.chess960_conversion import chess960_to_standard
 
 
 class ChessPolicy:
@@ -46,6 +47,13 @@ class BasicChessPolicy(ChessPolicy):
         for output in outputs:
             output = [x for x in output if x not in ChessTokenizer.special_vocab_to_tokens.values()]
             moves.append(ChessTokenizer.decode_move(output))
+
+
+        board = immutable_board.to_board()
+        converted_moves = [chess960_to_standard(move, board) for move in moves]
+        return converted_moves
+
+
         return moves
 
     def find_move_probability(self, immutable_board: ImmutableBoard, move_str: chess.Move) -> float:
