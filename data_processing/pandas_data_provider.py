@@ -143,10 +143,12 @@ class IterableDataLoader(IterableDataset):
     def __init__(
         self,
         data_path: Union[str, List[str]],
+        files_batch_size: int = 10,
         take_random_half_of_data: bool = False,
         # log_samples_limit: Optional[int] = None,
     ) -> None:
         self.data_path = data_path
+        self.files_batch_size = files_batch_size
         self.take_random_half_of_data = take_random_half_of_data
         self.eval = eval
 
@@ -173,15 +175,17 @@ class IterableDataLoader(IterableDataset):
         raise NotImplementedError
 
     def generate_data(self) -> Iterator[Dict[str, List[int]]]:
-        for path_to_file in self.files_names:
+        data: List[Dict[str, List[int]]] = []
+        for file_num, path_to_file in enumerate(self.files_names):
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
 
             if self.take_random_half_of_data:
                 load_df = load_df.sample(frac=0.5, random_state=1)
 
-            data: List[Dict[str, int]] = self.process_df(load_df)
-            for x in data:
-                yield x
+            data.extend(self.process_df(load_df))
+            if file_num + 1 % self.files_batch_size == 0 or file_num + 1 == len(self.files_names):
+                for x in data:
+                    yield x
 
     def log_samples(self, log_samples_limit: int):
         raise NotImplementedError
