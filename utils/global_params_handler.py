@@ -17,11 +17,9 @@ class GlobalParamsHandler:
         learning_rate: float = None,
         data_location: str = None,
         out_dir: str = None,
-        path_type: str = "full_info",
+        path_type: Optional[str] = None,
         path_format: List[str] = None,
     ):
-        """All parameters can be set here by gin"""
-        assert path_type in ["generator", "policy"], "Path type must be either full_info or raw_path"
 
         self.k = k
         self.learning_rate = learning_rate
@@ -33,7 +31,7 @@ class GlobalParamsHandler:
         self.out_dir_generated = False
 
     def get_data_path(self) -> Optional[Tuple[str, str]]:
-        if self.data_location is None:
+        if self.data_location is None or self.path_type is None:
             return None
         if self.path_type == "generator":
             assert self.k is not None, (

@@ -49,7 +49,7 @@ class TrainModel(Job):
         self.take_random_half_of_eval_data = take_random_half_of_eval_data
 
         # TODO: How to fix typing and class initialization
-        self.training_args = training_args_cls(output_dir=output_dir + "/out")
+        self.training_args = training_args_cls(output_dir=self.output_dir + "/out")
         if global_params_handler.learning_rate is not None:
             self.training_args.learning_rate = global_params_handler.learning_rate
 
@@ -78,7 +78,7 @@ class TrainModel(Job):
         for callback_logger in pytorch_callback_loggers:
             self.trainer.add_callback(callback_logger.get_pytorch_callback())
         self.trainer.pop_callback(NeptuneCallback)
-        self.save_model_path = output_dir + "/final_model"
+        self.save_model_path = self.output_dir + "/final_model"
 
         log_param("max learning rate", self.training_args.learning_rate)
         log_param("output_dir", self.output_dir)
