@@ -1,4 +1,6 @@
 import random
+import time
+
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
@@ -145,7 +147,6 @@ class IterableDataLoader(IterableDataset):
         data_path: Union[str, List[str]],
         files_batch_size: int = 10,
         take_random_half_of_data: bool = False,
-        # log_samples_limit: Optional[int] = None,
     ) -> None:
         self.data_path = data_path
         self.files_batch_size = files_batch_size
@@ -156,7 +157,6 @@ class IterableDataLoader(IterableDataset):
         self.prepare_files_list()
 
     def prepare_files_list(self):
-
         for folder_name in tqdm(os.listdir(self.data_path)):
             path: str = self.data_path + "/" + str(folder_name)
             for file_name in os.listdir(path):
@@ -183,9 +183,14 @@ class IterableDataLoader(IterableDataset):
                 load_df = load_df.sample(frac=0.5, random_state=1)
 
             data.extend(self.process_df(load_df))
-            if file_num + 1 % self.files_batch_size == 0 or file_num + 1 == len(self.files_names):
+            if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
+                print(f"Will shuflle data from {file_num - self.files_batch_size + 1} to {file_num} len = {len(data)}")
+                time_s = time.time()
+                random.shuffle(data)
+                print(f"Shuffled in {time.time() - time_s}")
                 for x in data:
                     yield x
+                data.clear()
 
     def log_samples(self, log_samples_limit: int):
         raise NotImplementedError
