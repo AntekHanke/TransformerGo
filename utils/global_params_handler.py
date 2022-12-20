@@ -1,4 +1,5 @@
-from typing import Union, List
+import os
+from typing import Union, List, Optional, Tuple
 
 import gin
 
@@ -20,7 +21,7 @@ class GlobalParamsHandler:
         path_format: List[str] = None,
     ):
         """All parameters can be set here by gin"""
-        assert path_type in ["full_info", "raw_path"], "Path type must be either full_info or raw_path"
+        assert path_type in ["generator", "policy"], "Path type must be either full_info or raw_path"
 
         self.k = k
         self.learning_rate = learning_rate
@@ -29,21 +30,46 @@ class GlobalParamsHandler:
         self.path_type = path_type
         self.path_format = path_format
 
-    def get_data_path(self):
-        if self.path_type == "full_info":
-            """This is the path to the pickle file containing the data"""
-            if self.k is not None:
-                if isinstance(self.k, list):
-                    return [self.data_location + f"_k={i}.pkl" for i in self.k]
+        self.out_dir_generated = False
+
+    def get_data_path(self) -> Optional[Tuple[str, str]]:
+        if self.data_location is None:
+            return None
+        if self.path_type == "generator":
+            assert self.k is not None, (
+                "Please choose kind of subgolas You want to use." "Available options: 1, 2, 3, 4, 5, 6"
+            )
+
+            path_to_train_dataset: Optional[str] = None
+            path_to_eval_dataset: Optional[str] = None
+
+            for folder_name in os.listdir(self.data_location):
+                if folder_name == "subgoals_data_train":
+                    path_to_train_dataset = (
+                        self.data_location + "/" + folder_name + "/" + "subgoals_k=" + str(self.k)
+                    )
+                elif folder_name == "subgoals_data_eval":
+                    path_to_eval_dataset = (
+                        self.data_location + "/" + folder_name + "/" + "subgoals_k=" + str(self.k)
+                    )
                 else:
-                    return self.data_location + f"_k={self.k}.pkl"
-        if self.path_type == "raw_path":
+                    continue
+
+            assert path_to_train_dataset and path_to_eval_dataset is not None, (
+                "No folders:" "subgoals_data_train and" "subgoals_data_eval "
+            )
+            return path_to_train_dataset, path_to_eval_dataset
+
+        elif self.path_type == "policy":
+            #TODO return paths for both train and eval
             return self.data_location
 
     def get_out_dir(self):
-        if self.path_format is not None:
-            for param_name in self.path_format:
-                self.out_dir += f"/{self.insert_path_element(param_name)}"
+        if not self.out_dir_generated:
+            if self.path_format is not None:
+                for param_name in self.path_format:
+                    self.out_dir += f"/{self.insert_path_element(param_name)}"
+            self.out_dir_generated = True
         return self.out_dir
 
     def insert_path_element(self, param_name):
