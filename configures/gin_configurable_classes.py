@@ -12,6 +12,7 @@ from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.pandas_data_provider import (
     IterableSubgoalDataLoader, IterablePolicyDataLoader
 )
+from data_processing.prepare_and_save_data import PandasPolicyPrepareAndSaveData
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.evaluate_cllp import EvaluateCLLP
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator
