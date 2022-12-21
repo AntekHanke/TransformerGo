@@ -27,3 +27,10 @@ class LeelaCCLPDataProcessing(Job):
 
     def execute(self):
         self.pandas_data_provider.create_data()
+
+class LeelaPolicyDatasetGenerator(Job):
+    def __init__(self, mcts_gen_class):
+        self.mcts_gen = mcts_gen_class()
+
+    def execute(self):
+        self.mcts_gen.generate_data()

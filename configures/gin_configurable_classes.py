@@ -49,7 +49,8 @@ configure_classes(
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
         IterableSubgoalDataLoader,
-        IterablePolicyDataLoader
+        IterablePolicyDataLoader,
+        PandasPolicyPrepareAndSaveData
     ],
     "data",
 )
