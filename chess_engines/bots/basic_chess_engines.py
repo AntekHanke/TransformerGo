@@ -52,10 +52,10 @@ class RandomChessEngine(ChessEngine):
 
 class PolicyChess(ChessEngine):
     def __init__(
-        self, policy_checkpoint, log_dir: str, debug_mode: bool = False, replace_legall_move_with_random: bool = False
+        self, policy_checkpoint, log_dir: str, debug_mode: bool = False, replace_legall_move_with_random: bool = False, name: str = "POLICY"
     ) -> None:
 
-        self.name: str = "POLICY ENGINE"
+        self.name: str = name
         self.log_dir = log_dir
         self.debug_mode = debug_mode
         self.replace_legall_move_with_random = replace_legall_move_with_random

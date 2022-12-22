@@ -2,7 +2,7 @@ import random
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-batch_size = {'ares': 1024, 'athena': 700}
+batch_size = {'ares': 1024, 'athena': 600}
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
@@ -22,8 +22,8 @@ base_config = {
     "BartConfig.max_position_embeddings": 100,
     "BartConfig.encoder_layers": 8,
     "BartConfig.decoder_layers": 8,
-    "BartConfig.encoder_attention_heads": 8,
-    "BartConfig.decoder_attention_heads": 8,
+    "BartConfig.encoder_attention_heads": 16,
+    "BartConfig.decoder_attention_heads": 16,
     "BartConfig.decoder_ffn_dim": 4096,
     "BartConfig.encoder_ffn_dim": 4096,
     "BartConfig.d_model": 1024,
@@ -47,7 +47,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"{base_config['TrainingArguments.learning_rate']}-lr-medium-large-policy",
+    experiment_name=f"{base_config['TrainingArguments.learning_rate']}-lr-large-policy",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

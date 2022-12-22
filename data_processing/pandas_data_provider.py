@@ -1,5 +1,6 @@
 import random
 import time
+from itertools import cycle
 
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
@@ -147,11 +148,13 @@ class IterableDataLoader(IterableDataset):
         data_path: Union[str, List[str]],
         files_batch_size: int = 10,
         take_random_half_of_data: bool = False,
+        cycle: bool = True,
     ) -> None:
         self.data_path = data_path
         self.files_batch_size = files_batch_size
         self.take_random_half_of_data = take_random_half_of_data
         self.eval = eval
+        self.cycle = cycle
 
         self.files_names: List[str] = []
         self.prepare_files_list()
@@ -176,8 +179,15 @@ class IterableDataLoader(IterableDataset):
 
     def generate_data(self) -> Iterator[Dict[str, List[int]]]:
         data: List[Dict[str, List[int]]] = []
-        for file_num, path_to_file in enumerate(self.files_names):
+
+        if self.cycle:
+            files_iterable = enumerate(cycle(self.files_names))
+        else:
+            files_iterable = enumerate(self.files_names)
+
+        for file_num, path_to_file in files_iterable:
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
+            log_value("load_df", file_num, file_num)
 
             if self.take_random_half_of_data:
                 load_df = load_df.sample(frac=0.5, random_state=1)
@@ -204,6 +214,12 @@ class IterableSubgoalDataLoader(IterableDataLoader):
 
 
 class IterablePolicyDataLoader(IterableDataLoader):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        df = df[["input_ids", "labels"]]
+        return df.to_dict(orient="records")
+
+class IterableSubgoalToPolicyDataLoader(IterableDataLoader):
     def process_df(self, df: pd.DataFrame):
 
         df = df[["input_ids", "moves"]]

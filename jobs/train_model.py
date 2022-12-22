@@ -57,12 +57,14 @@ class TrainModel(Job):
             data_path=self.path_to_training_data,
             files_batch_size=files_batch_size,
             take_random_half_of_data=self.take_random_half_of_training_data,
+            cycle=True,
         )
 
         self.iterable_subgoal_dataLoader_eval = iterable_dataset_class(
             data_path=self.path_to_eval_data,
             files_batch_size=1,
             take_random_half_of_data=self.take_random_half_of_eval_data,
+            cycle=False,
         )
 
         self.model_config = model_config_cls()
@@ -72,7 +74,7 @@ class TrainModel(Job):
             model=self.model,
             args=self.training_args,
             train_dataset=self.iterable_subgoal_dataLoader_train,
-            eval_dataset=self.iterable_subgoal_dataLoader_eval
+            eval_dataset=self.iterable_subgoal_dataLoader_eval,
         )
 
         for callback_logger in pytorch_callback_loggers:

@@ -14,15 +14,13 @@ from metric_logging import log_object, log_value
 class PandasPrepareAndSaveData:
     def __init__(
         self,
-        data_path: str,
-        out_path: str,
+        data_path: str = None,
+        out_path: str = None,
         files_batch_size: int = 10,
-        take_random_half_of_data: bool = False,
     ) -> None:
         self.data_path = data_path
         self.out_path = out_path
         self.files_batch_size = files_batch_size
-        self.take_random_half_of_data = take_random_half_of_data
         self.eval = eval
 
         self.files_names: List[str] = []
@@ -46,21 +44,17 @@ class PandasPrepareAndSaveData:
             log_object("path_to_file", path_to_file)
             log_value("file_num", file_num, file_num / len(self.files_names))
 
-
             print(f"Loading {path_to_file}")
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
 
-            # if self.take_random_half_of_data:
-            #     load_df = load_df.sample(frac=0.5, random_state=1)
+            log_value("len_of_df", file_num, len(load_df))
 
-            print(f"Len of df = {len(load_df)}")
-            print(f"Data len before processing: {len(data)}")
             data.extend(self.process_df(load_df))
             print(f"Data len after processing: {len(data)}")
             if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
-                print(f"Will shuflle data from {file_num - self.files_batch_size + 1} to {file_num} len = {len(data)}")
                 time_s = time.time()
-                # random.shuffle(data)
+                random.shuffle(data)
+                log_value("shuffle_time", file_num, time.time() - time_s)
                 print(f"Shuffled in {time.time() - time_s}")
 
                 df = pd.DataFrame(data)
@@ -106,7 +100,6 @@ class PandasPolicyPrepareAndSaveData(PandasPrepareAndSaveData):
             if len(best_move.moves) == 0:
                 return None
             return {
-                "idx": best_move.input_idx,
                 "input_ids": best_move.input_ids + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                 "labels": ChessTokenizer.encode(best_move.moves[0]),
             }
@@ -116,11 +109,3 @@ class PandasPolicyPrepareAndSaveData(PandasPrepareAndSaveData):
             for local_group in local_groups
             if process_single_local_group(local_group) is not None
         ]
-
-
-ufek = PandasPolicyPrepareAndSaveData(
-    "/home/tomasz/Research/subgoal_chess_data/generator_leela_datasets/train/subgoals_k=1",
-    "/home/tomasz/Research/subgoal_chess_data/policy_leela_datasets/k=1",
-    2,
-)
-ufek.generate_data()

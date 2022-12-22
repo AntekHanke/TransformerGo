@@ -75,7 +75,7 @@ def main_uci_loop(engine: ChessEngine):
 
         elif commands[0] == UCI_GO_COMMAND:
             baord: chess.Board = curent_state(move_list)
-            best_move = engine.propose_best_moves(baord, number_of_moves=2)
+            best_move = engine.propose_best_moves(baord, number_of_moves=8)
             output("bestmove" + " " + best_move)
 
         elif commands[0] == UCI_QUIT_COMMAND:

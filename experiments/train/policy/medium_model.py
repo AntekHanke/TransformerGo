@@ -11,8 +11,8 @@ base_config = {
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
 
     "TrainModel.files_batch_size": 10,
-    "TrainModel.path_to_training_data": "/leela_generator_data_train/subgoals_k=1",
-    "TrainModel.path_to_eval_data": "/leela_generator_data_eval/subgoals_k=1",
+    "TrainModel.path_to_training_data": "/save_data/policy_data/train",
+    "TrainModel.path_to_eval_data": "/save_data/policy_data/eval",
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
@@ -40,7 +40,7 @@ base_config = {
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
-    "TrainingArguments.learning_rate": 3e-5,
+    "TrainingArguments.learning_rate": 3e-4,
 
     "use_neptune": True,
 }
@@ -51,7 +51,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"medium-policy",
+    experiment_name=f"{base_config['TrainingArguments.learning_rate']}-lr-medium-policy",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
