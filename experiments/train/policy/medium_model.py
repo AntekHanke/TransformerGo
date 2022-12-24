@@ -40,7 +40,7 @@ base_config = {
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
-    "TrainingArguments.learning_rate": 3e-4,
+    "TrainingArguments.learning_rate": 6e-4,
 
     "use_neptune": True,
 }

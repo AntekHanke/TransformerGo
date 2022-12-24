@@ -83,7 +83,8 @@ class PolicyChess(ChessEngine):
             log_engine_specific_info(f"NUMBER OF GENERATED MOVES: {number_of_moves}", self.log_dir)
             log_engine_specific_info("JUST BEFORE SELECTING BEST MOVES", self.log_dir)
 
-        moves = self.chess_policy.get_best_moves(ImmutableBoard.from_board(current_state), number_of_moves)
+        moves, probs = self.chess_policy.get_best_moves(ImmutableBoard.from_board(current_state), number_of_moves, return_probs=True)
+        log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER SELECTING BEST MOVES. BEST MOVES: {moves}", self.log_dir)

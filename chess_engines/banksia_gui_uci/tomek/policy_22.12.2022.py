@@ -14,7 +14,11 @@ log_dir: str = "/home/tomasz/Research/subgoal_chess_data/bot_logs"
 
 
 engine = PolicyChess(
-    policy_checkpoint=policy_checkpoint, log_dir=log_dir, debug_mode=True, replace_legall_move_with_random=False
+    policy_checkpoint=policy_checkpoint,
+    log_dir=log_dir,
+    debug_mode=True,
+    replace_legall_move_with_random=False,
+    name="medium_1",
 )
 
 if __name__ == "__main__":
