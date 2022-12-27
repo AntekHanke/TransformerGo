@@ -260,4 +260,25 @@ contexts:
                            -B /net/scratch/people/plgtodrzygozdz/chess_data/:/chess_data
                            -B $TMPDIR:/tmp --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
+  ares_gpu_gg:
+    account: plgrlresearchgpu-gpu
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 100
+    cpu: 5
+    mem: 50
+    gpu: 1
+    modules_to_load:
+      - cuda/11.6.0
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-gpu-v100
+    slurm_url: plggracjangoral@ares.cyfronet.pl
+    storage_dir: /net/ascratch/people/plggracjangoral/generator_jobs
+    singularity_container:
+      --nv -H $PWD:/homeplaceholder
+      -B /net/ascratch/people/plggracjangoral/chess_data:/chess_data
+      -B /net/ascratch/people/plggracjangoral/chess_data/leela_models/:/leela_models
+      -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
+
 
