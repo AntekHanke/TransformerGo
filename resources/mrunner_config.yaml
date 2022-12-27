@@ -3,9 +3,9 @@ contexts:
   athena_gpu:
     backend_type: slurm
     cmd_type: sbatch
-    cpu: 4
+    cpu: 8
     mem: 80G
-    gpu: 1
+    gpu: 4
     nodes: 1
     ntasks: 1
     partition: plgrid-gpu-a100
@@ -15,7 +15,8 @@ contexts:
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/leela_models/:/leela_models
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/save_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/train_data/:/leela_generator_data_train
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/subgoal_chess_data
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/:/leela_generator_data_train
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/eval_data/:/leela_generator_data_eval
                             -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
     slurm_url: plgtodrzygozdz@athena.cyfronet.pl
@@ -25,8 +26,8 @@ contexts:
   athena_cpu:
     backend_type: slurm
     cmd_type: sbatch
-    cpu: 4
-    mem: 60G
+    cpu: 8
+    mem: 80G
     gpu: 0
     nodes: 1
     ntasks: 1
@@ -37,7 +38,8 @@ contexts:
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/leela_models/:/leela_models
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/save_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/train_data/:/leela_generator_data_train
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/subgoal_chess_data
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/:/leela_generator_data_train
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/eval_data/:/leela_generator_data_eval
                             -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
     slurm_url: plgtodrzygozdz@athena.cyfronet.pl

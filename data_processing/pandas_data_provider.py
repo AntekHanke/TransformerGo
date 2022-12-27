@@ -2,6 +2,7 @@ import random
 import time
 from itertools import cycle
 
+from configures.global_config import MAX_MOVES_FOR_CLLP
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
@@ -229,6 +230,29 @@ class IterableSubgoalToPolicyDataLoader(IterableDataLoader):
             return {
                 "input_ids": datapoint["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                 "labels": ChessTokenizer.encode(datapoint["moves"][0]),
+            }
+
+        data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
+        return data
+
+class IterableCLLPDataLoader(IterableDataLoader):
+    def process_df(self, df: pd.DataFrame):
+
+        df = df[["input_ids", "moves"]]
+        data_list = df.to_dict(orient="records")
+
+        def process_single_datapoint(datapoint):
+            moves_encoded = [ChessTokenizer.encode(move)[0] for move in datapoint["moves"]]
+            if len(moves_encoded) < MAX_MOVES_FOR_CLLP:
+                moves_encoded += [ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (
+                        MAX_MOVES_FOR_CLLP - len(moves_encoded)
+                )
+            return {
+                "input_ids": datapoint["input_ids"]
+                             + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
+                             + datapoint["labels"]
+                             + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                "labels": moves_encoded,
             }
 
         data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]

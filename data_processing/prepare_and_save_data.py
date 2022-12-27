@@ -2,11 +2,12 @@ import os
 import random
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 from tqdm import tqdm
 
+from configures.global_config import MAX_MOVES_FOR_CLLP
 from data_processing.chess_tokenizer import ChessTokenizer
 from metric_logging import log_object, log_value
 
@@ -17,14 +18,18 @@ class PandasPrepareAndSaveData:
         data_path: str = None,
         out_path: str = None,
         files_batch_size: int = 10,
+        p_sample: Optional[float] = None,
+        create_files_list: bool = True,
     ) -> None:
         self.data_path = data_path
         self.out_path = out_path
         self.files_batch_size = files_batch_size
+        self.p_sample = p_sample
         self.eval = eval
 
         self.files_names: List[str] = []
-        self.prepare_files_list()
+        if create_files_list:
+            self.prepare_files_list()
 
     def prepare_files_list(self):
         for folder_name in tqdm(os.listdir(self.data_path)):
@@ -33,11 +38,13 @@ class PandasPrepareAndSaveData:
                 path_to_file: str = os.path.join(path, file_name)
                 if os.path.isfile(path_to_file):
                     self.files_names.append(path_to_file)
-                    break
+
+        random.shuffle(self.files_names)
 
     def generate_data(self):
         data = []
         saved_files = 0
+        total_data_collected = 0
 
         for file_num, path_to_file in enumerate(self.files_names):
 
@@ -46,6 +53,8 @@ class PandasPrepareAndSaveData:
 
             print(f"Loading {path_to_file}")
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
+            if self.p_sample is not None:
+                load_df = load_df.sample(frac=self.p_sample, random_state=1)
 
             log_value("len_of_df", file_num, len(load_df))
 
@@ -56,6 +65,9 @@ class PandasPrepareAndSaveData:
                 random.shuffle(data)
                 log_value("shuffle_time", file_num, time.time() - time_s)
                 print(f"Shuffled in {time.time() - time_s}")
+
+                total_data_collected += len(data)
+                log_value("total_data_collected", file_num, total_data_collected)
 
                 df = pd.DataFrame(data)
                 new_output_dir = Path(f"{self.out_path}/part_{file_num}")
@@ -109,3 +121,47 @@ class PandasPolicyPrepareAndSaveData(PandasPrepareAndSaveData):
             for local_group in local_groups
             if process_single_local_group(local_group) is not None
         ]
+
+
+class CLLPPrepareAndSaveData(PandasPrepareAndSaveData):
+    def __int__(
+        self,
+        data_path: str = None,
+        out_path: str = None,
+        files_batch_size: int = 10,
+        p_sample: Optional[float] = None,
+    ):
+        super().__init__(data_path, out_path, files_batch_size, p_sample)
+        self.file_names_queue = {i: [] for i in range(1, MAX_MOVES_FOR_CLLP + 1)}
+
+    def prepare_files_list(self):
+        for k in range(1, MAX_MOVES_FOR_CLLP + 1):
+            for folder_name in tqdm(os.listdir(self.data_path + f"/subgoal_{k}")):
+                path: str = self.data_path + "/" + str(folder_name)
+                for file_name in os.listdir(path):
+                    path_to_file: str = os.path.join(path, file_name)
+                    if os.path.isfile(path_to_file):
+                        self.file_names_queue[k].append(path_to_file)
+
+            for k in range(1, MAX_MOVES_FOR_CLLP + 1):
+                random.shuffle(self.files_names_queue[k])
+
+    def process_df(self, df: pd.DataFrame):
+        df = df[["input_ids", "labels", "moves"]]
+        data_list = df.to_dict(orient="records")
+
+        def process_single_datapoint(datapoint):
+            moves_encoded = [ChessTokenizer.encode(move)[0] for move in datapoint["moves"]]
+            if len(moves_encoded) < MAX_MOVES_FOR_CLLP:
+                moves_encoded += [ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (
+                    MAX_MOVES_FOR_CLLP - len(moves_encoded)
+                )
+            return {
+                "input_ids": datapoint["input_ids"]
+                + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
+                + datapoint["labels"]
+                + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                "labels": moves_encoded,
+            }
+
+        return [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
