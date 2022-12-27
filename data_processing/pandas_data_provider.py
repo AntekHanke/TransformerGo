@@ -13,6 +13,7 @@ from tqdm import tqdm
 from torch.utils.data import IterableDataset
 from utils.global_params_handler import GlobalParamsHandler
 
+
 # rng = random.Random(0)
 
 # class PandasSubgoalDataProvider(ChessDataProvider):
@@ -143,10 +144,10 @@ from utils.global_params_handler import GlobalParamsHandler
 
 class IterableDataLoader(IterableDataset):
     def __init__(
-        self,
-        data_path: Union[str, List[str]],
-        files_batch_size: int = 10,
-        take_random_half_of_data: bool = False,
+            self,
+            data_path: Union[str, List[str]],
+            files_batch_size: int = 10,
+            take_random_half_of_data: bool = False,
     ) -> None:
         self.data_path = data_path
         self.files_batch_size = files_batch_size
@@ -156,7 +157,7 @@ class IterableDataLoader(IterableDataset):
         self.files_names: List[str] = []
         self.prepare_files_list()
 
-    def prepare_files_list(self):
+    def prepare_files_list(self) -> None:
         for folder_name in tqdm(os.listdir(self.data_path)):
             path: str = self.data_path + "/" + str(folder_name)
             for file_name in os.listdir(path):
@@ -171,7 +172,7 @@ class IterableDataLoader(IterableDataset):
         raise NotImplementedError
 
     @staticmethod
-    def process_df(df: pd.DataFrame) -> List[Dict[str, int]]:
+    def process_df(df: pd.DataFrame) -> List[Dict[str, List[int]]]:
         raise NotImplementedError
 
     def generate_data(self) -> Iterator[Dict[str, List[int]]]:
@@ -183,6 +184,7 @@ class IterableDataLoader(IterableDataset):
                 load_df = load_df.sample(frac=0.5, random_state=1)
 
             data.extend(self.process_df(load_df))
+
             if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
                 print(f"Will shuflle data from {file_num - self.files_batch_size + 1} to {file_num} len = {len(data)}")
                 time_s = time.time()
@@ -202,10 +204,15 @@ class IterableSubgoalDataLoader(IterableDataLoader):
         df = df[["input_ids", "labels"]]
         return df.to_dict(orient="records")
 
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+    def log_samples(self, log_samples_limit: int):
+        raise NotImplementedError
+
 
 class IterablePolicyDataLoader(IterableDataLoader):
     def process_df(self, df: pd.DataFrame):
-
         df = df[["input_ids", "moves"]]
         data_list = df.to_dict(orient="records")
 
@@ -217,3 +224,9 @@ class IterablePolicyDataLoader(IterableDataLoader):
 
         data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
         return data
+
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+    def log_samples(self, log_samples_limit: int):
+        raise NotImplementedError
