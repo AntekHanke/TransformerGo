@@ -39,7 +39,7 @@ contexts:
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/leela_models/:/leela_models
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/save_data
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/subgoal_chess_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/:/leela_generator_data_train
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/subgoals/train/:/leela_generator_data_train
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/eval_data/:/leela_generator_data_eval
                             -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
     slurm_url: plgtodrzygozdz@athena.cyfronet.pl

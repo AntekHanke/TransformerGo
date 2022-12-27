@@ -19,19 +19,26 @@ class PandasPrepareAndSaveData:
         out_path: str = None,
         files_batch_size: int = 10,
         p_sample: Optional[float] = None,
-        create_files_list: bool = True,
+        multi_k: bool = True,
+        files_limit: Optional[int] = None,
+        cutoff: Optional[int] = None,
     ) -> None:
         self.data_path = data_path
         self.out_path = out_path
         self.files_batch_size = files_batch_size
         self.p_sample = p_sample
+        self.multi_k = multi_k
+        self.files_limit = files_limit
+        self.cutoff = cutoff
+
         self.eval = eval
 
         self.files_names: List[str] = []
-        if create_files_list:
+        if not self.multi_k:
             self.prepare_files_list()
-
-        self.file_names_queue = {i: [] for i in range(1, MAX_MOVES_FOR_CLLP + 1)}
+        else:
+            self.file_names_queue = {i: [] for i in range(1, MAX_MOVES_FOR_CLLP + 1)}
+            self.prepare_files_list_multi_k()
 
     def prepare_files_list(self):
         for folder_name in tqdm(os.listdir(self.data_path)):
@@ -56,7 +63,9 @@ class PandasPrepareAndSaveData:
             print(f"Loading {path_to_file}")
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
             if self.p_sample is not None:
-                load_df = load_df.sample(frac=self.p_sample, random_state=1)
+                load_df = load_df.sample(frac=self.p_sample)
+            if self.cutoff is not None:
+                load_df = load_df.sample(n=self.cutoff)
 
             log_value("len_of_df", file_num, len(load_df))
 
@@ -126,7 +135,7 @@ class PandasPolicyPrepareAndSaveData(PandasPrepareAndSaveData):
 
 
 class CLLPPrepareAndSaveData(PandasPrepareAndSaveData):
-    def prepare_files_list_k(self):
+    def prepare_files_list_multi_k(self):
         for k in range(1, MAX_MOVES_FOR_CLLP + 1):
             for folder_name in tqdm(os.listdir(self.data_path + f"/subgoal_{k}")):
                 path: str = self.data_path + f"/subgoal_{k}" + "/" + str(folder_name)
@@ -138,10 +147,9 @@ class CLLPPrepareAndSaveData(PandasPrepareAndSaveData):
         for k in range(1, MAX_MOVES_FOR_CLLP + 1):
             random.shuffle(self.file_names_queue[k])
 
-        for _ in range(2):
+        assert self.files_limit is not None, "files_limit must be set for CLLP"
+        for _ in range(self.files_limit//6):
             self.files_names += [self.file_names_queue[k].pop() for k in range(1, MAX_MOVES_FOR_CLLP + 1)]
-
-        d = 5
 
 
     def process_df(self, df: pd.DataFrame):
