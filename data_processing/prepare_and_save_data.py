@@ -31,6 +31,8 @@ class PandasPrepareAndSaveData:
         if create_files_list:
             self.prepare_files_list()
 
+        self.file_names_queue = {i: [] for i in range(1, MAX_MOVES_FOR_CLLP + 1)}
+
     def prepare_files_list(self):
         for folder_name in tqdm(os.listdir(self.data_path)):
             path: str = self.data_path + "/" + str(folder_name)
@@ -124,27 +126,23 @@ class PandasPolicyPrepareAndSaveData(PandasPrepareAndSaveData):
 
 
 class CLLPPrepareAndSaveData(PandasPrepareAndSaveData):
-    def __int__(
-        self,
-        data_path: str = None,
-        out_path: str = None,
-        files_batch_size: int = 10,
-        p_sample: Optional[float] = None,
-    ):
-        super().__init__(data_path, out_path, files_batch_size, p_sample)
-        self.file_names_queue = {i: [] for i in range(1, MAX_MOVES_FOR_CLLP + 1)}
-
-    def prepare_files_list(self):
+    def prepare_files_list_k(self):
         for k in range(1, MAX_MOVES_FOR_CLLP + 1):
             for folder_name in tqdm(os.listdir(self.data_path + f"/subgoal_{k}")):
-                path: str = self.data_path + "/" + str(folder_name)
+                path: str = self.data_path + f"/subgoal_{k}" + "/" + str(folder_name)
                 for file_name in os.listdir(path):
                     path_to_file: str = os.path.join(path, file_name)
                     if os.path.isfile(path_to_file):
                         self.file_names_queue[k].append(path_to_file)
 
-            for k in range(1, MAX_MOVES_FOR_CLLP + 1):
-                random.shuffle(self.files_names_queue[k])
+        for k in range(1, MAX_MOVES_FOR_CLLP + 1):
+            random.shuffle(self.file_names_queue[k])
+
+        for _ in range(2):
+            self.files_names += [self.file_names_queue[k].pop() for k in range(1, MAX_MOVES_FOR_CLLP + 1)]
+
+        d = 5
+
 
     def process_df(self, df: pd.DataFrame):
         df = df[["input_ids", "labels", "moves"]]
