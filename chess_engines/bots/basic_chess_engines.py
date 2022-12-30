@@ -10,6 +10,7 @@ import chess.engine
 import numpy as np
 
 from chess_engines.third_party.stockfish import StockfishEngine
+from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
 from policy.chess_policy import BasicChessPolicy
@@ -52,13 +53,20 @@ class RandomChessEngine(ChessEngine):
 
 class PolicyChess(ChessEngine):
     def __init__(
-        self, policy_checkpoint, log_dir: str, debug_mode: bool = False, replace_legall_move_with_random: bool = False, name: str = "POLICY"
+        self,
+        policy_checkpoint,
+        log_dir: str,
+        debug_mode: bool = False,
+        replace_legall_move_with_random: bool = False,
+        do_sample: bool = True,
+        name: str = "POLICY",
     ) -> None:
 
         self.name: str = name
         self.log_dir = log_dir
         self.debug_mode = debug_mode
         self.replace_legall_move_with_random = replace_legall_move_with_random
+        self.do_sample = do_sample
         self.policy_checkpoint = policy_checkpoint
         self.chess_policy = BasicChessPolicy(self.policy_checkpoint)
 
@@ -83,8 +91,14 @@ class PolicyChess(ChessEngine):
             log_engine_specific_info(f"NUMBER OF GENERATED MOVES: {number_of_moves}", self.log_dir)
             log_engine_specific_info("JUST BEFORE SELECTING BEST MOVES", self.log_dir)
 
-        moves, probs = self.chess_policy.get_best_moves(ImmutableBoard.from_board(current_state), number_of_moves, return_probs=True)
-        log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
+        try:
+            moves, probs = self.chess_policy.get_best_moves(
+                ImmutableBoard.from_board(current_state), number_of_moves, return_probs=True, do_sample=self.do_sample
+            )
+            log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
+        except Exception as e:
+            log_engine_specific_info(f"ERROR: {e}", self.log_dir)
+            # return None
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER SELECTING BEST MOVES. BEST MOVES: {moves}", self.log_dir)

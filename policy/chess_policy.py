@@ -35,6 +35,7 @@ class BasicChessPolicy(ChessPolicy):
         num_return_sequences: int = 8,
         num_beams: int = 16,
         return_probs: bool = False,
+        do_sample: bool = False,
     ) -> List[chess.Move]:
         encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [
             ChessTokenizer.vocab_to_tokens["<SEP>"]
@@ -53,18 +54,18 @@ class BasicChessPolicy(ChessPolicy):
         sequence = outputs.sequences.tolist()
         scores = outputs.scores[0]
 
-        # outputs: List[List[int]] = self.model.generate(
-        #     inputs=input_tensor,
-        #     max_new_tokens=MAX_NEW_TOKENS_FOR_POLICY,
-        #     do_sample=True,
-        # ).tolist()
-
         moves: List[chess.Move] = []
         moves_ids: List[int] = []
-        for output in sequence:
-            output = [x for x in output if x not in ChessTokenizer.special_vocab_to_tokens.values()]
-            moves.append(ChessTokenizer.decode_move(output))
-            moves_ids.append(output)
+        if not do_sample:
+            for output in sequence:
+                output = [x for x in output if x not in ChessTokenizer.special_vocab_to_tokens.values()]
+                moves.append(ChessTokenizer.decode_move(output))
+                moves_ids.append(output)
+        else:
+            probs = np.exp(scores[0].tolist())
+            probs = probs / np.sum(probs)
+            moves_ids = np.random.choice(list(range(4600)), num_return_sequences, p=probs, replace=False)
+            moves = [ChessTokenizer.decode_move([x]) for x in moves_ids]
 
         print(f"Moves = {[str(move) for move in moves]}")
 
@@ -72,7 +73,7 @@ class BasicChessPolicy(ChessPolicy):
         converted_moves = [chess960_to_standard(move, board) for move in moves]
 
         if return_probs:
-            logits = [scores[0, move_id].tolist()[0] for move_id in moves_ids]
+            logits = [scores[0, move_id].tolist() for move_id in moves_ids]
             return converted_moves, np.exp(logits)
         else:
             return converted_moves

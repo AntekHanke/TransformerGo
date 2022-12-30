@@ -18,6 +18,7 @@ engine = PolicyChess(
     log_dir=log_dir,
     debug_mode=True,
     replace_legall_move_with_random=False,
+    do_sample=True,
     name="medium_5_(2g)",
 )
 

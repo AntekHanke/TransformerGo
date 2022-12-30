@@ -148,12 +148,12 @@ class IterableDataLoader(IterableDataset):
         self,
         data_path: Union[str, List[str]],
         files_batch_size: int = 10,
-        take_random_half_of_data: bool = False,
+        p_sample: Optional[float] = None,
         cycle: bool = True,
     ) -> None:
         self.data_path = data_path
         self.files_batch_size = files_batch_size
-        self.take_random_half_of_data = take_random_half_of_data
+        self.p_sample = p_sample
         self.eval = eval
         self.cycle = cycle
 
@@ -190,8 +190,9 @@ class IterableDataLoader(IterableDataset):
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
             log_value("load_df", file_num, file_num)
 
-            if self.take_random_half_of_data:
-                load_df = load_df.sample(frac=0.5, random_state=1)
+            if self.p_sample:
+                log_value("p_sample", 0, self.p_sample,)
+                load_df = load_df.sample(frac=self.p_sample, random_state=1)
 
             data.extend(self.process_df(load_df))
             if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):

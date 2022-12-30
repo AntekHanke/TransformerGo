@@ -65,7 +65,8 @@ class PandasPrepareAndSaveData:
             if self.p_sample is not None:
                 load_df = load_df.sample(frac=self.p_sample)
             if self.cutoff is not None:
-                load_df = load_df.sample(n=self.cutoff)
+                if len(load_df) > self.cutoff:
+                    load_df = load_df.sample(n=self.cutoff)
 
             log_value("len_of_df", file_num, len(load_df))
 

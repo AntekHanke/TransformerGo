@@ -9,7 +9,7 @@ from chess_engines.bots.basic_chess_engines import PolicyChess
 from chess_engines.banksia_gui_uci.banksia_gui_core import main_uci_loop
 
 
-policy_checkpoint: str = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/policy/medium_large_22.12.2022"
+policy_checkpoint: str = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/policy/medium_2g_2"
 log_dir: str = "/home/tomasz/Research/subgoal_chess_data/bot_logs"
 
 
@@ -18,8 +18,8 @@ engine = PolicyChess(
     log_dir=log_dir,
     debug_mode=True,
     replace_legall_move_with_random=False,
-    do_sample=True,
-    name="MEDIUM_LARGE_POLICY",
+    do_sample=False,
+    name="medium_6_(2g)",
 )
 
 if __name__ == "__main__":

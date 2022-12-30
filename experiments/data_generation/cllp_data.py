@@ -7,10 +7,11 @@ base_config = {
 
 
     "CLLPPrepareAndSaveData.data_path": "/leela_generator_data_train",
-    "CLLPPrepareAndSaveData.out_path": "/save_data/cllp_data",
+    "CLLPPrepareAndSaveData.out_path": "/save_data/cllp_bigger",
     "CLLPPrepareAndSaveData.files_batch_size": 60,
     "CLLPPrepareAndSaveData.p_sample": 0.5,
     "CLLPPrepareAndSaveData.files_limit": 1200,
+    "CLLPPrepareAndSaveData.cutoff": 100000,
     "use_neptune": True,
 }
 
@@ -19,7 +20,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"generate_cllp_data",
+    experiment_name=f"bigger-generate_cllp_data",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
