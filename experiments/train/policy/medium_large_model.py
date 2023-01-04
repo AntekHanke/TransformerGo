@@ -10,11 +10,11 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
 
-    "TrainModel.p_sample": 0.2,
+    "TrainModel.p_sample": 0.3,
 
     "TrainModel.files_batch_size": 10,
-    "TrainModel.path_to_training_data": "/save_data/policy_data/train",
-    "TrainModel.path_to_eval_data": "/save_data/policy_data/eval",
+    "TrainModel.path_to_training_data": "/subgoal_chess_data/large_policy_data/train",
+    "TrainModel.path_to_eval_data": "/subgoal_chess_data/large_policy_data/eval",
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
@@ -51,7 +51,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"0.2-{base_config['TrainingArguments.learning_rate']}-4g-lr-medium-large-policy",
+    experiment_name=f"0.3-{base_config['TrainingArguments.learning_rate']}-4g-lr-medium-large-policy",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

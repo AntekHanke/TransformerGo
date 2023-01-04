@@ -10,8 +10,8 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
 
-    "TrainModel.files_batch_size": 1,
-    "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_bigger",
+    "TrainModel.files_batch_size": 10,
+    "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_data",
     "TrainModel.path_to_eval_data": "/subgoal_chess_data/cllp_eval",
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
@@ -51,7 +51,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"b{batch_size[MACHINE]}-{base_config['TrainingArguments.learning_rate']}-lr-2g-medium-cllp",
+    experiment_name=f"EQ-b{batch_size[MACHINE]}-{base_config['TrainingArguments.learning_rate']}-lr-2g-medium-cllp",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,

@@ -3,7 +3,7 @@ contexts:
   athena_gpu:
     backend_type: slurm
     cmd_type: sbatch
-    cpu: 8
+    cpu: 2
     mem: 80G
     gpu: 4
     nodes: 1
