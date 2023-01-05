@@ -2,6 +2,7 @@ from ctypes import Union
 from typing import List
 
 import chess
+import numpy as np
 import torch
 from transformers import BartForConditionalGeneration
 
@@ -29,7 +30,12 @@ class BasicChessPolicy(ChessPolicy):
             self.model = checkpoint_path_or_model
 
     def get_best_moves(
-        self, immutable_board: ImmutableBoard, num_return_sequences: int = 1, num_beams: int = 16
+        self,
+        immutable_board: ImmutableBoard,
+        num_return_sequences: int = 8,
+        num_beams: int = 16,
+        return_probs: bool = False,
+        do_sample: bool = False,
     ) -> List[chess.Move]:
         encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [
             ChessTokenizer.vocab_to_tokens["<SEP>"]
@@ -40,21 +46,37 @@ class BasicChessPolicy(ChessPolicy):
             num_beams=num_beams,
             num_return_sequences=num_return_sequences,
             max_new_tokens=MAX_NEW_TOKENS_FOR_POLICY,
+            output_scores=True,
+            return_dict_in_generate=True,
             do_sample=False,
-        ).tolist()
-        print(f"decoded = {ChessTokenizer.decode(outputs[0])}")
-        moves: List[chess.Move] = []
-        for output in outputs:
-            output = [x for x in output if x not in ChessTokenizer.special_vocab_to_tokens.values()]
-            moves.append(ChessTokenizer.decode_move(output))
+        )
 
+        sequence = outputs.sequences.tolist()
+        scores = outputs.scores[0]
+
+        moves: List[chess.Move] = []
+        moves_ids: List[int] = []
+        if not do_sample:
+            for output in sequence:
+                output = [x for x in output if x not in ChessTokenizer.special_vocab_to_tokens.values()]
+                moves.append(ChessTokenizer.decode_move(output))
+                moves_ids.append(output)
+        else:
+            probs = np.exp(scores[0].tolist())
+            probs = probs / np.sum(probs)
+            moves_ids = np.random.choice(list(range(4600)), num_return_sequences, p=probs, replace=False)
+            moves = [ChessTokenizer.decode_move([x]) for x in moves_ids]
+
+        print(f"Moves = {[str(move) for move in moves]}")
 
         board = immutable_board.to_board()
         converted_moves = [chess960_to_standard(move, board) for move in moves]
-        return converted_moves
 
-
-        return moves
+        if return_probs:
+            logits = [scores[0, move_id].tolist() for move_id in moves_ids]
+            return converted_moves, np.exp(logits)
+        else:
+            return converted_moves
 
     def find_move_probability(self, immutable_board: ImmutableBoard, move_str: chess.Move) -> float:
         encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [

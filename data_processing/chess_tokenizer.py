@@ -137,3 +137,8 @@ class ChessTokenizer:
     def decode(cls, tokens):
         """General decode method"""
         return [cls.tokens_to_vocab[token] for token in tokens]
+
+    @classmethod
+    def decode_moves(cls, tokens):
+        """Decode moves"""
+        return [cls.tokens_to_vocab[token] for token in tokens if token not in cls.special_vocab_to_tokens.values()]
