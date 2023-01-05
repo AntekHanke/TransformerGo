@@ -1,4 +1,4 @@
-from configures.locally_testing_jobs.detect_local_machine import get_local_machine
+from configures.detect_local_machine import get_local_machine
 
 if get_local_machine() == "tomasz":
     NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIwZDRhNWIxNS1hN2RkLTQ1ZjMtOGRmZi02MWI4NGRkZjA5MGMifQ=="
