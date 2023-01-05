@@ -12,7 +12,7 @@ from data_structures.data_structures import ImmutableBoard
 class CLLP:
     """Basic pgn_policy based on generation from the model"""
 
-    def __init__(self, checkpoint_path_or_model, num_beams: int = None, num_return_sequences: int = None):
+    def __init__(self, checkpoint_path_or_model, num_beams: int = 16, num_return_sequences: int = 1):
         if isinstance(checkpoint_path_or_model, str):
             self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
         else:
@@ -46,7 +46,7 @@ class CLLP:
         moves_batch = []
         moves_for_one_query = []
         for i, out in enumerate(output):
-            moves_for_one_query.append(ChessTokenizer.decode_uci_moves(out))
+            moves_for_one_query.append(ChessTokenizer.decode_moves(out))
             if (i + 1) % self.num_return_sequences == 0:
                 moves_batch.append(moves_for_one_query)
                 moves_for_one_query = []

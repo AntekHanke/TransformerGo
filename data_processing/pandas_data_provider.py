@@ -1,6 +1,8 @@
 import random
 import time
+from itertools import cycle
 
+from configures.global_config import MAX_MOVES_FOR_CLLP
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
@@ -12,7 +14,6 @@ import pandas as pd
 from tqdm import tqdm
 from torch.utils.data import IterableDataset
 from utils.global_params_handler import GlobalParamsHandler
-
 
 # rng = random.Random(0)
 
@@ -144,20 +145,22 @@ from utils.global_params_handler import GlobalParamsHandler
 
 class IterableDataLoader(IterableDataset):
     def __init__(
-            self,
-            data_path: Union[str, List[str]],
-            files_batch_size: int = 10,
-            take_random_half_of_data: bool = False,
+        self,
+        data_path: Union[str, List[str]],
+        files_batch_size: int = 10,
+        p_sample: Optional[float] = None,
+        cycle: bool = True,
     ) -> None:
         self.data_path = data_path
         self.files_batch_size = files_batch_size
-        self.take_random_half_of_data = take_random_half_of_data
+        self.p_sample = p_sample
         self.eval = eval
+        self.cycle = cycle
 
         self.files_names: List[str] = []
         self.prepare_files_list()
 
-    def prepare_files_list(self) -> None:
+    def prepare_files_list(self):
         for folder_name in tqdm(os.listdir(self.data_path)):
             path: str = self.data_path + "/" + str(folder_name)
             for file_name in os.listdir(path):
@@ -172,19 +175,26 @@ class IterableDataLoader(IterableDataset):
         raise NotImplementedError
 
     @staticmethod
-    def process_df(df: pd.DataFrame) -> List[Dict[str, List[int]]]:
+    def process_df(df: pd.DataFrame) -> List[Dict[str, int]]:
         raise NotImplementedError
 
     def generate_data(self) -> Iterator[Dict[str, List[int]]]:
         data: List[Dict[str, List[int]]] = []
-        for file_num, path_to_file in enumerate(self.files_names):
-            load_df: pd.DataFrame = pd.read_pickle(path_to_file)
 
-            if self.take_random_half_of_data:
-                load_df = load_df.sample(frac=0.5, random_state=1)
+        if self.cycle:
+            files_iterable = enumerate(cycle(self.files_names))
+        else:
+            files_iterable = enumerate(self.files_names)
+
+        for file_num, path_to_file in files_iterable:
+            load_df: pd.DataFrame = pd.read_pickle(path_to_file)
+            log_value("load_df", file_num, file_num)
+
+            if self.p_sample:
+                log_value("p_sample", 0, self.p_sample,)
+                load_df = load_df.sample(frac=self.p_sample, random_state=1)
 
             data.extend(self.process_df(load_df))
-
             if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
                 print(f"Will shuflle data from {file_num - self.files_batch_size + 1} to {file_num} len = {len(data)}")
                 time_s = time.time()
@@ -204,15 +214,16 @@ class IterableSubgoalDataLoader(IterableDataLoader):
         df = df[["input_ids", "labels"]]
         return df.to_dict(orient="records")
 
-    def __getitem__(self, item):
-        raise NotImplementedError
-
-    def log_samples(self, log_samples_limit: int):
-        raise NotImplementedError
-
 
 class IterablePolicyDataLoader(IterableDataLoader):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        df = df[["input_ids", "labels"]]
+        return df.to_dict(orient="records")
+
+class IterableSubgoalToPolicyDataLoader(IterableDataLoader):
     def process_df(self, df: pd.DataFrame):
+
         df = df[["input_ids", "moves"]]
         data_list = df.to_dict(orient="records")
 
@@ -225,8 +236,25 @@ class IterablePolicyDataLoader(IterableDataLoader):
         data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
         return data
 
-    def __getitem__(self, item):
-        raise NotImplementedError
+class IterableCLLPDataLoader(IterableDataLoader):
+    def process_df(self, df: pd.DataFrame):
 
-    def log_samples(self, log_samples_limit: int):
-        raise NotImplementedError
+        df = df[["input_ids", "moves"]]
+        data_list = df.to_dict(orient="records")
+
+        def process_single_datapoint(datapoint):
+            moves_encoded = [ChessTokenizer.encode(move)[0] for move in datapoint["moves"]]
+            if len(moves_encoded) < MAX_MOVES_FOR_CLLP:
+                moves_encoded += [ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (
+                        MAX_MOVES_FOR_CLLP - len(moves_encoded)
+                )
+            return {
+                "input_ids": datapoint["input_ids"]
+                             + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
+                             + datapoint["labels"]
+                             + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                "labels": moves_encoded,
+            }
+
+        data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
+        return data
