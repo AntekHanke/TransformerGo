@@ -9,7 +9,7 @@ from transformers import BartForConditionalGeneration
 from configures.global_config import MAX_NEW_TOKENS_FOR_POLICY
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
-from lczero.lczero_backend import LCZeroBackend
+from lczero.lczero_backend import LCZeroBackend, get_lczero_backend
 from utils.chess960_conversion import chess960_to_standard
 
 
@@ -97,13 +97,9 @@ class BasicChessPolicy(ChessPolicy):
         print(num)
 
 
-class LCZeroPolicy:
-    def __init__(self, lczero_backend: LCZeroBackend = None) -> None:
-        if lczero_backend is None:
-            print("Creating new lczero backend")
-            self.lczero_backend = LCZeroBackend()
-        else:
-            self.lczero_backend = lczero_backend
+class LCZeroPolicy(ChessPolicy):
+    def __init__(self):
+        self.lczero_backend = get_lczero_backend()
 
     def get_best_moves(
         self,

@@ -37,7 +37,7 @@ def check_cllp_quality(cllp_checkpoint, data_path, examples_per_k=100):
 
     cllp = CLLP(cllp_checkpoint, num_return_sequences=8)
     for k, samples in examples.items():
-        if k < 4:
+        if k != 3:
             continue
 
         identical = 0
@@ -68,7 +68,7 @@ def check_cllp_quality(cllp_checkpoint, data_path, examples_per_k=100):
 
 
 check_cllp_quality(
-    "/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium_2",
+    "/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium",
     "/home/tomasz/Research/subgoal_chess_data/cllp_leela_datasets/prepare",
     100
 )
