@@ -13,7 +13,7 @@ from chess_engines.third_party.stockfish import StockfishEngine
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
-from policy.chess_policy import BasicChessPolicy
+from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 
@@ -54,12 +54,13 @@ class RandomChessEngine(ChessEngine):
 class PolicyChess(ChessEngine):
     def __init__(
         self,
-        policy_checkpoint,
-        log_dir: str,
+        policy_checkpoint: Optional[str] = None,
+        log_dir: str = None,
         debug_mode: bool = False,
         replace_legall_move_with_random: bool = False,
         do_sample: bool = True,
         name: str = "POLICY",
+        use_lczero_policy: bool = False,
     ) -> None:
 
         self.name: str = name
@@ -68,7 +69,10 @@ class PolicyChess(ChessEngine):
         self.replace_legall_move_with_random = replace_legall_move_with_random
         self.do_sample = do_sample
         self.policy_checkpoint = policy_checkpoint
-        self.chess_policy = BasicChessPolicy(self.policy_checkpoint)
+        if not use_lczero_policy:
+            self.chess_policy = BasicChessPolicy(self.policy_checkpoint)
+        else:
+            self.chess_policy = LCZeroPolicy()
 
     def new_game(self) -> None:
         today: datetime.date = date.today()

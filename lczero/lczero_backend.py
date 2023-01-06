@@ -1,15 +1,16 @@
+import chess
 from lczero.backends import Weights, Backend, GameState
 
 
 class LCZeroBackend:
     def __init__(self):
-        try:
-            self.weights = Weights()
-            self.backend = Backend(weights=self.weights)
-        except:
-            print(
-                "Weights not found. Please download them from https://lczero.org/networks/ and place them in the same folder as this script."
-            )
+        # try:
+        self.weights = Weights()
+        self.backend = Backend(weights=self.weights)
+        # except:
+        #     print(
+        #         "Weights not found. Please download them from https://lczero.org/networks/ and place them in the same folder as this script."
+        #     )
 
     def evaluate_immutable_board(self, immutable_board):
         game_state = GameState(fen=immutable_board.fen())
@@ -24,3 +25,7 @@ class LCZeroBackend:
         moves = list(zip(game_state.moves(), output.p_softmax(*game_state.policy_indices())))
         sorted_moves = sorted(moves, key=lambda x: x[1], reverse=True)
         return sorted_moves
+
+    def policy_distribution_dict(self, immutable_board):
+        sorted_moves = self.get_policy_distribution(immutable_board)
+        return {move[0]: move[1] for move in sorted_moves}
