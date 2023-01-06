@@ -2,15 +2,15 @@
 import os
 import sys
 
-sys.path.append("/home/tomasz/Research/subgoal_search_chess")
+sys.path.append("/")
 os.environ["SUBGOAL_PROJECT_ROOT"] = "/home/tomasz/Research/subgoal_search_chess"
 
 from chess_engines.bots.basic_chess_engines import PolicyChess
-from chess_engines.banksia_gui_uci.banksia_gui_core import main_uci_loop
+from chess_engines.banksia_gui_uci.gracjan.banksia_gui_core import main_uci_loop
 
 
 policy_checkpoint: str = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/policy/medium_large_22.12.2022"
-log_dir: str = "/home/tomasz/Research/subgoal_chess_data/bot_logs"
+log_dir: str = "/bot_logs"
 
 
 engine = PolicyChess(

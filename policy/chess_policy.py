@@ -9,6 +9,7 @@ from transformers import BartForConditionalGeneration
 from configures.global_config import MAX_NEW_TOKENS_FOR_POLICY
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
+from lczero.lczero_backend import LCZeroBackend, get_lczero_backend
 from utils.chess960_conversion import chess960_to_standard
 
 
@@ -94,3 +95,40 @@ class BasicChessPolicy(ChessPolicy):
         scores = outputs.scores[0]
         num = scores[0, 100].tolist()
         print(num)
+
+
+class LCZeroPolicy(ChessPolicy):
+    def __init__(self):
+        self.lczero_backend = get_lczero_backend()
+
+    def get_best_moves(
+        self,
+        immutable_board: ImmutableBoard,
+        num_return_sequences: int = 8,
+        num_beams: int = None,
+        return_probs: bool = False,
+        do_sample: bool = False,
+    ):
+        p_distribution = self.lczero_backend.get_policy_distribution(immutable_board)[:num_return_sequences]
+        probs = []
+        moves = []
+        for move in p_distribution:
+            moves.append(chess.Move.from_uci(move[0]))
+            probs.append(move[1])
+        if return_probs:
+            return moves, probs
+        else:
+            return moves
+
+    def get_path_probability(
+        self, immutable_board: ImmutableBoard, path: List[chess.Move], log_prob: bool = True
+    ) -> float:
+        board = immutable_board.to_board()
+        probs = []
+        for move in path:
+            probs.append(self.lczero_backend.policy_distribution_dict(ImmutableBoard.from_board(board))[move.uci()])
+            board.push(move)
+        if log_prob:
+            return sum(np.log(probs))
+        else:
+            return np.prod(probs)
