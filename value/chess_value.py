@@ -6,9 +6,19 @@ class ChessValue:
     def evaluate_immutable_board(self, immutable_board: ImmutableBoard) -> float:
         raise NotImplementedError
 
+
 class LCZeroValue(ChessValue):
-    def __init__(self, lczero_backend: LCZeroBackend = None) -> None:
+    def __init__(self) -> None:
         self.lczero_backend = get_lczero_backend()
 
-    def evaluate_immutable_board(self):
-        return self.lczero_backend.evaluate_immutable_board()
+    @staticmethod
+    def absolute_v(player, v):
+        if player == "w":
+            return v
+        elif player == "b":
+            return -v
+
+    def evaluate_immutable_board(self, immutable_board: ImmutableBoard) -> float:
+        return self.absolute_v(
+            immutable_board.active_player, self.lczero_backend.evaluate_immutable_board(immutable_board)
+        )
