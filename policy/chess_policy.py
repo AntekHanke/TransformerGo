@@ -133,6 +133,10 @@ class LCZeroPolicy(ChessPolicy):
         board = immutable_board.to_board()
         probs = []
         for move in path:
-            probs.append(self.lczero_backend.policy_distribution_dict(ImmutableBoard.from_board(board))[move.uci()])
+            moves_distribution = self.lczero_backend.policy_distribution_dict(ImmutableBoard.from_board(board))
+            if move.uci() in moves_distribution:
+                probs.append(moves_distribution[move.uci()])
+            else:
+                probs.append(0)
             board.push(move)
         return probs

@@ -47,7 +47,6 @@ class CLLP:
             if (i + 1) % num_return_sequences == 0:
                 moves_batch.append(moves_for_one_query)
                 moves_for_one_query = []
-            # moves_batch.append(ChessTokenizer.decode_uci_moves(out))
         return moves_batch
 
     def get_path(
@@ -65,7 +64,6 @@ class CLLP:
         self, queries_list: List[Tuple[ImmutableBoard, ImmutableBoard]], num_beams, num_return_sequences
     ):
         inputs_tokenized = []
-        moves_batch = []
 
         for input_immutable_board, target_immutable_board in queries_list:
             inputs_tokenized.append(

@@ -3,6 +3,7 @@ import numpy as np
 
 from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
+from policy.chess_policy import LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 from value.chess_value import LCZeroValue
@@ -33,7 +34,6 @@ class ChessStateExpander:
         n_subgoals,
         cllp_num_beams,
         cllp_num_return_sequences,
-        return_only_correct_subgoals=True,
     ):
         subgoals = self.subgoal_generator.generate_subgoals(input_immutable_board, n_subgoals)
         paths = self.cllp.get_paths_batch(
@@ -44,11 +44,11 @@ class ChessStateExpander:
 
         for subgoal, paths_to_subgoal in zip(subgoals, paths):
             correct_paths = [path for path in paths_to_subgoal if verify_path(input_immutable_board, subgoal, path)]
-            if return_only_correct_subgoals and len(correct_paths) == 0:
+            if len(correct_paths) == 0:
                 continue
 
             paths_raw_probabilities = [
-                self.policy.get_path_probabilities(input_immutable_board, subgoal, path) for path in paths_to_subgoal
+                self.policy.get_path_probabilities(input_immutable_board, path) for path in correct_paths
             ]
 
             paths_stats = [
@@ -72,7 +72,7 @@ class ChessStateExpander:
 
             subgoals_info[subgoal] = subgoal_info
 
-        return subgoals, subgoals_info
+        return subgoals_info
 
     def analyze_path_probabilities(self, paths_raw_probabilities):
         total_path_probability = np.prod(paths_raw_probabilities)
@@ -84,9 +84,11 @@ generator = BasicChessSubgoalGenerator(
     "/home/tomasz/Research/subgoal_chess_data/local_leela_models/4gpu_generator/subgoals_k=3"
 )
 cllp = CLLP("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium")
+policy = LCZeroPolicy()
 value = LCZeroValue()
 
-expander = ChessStateExpander(value, generator, cllp)
+
+expander = ChessStateExpander(policy, value, generator, cllp)
 
 board = chess.Board()
 board.push(chess.Move.from_uci("e2e4"))
@@ -94,7 +96,8 @@ board.push(chess.Move.from_uci("e7e5"))
 board.push(chess.Move.from_uci("g1f3"))
 
 b = ImmutableBoard.from_board(board)
-subgoals, result, vals = expander.expand_state(b, 4, 16, 2)
-fig = immutable_boards_to_img([b] + subgoals, vals)
+subgoals_info = expander.expand_state(b, 4, 16, 2)
+subgoals = list(subgoals_info.keys())
+fig = immutable_boards_to_img([b] + subgoals, ["input"] + [f"subgoal{i}" for i in range(len(subgoals))])
 fig.show()
-print(result)
+y = 4
