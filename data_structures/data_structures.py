@@ -52,3 +52,16 @@ class ImmutableBoard(ImmutableBoardData):
 
     def fen(self) -> str:
         return " ".join(self)
+
+    def __hash__(self):
+        return hash(self.board + self.active_player + self.castles + self.en_passant_target)
+
+    def __eq__(self, other):
+        return all(
+            [
+                self.board == other.board,
+                self.active_player == other.active_player,
+                self.castles == other.castles,
+                self.en_passant_target == other.en_passant_target,
+            ]
+        )

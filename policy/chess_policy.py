@@ -110,6 +110,7 @@ class LCZeroPolicy(ChessPolicy):
         do_sample: bool = False,
     ):
         p_distribution = self.lczero_backend.get_policy_distribution(immutable_board)[:num_return_sequences]
+        print(p_distribution)
         probs = []
         moves = []
         for move in p_distribution:
