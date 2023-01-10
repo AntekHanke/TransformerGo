@@ -29,7 +29,6 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
         outputs = self.model.generate(
             input_tensor,
-            num_return_sequences=n_subgoals,
             max_new_tokens=80,
             **subgoal_generation_kwargs
         ).tolist()
