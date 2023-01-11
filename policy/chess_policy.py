@@ -123,12 +123,20 @@ class LCZeroPolicy(ChessPolicy):
     def get_path_probability(
         self, immutable_board: ImmutableBoard, path: List[chess.Move], log_prob: bool = True
     ) -> float:
-        board = immutable_board.to_board()
-        probs = []
-        for move in path:
-            probs.append(self.lczero_backend.policy_distribution_dict(ImmutableBoard.from_board(board))[move.uci()])
-            board.push(move)
+        probs = self.lczero_backend.get_path_probabilities(immutable_board, path)
         if log_prob:
             return sum(np.log(probs))
         else:
             return np.prod(probs)
+
+    def get_path_probabilities(self, immutable_board: ImmutableBoard, path: List[chess.Move]) -> float:
+        board = immutable_board.to_board()
+        probs = []
+        for move in path:
+            moves_distribution = self.lczero_backend.policy_distribution_dict(ImmutableBoard.from_board(board))
+            if move.uci() in moves_distribution:
+                probs.append(moves_distribution[move.uci()])
+            else:
+                probs.append(0)
+            board.push(move)
+        return probs

@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import chess
 from chess import Move, PIECE_SYMBOLS
 
 from data_structures.data_structures import ImmutableBoard
@@ -59,7 +60,9 @@ class ChessTokenizer:
         "-",
     ]
     players = ["w", "b"]
-    non_special_vocab = pieces + integers + algebraic_fields + players + castlings + algebraic_moves + algebraic_promotions
+    non_special_vocab = (
+        pieces + integers + algebraic_fields + players + castlings + algebraic_moves + algebraic_promotions
+    )
     special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
     vocab_to_tokens = {symbol: i + NON_SPECIAL_TOKENS_START for i, symbol in enumerate(non_special_vocab)}
     vocab_to_tokens.update(special_vocab_to_tokens)
@@ -141,4 +144,8 @@ class ChessTokenizer:
     @classmethod
     def decode_moves(cls, tokens):
         """Decode moves"""
-        return [cls.tokens_to_vocab[token] for token in tokens if token not in cls.special_vocab_to_tokens.values()]
+        return [
+            chess.Move.from_uci(cls.tokens_to_vocab[token])
+            for token in tokens
+            if token not in cls.special_vocab_to_tokens.values()
+        ]
