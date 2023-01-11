@@ -305,12 +305,14 @@ contexts:
       -B /net/ascratch/people/plggracjangoral/chess_data/leela_models:/leela_models
       -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
 
+
+
   athena_gpu_gg:
     backend_type: slurm
     cmd_type: sbatch
-    cpu: 2
-    mem: 80G
-    gpu: 4
+    cpu: 1
+    mem: 120G
+    gpu: 1
     nodes: 1
     ntasks: 1
     partition: plgrid-gpu-a100
@@ -318,10 +320,33 @@ contexts:
       - CUDA/11.6.0
     singularity_container: -H $PWD:/homeplaceholder
       -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess_data:/chess_data
+      -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess_data/subgoals_dataset_lichess:/subgoals_dataset_lichess
       -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess_data/leela_models:/leela_models
+      -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/pgn_large:/pgn_large
+      -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/cllp_bigger:/subgoal_chess_data/cllp_bigger
+      -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/cllp_eval:/subgoal_chess_data/cllp_eval
       -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
     slurm_url: plggracjangoral@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/
     time: 2880
+
+  prom_cpu_gg:
+    account: plgrlresearch
+    backend_type: slurm
+    cmd_type: sbatch
+    time: 59
+    cpu: 1
+    mem: 40G
+    modules_to_load:
+     - plgrid/tools/singularity/stable
+    nodes: 1
+    ntasks: 1
+    partition: plgrid
+    slurm_url: plggracjangoral@prometheus.cyfronet.pl
+    storage_dir: /net/scratch/people/plggracjangoral/chessdata_from_chessengines
+    singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plggracjangoral/chess_data/database_chess_lichess:/database_chess_lichess
+                           -B /net/scratch/people/plggracjangoral/chess_data/subgoals_dataset_lichess:/subgoals_dataset_lichess
+                           -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
 
 
