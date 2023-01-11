@@ -2,22 +2,22 @@ import random
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-batch_size = {'ares': 1024, 'athena': 350, 'athena_2_gpu': 650, 'athena_4_gpu': 1300}
+batch_size = {'ares': 1024, 'athena': 350, 'athena_2_gpu': 650, 'athena_8_gpu': 2100}
 
-MACHINE = 'athena_4_gpu'
+MACHINE = 'athena_8_gpu'
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
 
-    "TrainModel.files_batch_size": 1,
+    "TrainModel.files_batch_size": 10,
     "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_bigger",
     "TrainModel.path_to_eval_data": "/subgoal_chess_data/cllp_eval",
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
-    "GlobalParamsHandler.out_dir": f"/leela_models/cllp/medium_large_model/{date.today()}/{random.randint(0, 100000)}",
+    "GlobalParamsHandler.out_dir": f"/leela_models/cllp/medium_large_model/{date.today()}",
     "GlobalParamsHandler.path_type": "raw_path",
 
     "BartConfig.vocab_size": 4600,
@@ -39,7 +39,7 @@ base_config = {
     "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
-    "TrainingArguments.learning_rate": 2e-4,
+    "TrainingArguments.learning_rate": 1e-4,
 
     "use_neptune": True,
 }
@@ -49,14 +49,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"b{batch_size[MACHINE]}-{base_config['TrainingArguments.learning_rate']}-lr-2g-medium-large--cllp",
+    experiment_name=f"b{batch_size[MACHINE]}-{base_config['TrainingArguments.learning_rate']}-lr-8g-medium-large--cllp",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["leela", "train", "medium-large", "subgoals_k=1"],
+    tags=["leela", "train", "medium-large", "cllp"],
     with_neptune=True,
     env={},
 )

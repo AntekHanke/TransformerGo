@@ -19,13 +19,10 @@ source_files_register.register(__file__)
 
 class CreatePGNDataset(Job):
     def __init__(
-        self,
-        chess_database_cls: Type[ChessDataProvider],
+            self,
+            chess_database_cls: Type[ChessDataProvider],
     ):
-
         self.chess_database = chess_database_cls()
-
-
 
     def execute(self) -> None:
         self.chess_database.create_data()
