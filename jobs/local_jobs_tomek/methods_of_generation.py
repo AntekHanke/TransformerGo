@@ -56,7 +56,6 @@ def print_summary(input_immutable_board, generation_kwargs, k):
     print(f"Summary correct subgoals: {len(subgoals_info)/generation_kwargs['num_return_sequences']}")
     print(f"Summary: best total probability = {max([x['highest_total_probability'] for x in subgoals_info.values()])}")
     print(f"Summary: best min probability = {max([x['highest_min_probability'] for x in subgoals_info.values()])}")
-    # print(f"Summary: best max probability = {max([x['highest_max_probability'] for x in subgoals_info.values()])}")
 
     for num, subgoal_info in enumerate(subgoals_info.values()):
         show_subgoal_info(subgoal_info, num)
