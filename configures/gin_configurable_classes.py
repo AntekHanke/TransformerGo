@@ -4,6 +4,7 @@ from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 from data_processing.chess_data_generator import (
     NoFilter,
     ResultFilter,
+    ELOFilter,
     ChessCLLPGamesDataGenerator,
     ChessSubgoalGamesDataGenerator,
     PolicyGamesDataGenerator,
@@ -43,7 +44,7 @@ configure_classes(
     "jobs",
 )
 configure_classes([Trainer, TrainingArguments, BartConfig, BertConfig], "transformers")
-configure_classes([NoFilter, ResultFilter], "filters")
+configure_classes([NoFilter, ResultFilter, ELOFilter], "filters")
 configure_classes(
     [
         PolicyGamesDataGenerator,
