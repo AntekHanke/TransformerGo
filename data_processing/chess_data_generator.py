@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Type
 
 import chess.pgn
 import random
@@ -124,8 +124,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
     def __init__(
         self,
         pgn_file: Optional[str] = None,
-        chess_filter: ChessFilter = ChessFilter,
-        type_of_data_selector: Optional[str] = None,
+        chess_filter: Type[ChessFilter] = ChessFilter,
         p_sample: Optional[float] = None,
         n_data: Optional[int] = None,
         train_eval_split: float = 0.95,
@@ -141,8 +140,9 @@ class ChessGamesDataGenerator(ChessDataProvider):
         self.name_of_pgn_file: str = self.path_to_pgn_file.split("/")[-1]
         self.pgn_database = open(self.path_to_pgn_file, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
-        self.type_of_data_selector = type_of_data_selector
-        self.chess_filter = chess_filter
+        self.chess_filter = chess_filter()
+
+        help(self.chess_filter)
 
         print(1000 * "=")
         print(
