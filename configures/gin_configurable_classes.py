@@ -4,6 +4,7 @@ from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 from data_processing.chess_data_generator import (
     NoFilter,
     ResultFilter,
+    ELOFilter,
     ChessCLLPGamesDataGenerator,
     ChessSubgoalGamesDataGenerator,
     PolicyGamesDataGenerator,
@@ -14,7 +15,7 @@ from data_processing.pandas_data_provider import (
 )
 from data_processing.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
 from jobs.create_pgn_dataset import CreatePGNDataset
-from jobs.evaluate_cllp import EvaluateCLLP
+# from jobs.evaluate_cllp import EvaluateCLLP
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
@@ -35,7 +36,7 @@ configure_classes(
         TrainModel,
         CreatePGNDataset,
         LeelaCCLPDataProcessing,
-        EvaluateCLLP,
+        # EvaluateCLLP,
         TrainBertForSequenceModel,
         LeelaParallelDatasetGenerator,
         LeelaPrepareAndSaveData
@@ -43,7 +44,7 @@ configure_classes(
     "jobs",
 )
 configure_classes([Trainer, TrainingArguments, BartConfig, BertConfig], "transformers")
-configure_classes([NoFilter, ResultFilter], "filters")
+configure_classes([NoFilter, ResultFilter, ELOFilter], "filters")
 configure_classes(
     [
         PolicyGamesDataGenerator,

@@ -43,8 +43,6 @@ class TrainModel(Job):
         if output_dir_from_global_params_handler is not None:
             self.output_dir = output_dir_from_global_params_handler
 
-        self.path_to_training_data = path_to_training_data
-        self.path_to_eval_data = path_to_eval_data
         self.take_random_half_of_training_data = p_sample
         self.take_random_half_of_eval_data = take_random_half_of_eval_data
 
