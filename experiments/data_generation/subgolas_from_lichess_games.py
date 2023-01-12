@@ -6,7 +6,8 @@ base_config = {
     "CreatePGNDataset.chess_database_cls": "@data.ChessSubgoalGamesDataGenerator",
 
     # class's parametres (ChessSubgoalGamesDataGenerator)
-    "ChessSubgoalGamesDataGenerator.pgn_file": "/pgn_large/lichess_db_standard_rated_2022-10.pgn",    "ChessSubgoalGamesDataGenerator.p_sample": 1.0,
+    "ChessSubgoalGamesDataGenerator.pgn_file": "/pgn_large/lichess_db_standard_rated_2022-10.pgn",
+    "ChessSubgoalGamesDataGenerator.p_sample": 1.0,
     "ChessSubgoalGamesDataGenerator.n_data": 10 ** 10,
     "ChessSubgoalGamesDataGenerator.train_eval_split": 0.95,
     "ChessSubgoalGamesDataGenerator.save_data_path": "/subgoals_dataset_lichess/",
