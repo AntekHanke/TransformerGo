@@ -137,7 +137,9 @@ class ChessGamesDataGenerator(ChessDataProvider):
         save_data_every: int = 1000,
     ):
         self.size_of_computed_dataset: int = 0
-        self.pgn_database = open(pgn_file, errors="ignore")
+        self.path_to_pgn_file = pgn_file
+        self.name_of_pgn_file: str = self.path_to_pgn_file.split("/")[-1]
+        self.pgn_database = open(self.path_to_pgn_file, errors="ignore")
         assert chess_filter is not None, "Chess filter must be specified"
         self.type_of_data_selector = type_of_data_selector
         self.chess_filter = chess_filter
@@ -232,8 +234,8 @@ class ChessGamesDataGenerator(ChessDataProvider):
     def save_data(self, part: int) -> None:
         pd_tarin: pd.DataFrame = pd.DataFrame(self.train_data_queue).transpose()
         pd_eval: pd.DataFrame = pd.DataFrame(self.eval_data_queue).transpose()
-        pd_tarin.to_pickle(self.save_data_path + f"train_part_{part}.pkl")
-        pd_eval.to_pickle(self.save_data_path + f"eval_part_{part}.pkl")
+        pd_tarin.to_pickle(self.save_data_path + f"{self.name_of_pgn_file}_train_part_{part}.pkl")
+        pd_eval.to_pickle(self.save_data_path + f"{self.name_of_pgn_file}_eval_part_{part}.pkl")
 
         self.train_data_queue.clear()
         self.eval_data_queue.clear()
