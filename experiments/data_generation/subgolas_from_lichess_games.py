@@ -6,14 +6,19 @@ base_config = {
     "CreatePGNDataset.chess_database_cls": "@data.ChessSubgoalGamesDataGenerator",
 
     # class's parametres (ChessSubgoalGamesDataGenerator)
-    "ChessSubgoalGamesDataGenerator.pgn_file": "/pgn_large/lichess_db_standard_rated_2022-10.pgn",
-    "ChessSubgoalGamesDataGenerator.chess_filter": "@filters.ResultFilter",
-    "ChessSubgoalGamesDataGenerator.p_sample": 1.0,
-    "ChessSubgoalGamesDataGenerator.n_data": 10**10,
+    "ChessSubgoalGamesDataGenerator.pgn_file": "/pgn_large/lichess_db_standard_rated_2022-10.pgn",    "ChessSubgoalGamesDataGenerator.p_sample": 1.0,
+    "ChessSubgoalGamesDataGenerator.n_data": 10 ** 10,
     "ChessSubgoalGamesDataGenerator.train_eval_split": 0.95,
     "ChessSubgoalGamesDataGenerator.save_data_path": "/subgoals_dataset_lichess/",
     "ChessSubgoalGamesDataGenerator.save_data_every": 100000,
+    "ChessSubgoalGamesDataGenerator.log_stats_after_n": 1000,
     "ChessSubgoalGamesDataGenerator.k": 1,
+    "ChessSubgoalGamesDataGenerator.chess_filter": "@filters.ResultFilter",
+
+    # class's parameters (ResultFilter)
+    "ResultFilter.filter_name": "ResultFilter",
+    "ResultFilter.type_of_selector": "ELO",
+    "ResultFilter.threshold": 2300,
 
     "use_neptune": True,
 }
