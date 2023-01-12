@@ -49,8 +49,8 @@ class ResultFilter(ChessFilter):
     """Filters games that have a winner or looser. Filters transitions that were played by the winner or looser."""
 
     def __init__(
-            self,
-            winner_or_looser: str = "winner",
+        self,
+        winner_or_looser: str = "winner",
     ) -> None:
         assert winner_or_looser in ["winner", "loser"], "winner_or_looser must be 'winner' or 'loser'"
         self.winner_or_looser = winner_or_looser
@@ -119,18 +119,18 @@ class ChessGamesDataGenerator(ChessDataProvider):
     """Reads PGN file and creates data."""
 
     def __init__(
-            self,
-            pgn_file: Optional[str] = None,
-            chess_filter: Optional[Type[ChessFilter]] = None,
-            p_sample: Optional[float] = None,
-            n_data: Optional[int] = None,
-            train_eval_split: float = 0.95,
-            log_samples_limit: Optional[int] = None,
-            log_stats_after_n: int = 1000,
-            p_log_sample: float = 0.01,
-            only_eval: bool = False,
-            save_data_path: Optional[str] = None,
-            save_data_every: int = 1000,
+        self,
+        pgn_file: Optional[str] = None,
+        chess_filter: Optional[Type[ChessFilter]] = None,
+        p_sample: Optional[float] = None,
+        n_data: Optional[int] = None,
+        train_eval_split: float = 0.95,
+        log_samples_limit: Optional[int] = None,
+        log_stats_after_n: int = 1000,
+        p_log_sample: float = 0.01,
+        only_eval: bool = False,
+        save_data_path: Optional[str] = None,
+        save_data_every: int = 1000,
     ):
         self.size_of_computed_dataset: int = 0
         self.path_to_pgn_file = pgn_file
@@ -141,8 +141,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
         print(1000 * "=")
         print(
-            f"Name of used filter: {type(self.chess_filter)}."
-            f" Atributs of used filter: {self.chess_filter.__dict__}"
+            f"Name of used filter: {type(self.chess_filter)}." f" Atributs of used filter: {self.chess_filter.__dict__}"
         )
         print(1000 * "=")
 
@@ -272,7 +271,7 @@ class PolicyGamesDataGenerator(ChessGamesDataGenerator):
             if random.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(transition.immutable_board)
-                                 + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                     "labels": ChessTokenizer.encode_move(transition.move),
                 }
                 sample = {"input_board": transition.immutable_board, "move": transition.move.uci(), "num": num}
@@ -303,7 +302,7 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             if random.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-                                 + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                     "labels": ChessTokenizer.encode_immutable_board(target_board),
                 }
 
@@ -316,10 +315,10 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             self.log_sample(sample, one_game_data.metadata)
 
     def game_to_datapoints(
-            self,
-            one_game_data: OneGameData,
-            current_dataset: List[Dict[str, List[int]]],
-            number_of_datapoint_from_one_game: Optional[int] = None,
+        self,
+        one_game_data: OneGameData,
+        current_dataset: List[Dict[str, List[int]]],
+        number_of_datapoint_from_one_game: Optional[int] = None,
     ) -> None:
 
         # TODO: Here You can create chess endings: TO
@@ -331,7 +330,9 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             else:
                 p: np.ndarray = prob_select_function(game_length)
 
-            assert number_of_datapoint_from_one_game is not None, "Please select number of datapoints frome game. Must be integer."
+            assert (
+                number_of_datapoint_from_one_game is not None
+            ), "Please select number of datapoints frome game. Must be integer."
             selected_datapoints = np.random.choice(
                 list(range(game_length)), size=number_of_datapoint_from_one_game, p=p
             )
@@ -343,7 +344,7 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
 
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-                                 + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                     "labels": ChessTokenizer.encode_immutable_board(target_board),
                 }
 
@@ -373,8 +374,8 @@ class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
             if random.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-                                 + ChessTokenizer.encode_immutable_board(input_board)
-                                 + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                    + ChessTokenizer.encode_immutable_board(input_board)
+                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                     "labels": ChessTokenizer.encode_move(move),
                 }
 
