@@ -2,25 +2,21 @@ import random
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-batch_size = {'ares': 1024, 'athena': 700, 'athena_2_gpu': 1350, 'athena_4_gpu': 2700}
+batch_size = {"ares": 1024, "athena": 700, "athena_2_gpu": 1350, "athena_4_gpu": 2700}
 
-MACHINE = 'athena_4_gpu'
+MACHINE = "athena_4_gpu"
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
-
     "TrainModel.files_batch_size": 10,
     "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_data",
     "TrainModel.path_to_eval_data": "/subgoal_chess_data/cllp_eval",
-
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-
     "GlobalParamsHandler.out_dir": f"/leela_models/cllp/medium_model/{date.today()}/{random.randint(0, 100000)}",
     "GlobalParamsHandler.path_type": "raw_path",
     # "GlobalParamsHandler.path_format": ['learning_rate'],
-
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 160,
     "BartConfig.encoder_layers": 8,
@@ -31,7 +27,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 2048,
     "BartConfig.d_model": 512,
     "BartConfig.dropout": 0.0,
-
     "TrainingArguments.max_steps": 60000,
     "TrainingArguments.per_device_train_batch_size": batch_size[MACHINE],
     "TrainingArguments.per_device_eval_batch_size": batch_size[MACHINE],
@@ -41,7 +36,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 2e-4,
-
     "use_neptune": True,
 }
 

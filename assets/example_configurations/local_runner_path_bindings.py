@@ -1,4 +1,4 @@
-#Here is an example of how to set up a local runner path bindings configuration.
+# Here is an example of how to set up a local runner path bindings configuration.
 
 LOCAL_PATH_BINDING_EXAMPLE = {
     "/leela_generator_data": "/home/tomasz/Research/subgoal_chess_data/generator_leela_datasets",

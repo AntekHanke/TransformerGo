@@ -6,10 +6,8 @@ base_config = {
     "TrainModel.paths_provider_cls": "@data.TrainCLLPOnPGNPathsProvider",
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-
     "TrainCLLPOnPGNPathsProvider.pgn_path": "/chess_data/pgn/database.pgn",
     "TrainCLLPOnPGNPathsProvider.save_models_to": "/leela_models/cllp/v0/small",
-
     "ChessCLLPGamesDataGenerator.max_k": 6,
     "ChessCLLPGamesDataGenerator.pgn_file": "/chess_data/pgn/database.pgn",
     "ChessCLLPGamesDataGenerator.chess_filter": "@filters.NoFilter",
@@ -17,8 +15,6 @@ base_config = {
     "ChessCLLPGamesDataGenerator.n_data": 10**8,
     "ChessCLLPGamesDataGenerator.log_samples_limit": 100,
     "ChessCLLPGamesDataGenerator.p_log_sample": 0.01,
-
-
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
     "BartConfig.encoder_layers": 4,
@@ -29,7 +25,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 1024,
     "BartConfig.d_model": 256,
     "BartConfig.dropout": 0.1,
-
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 512,
     "TrainingArguments.per_device_eval_batch_size": 512,
@@ -39,7 +34,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 0.0002,
-
     "use_neptune": True,
 }
 

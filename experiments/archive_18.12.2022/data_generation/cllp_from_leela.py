@@ -6,7 +6,6 @@ base_config = {
     "PandasCLLPDataGenerator.data_path": "/leela_generator_data",
     "PandasCLLPDataGenerator.save_final_df_path": "/leela_cllp_data/cllp_one_moves_test.pkl",
     "PandasCLLPDataGenerator.use_one_move": True,
-
     "use_neptune": True,
 }
 

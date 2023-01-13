@@ -15,5 +15,5 @@ for _ in range(2):
     subgoals = g.generate_subgoals(input_b, 4)
     print(f"Time for generation: {time.time() - time_s}")
 
-fig = immutable_boards_to_img([input_b] + subgoals, ['input'] + [f"subgoal {i}" for i in range(len(subgoals))])
+fig = immutable_boards_to_img([input_b] + subgoals, ["input"] + [f"subgoal {i}" for i in range(len(subgoals))])
 plt.show()

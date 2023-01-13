@@ -51,9 +51,10 @@ class StatisticsDatasetCreator(ChessGamesDataGenerator):
 
             if len(self.games_to_eval) % 100 == 0 and len(self.games_to_eval) > 0:
                 log_value("stats_data_generation", n_iterations, len(self.games_to_eval))
-                log_value("stats_data_progress", n_iterations, len(self.games_to_eval)/self.n_games)
+                log_value("stats_data_progress", n_iterations, len(self.games_to_eval) / self.n_games)
 
-        print(f'Finished creating {len(self.games_to_eval)} games for evaluation.')
+        print(f"Finished creating {len(self.games_to_eval)} games for evaluation.")
+
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         raise NotImplementedError
 

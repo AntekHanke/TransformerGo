@@ -258,11 +258,18 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
     def log_progress(self, n_iterations: int) -> None:
         if n_iterations % self.log_stats_after_n == 0:
-            self.size_of_computed_dataset += len(self.eval_data_queue) + len(self.train_data_queue)
             log_value(f"Train dataset points in batch {self.save_data_every}", n_iterations, len(self.train_data_queue))
             log_value(f"Eval dataset points in batch {self.save_data_every}", n_iterations, len(self.eval_data_queue))
             log_value("Dataset games", n_iterations, self.n_games)
-            log_value("Dataset size", n_iterations, self.size_of_computed_dataset)
+            if n_iterations % self.save_data_every != 0:
+                log_value(
+                    "Dataset size",
+                    n_iterations,
+                    self.size_of_computed_dataset + len(self.eval_data_queue) + len(self.train_data_queue),
+                )
+            else:
+                self.size_of_computed_dataset += len(self.eval_data_queue) + len(self.train_data_queue)
+                log_value("Dataset size", n_iterations, self.size_of_computed_dataset)
 
 
 class PolicyGamesDataGenerator(ChessGamesDataGenerator):
@@ -285,11 +292,12 @@ class PolicyGamesDataGenerator(ChessGamesDataGenerator):
 
 
 class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
-    def __init__(self, k, *args, **kwargs):
+    def __init__(self, k, number_of_datapoint_from_one_game, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.save_data_path = self.save_data_path + "subgoals_k=" + str(k) + "/"
         self.k = k
         self.prob_selector = prob_table_for_diff_n((5, 500))
+        self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game
 
     def game_to_datapoints_all(self, one_game_data: OneGameData, current_dataset: List[Dict[str, List[int]]]) -> None:
         game_length = len(one_game_data.transitions)
@@ -314,12 +322,7 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             }
             self.log_sample(sample, one_game_data.metadata)
 
-    def game_to_datapoints(
-        self,
-        one_game_data: OneGameData,
-        current_dataset: List[Dict[str, List[int]]],
-        number_of_datapoint_from_one_game: Optional[int] = None,
-    ) -> None:
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: List[Dict[str, List[int]]]) -> None:
 
         # TODO: Here You can create chess endings: TO
         game_length: int = len(one_game_data.transitions)
@@ -331,10 +334,10 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
                 p: np.ndarray = prob_select_function(game_length)
 
             assert (
-                number_of_datapoint_from_one_game is not None
+                self.number_of_datapoint_from_one_game is not None
             ), "Please select number of datapoints frome game. Must be integer."
             selected_datapoints = np.random.choice(
-                list(range(game_length)), size=number_of_datapoint_from_one_game, p=p
+                list(range(game_length)), size=self.number_of_datapoint_from_one_game, p=p
             )
 
             for key in selected_datapoints:

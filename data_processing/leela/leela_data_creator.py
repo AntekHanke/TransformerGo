@@ -23,17 +23,14 @@ class LeelaTreesGenerator:
     """
 
     def __init__(
-            self,
-            path_to_chess_dataset: str,
-            leela_parms: List[str],
-            number_of_searching_nodes: int = 1000
+        self, path_to_chess_dataset: str, leela_parms: List[str], number_of_searching_nodes: int = 1000
     ) -> None:
         self.path_to_chess_dataset = path_to_chess_dataset
         self.leela_parms = leela_parms
         self.number_of_searching_nodes = number_of_searching_nodes
 
     def chess_data_generator(self):
-        with open(self.path_to_chess_dataset, 'r') as data:
+        with open(self.path_to_chess_dataset, "r") as data:
             chess_database: TextIO = data
 
             while True:
@@ -81,21 +78,20 @@ class LeelaTreesGenerator:
 
     def generate_and_save_tress_by_leela(self) -> None:
         n_board: int = 0
-        with open('leela/trees_of_leela/all_trees.txt', 'w') as leela_tress:
+        with open("leela/trees_of_leela/all_trees.txt", "w") as leela_tress:
 
             for game in self.chess_data_generator():
                 board: str = self.random_chess_board(game)
                 self.play(input_board=board)
 
-                shutil.move('tree.gml',
-                            'leela/trees_of_leela/tree.gml')
+                shutil.move("tree.gml", "leela/trees_of_leela/tree.gml")
 
-                with open('leela/trees_of_leela/tree.gml', 'r') as curent_tree:
+                with open("leela/trees_of_leela/tree.gml", "r") as curent_tree:
                     leela_tress.write(board)
-                    leela_tress.write('\n')
+                    leela_tress.write("\n")
                     for line in curent_tree:
                         leela_tress.write(line)
-                    leela_tress.write('\n')
+                    leela_tress.write("\n")
                 n_board += 1
-                log_value('evaluated board', n_board, n_board)
-                os.remove('leela/trees_of_leela/tree.gml')
+                log_value("evaluated board", n_board, n_board)
+                os.remove("leela/trees_of_leela/tree.gml")

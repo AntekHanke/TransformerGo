@@ -3,7 +3,6 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.CreatePGNDataset",
     "CreatePGNDataset.chess_database_cls": "@data.ChessCLLPGamesDataGenerator",
-
     "ChessCLLPGamesDataGenerator.max_k": 6,
     "ChessCLLPGamesDataGenerator.pgn_file": "/chess_data/pgn/database.pgn",
     "ChessCLLPGamesDataGenerator.chess_filter": "@filters.NoFilter",
@@ -11,10 +10,8 @@ base_config = {
     "ChessCLLPGamesDataGenerator.n_data": 10**4,
     "ChessCLLPGamesDataGenerator.log_samples_limit": 100,
     "ChessCLLPGamesDataGenerator.p_log_sample": 0.01,
-
     "ChessCLLPGamesDataGenerator.save_data_path": "/chess_data/pgn/train_data/cllp/",
     "ChessCLLPGamesDataGenerator.save_data_every": 100,
-
     "use_neptune": True,
 }
 

@@ -4,8 +4,6 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.LeelaPrepareAndSaveData",
     "LeelaPrepareAndSaveData.pandas_data_prepare_cls": "@data.CLLPPrepareAndSaveData",
-
-
     "CLLPPrepareAndSaveData.data_path": "/leela_generator_data_train",
     "CLLPPrepareAndSaveData.out_path": "/save_data/cllp_bigger",
     "CLLPPrepareAndSaveData.files_batch_size": 60,

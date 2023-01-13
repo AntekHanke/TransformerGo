@@ -19,7 +19,7 @@ engine = SubgoalWithCLLPStockfish(
     stockfish_depth=20,
     log_dir=log_dir,
     debug_mode=True,
-    replace_legall_move_with_random=False
+    replace_legall_move_with_random=False,
 )
 
 if __name__ == "__main__":

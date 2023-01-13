@@ -21,7 +21,7 @@ def prob_select_function(number_of_samples: int) -> np.ndarray:
                 prob = np.append(prob, top)
         prob = (1.0 / sum(prob)) * prob
     else:
-        prob = np.array([1.0/number_of_samples for _ in range(number_of_samples)])
+        prob = np.array([1.0 / number_of_samples for _ in range(number_of_samples)])
     return prob
 
 

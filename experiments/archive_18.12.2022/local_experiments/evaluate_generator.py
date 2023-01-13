@@ -12,7 +12,8 @@ b.push(chess.Move.from_uci("g1h3"))
 subgoal = x.generate_subgoals(ImmutableBoard.from_board(b))
 
 import matplotlib.pyplot as plt
-fig = immutable_boards_to_img([ImmutableBoard.from_board(b), subgoal], ['input', 'target'])
+
+fig = immutable_boards_to_img([ImmutableBoard.from_board(b), subgoal], ["input", "target"])
 
 plt.show()
 # print(subgoal)

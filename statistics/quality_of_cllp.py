@@ -34,7 +34,6 @@ def check_cllp_quality(cllp_checkpoint, data_path, examples_per_k=100):
                 examples[key].append(sample)
             break
 
-
     cllp = CLLP(cllp_checkpoint, num_return_sequences=8)
     for k, samples in examples.items():
         if k != 3:
@@ -64,12 +63,13 @@ def check_cllp_quality(cllp_checkpoint, data_path, examples_per_k=100):
                 except:
                     print("not good")
 
-        print(f"K: {k}, success: {identical}, trials: {trials}, success rate: {identical / trials} | good: {good}, good rate: {good / trials}")
+        print(
+            f"K: {k}, success: {identical}, trials: {trials}, success rate: {identical / trials} | good: {good}, good rate: {good / trials}"
+        )
 
 
 check_cllp_quality(
     "/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium",
     "/home/tomasz/Research/subgoal_chess_data/cllp_leela_datasets/prepare",
-    100
+    100,
 )
-

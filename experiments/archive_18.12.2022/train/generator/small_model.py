@@ -4,16 +4,13 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.chess_database_cls": "@data.PandasSubgoalDataProvider",
-
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-
     "GlobalParamsHandler.k": 3,
     "GlobalParamsHandler.out_dir": "/leela_models/v1/generator/small_model",
     "GlobalParamsHandler.data_location": "/leela_generator_data/full_dataset",
     "GlobalParamsHandler.data_type": "generator",
     "GlobalParamsHandler.path_format": ["k", "learning_rate"],
-
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
     "BartConfig.encoder_layers": 4,
@@ -24,7 +21,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 1024,
     "BartConfig.d_model": 256,
     "BartConfig.dropout": 0.1,
-
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 2048,
     "TrainingArguments.per_device_eval_batch_size": 2048,
@@ -34,7 +30,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 0.0002,
-
     "use_neptune": True,
 }
 

@@ -15,13 +15,12 @@ if USE_NEPTUNE:
         name="weak pgn_policy self play",
         project=NEPTUNE_PROJECT,
         api_token=NEPTUNE_API_TOKEN,
-        source_files=source_files_register.get()
+        source_files=source_files_register.get(),
     )
 
 
 board = chess.Board()
 # weak_policy = Policy("/home/tomek/Research/subgoal_chess_data/fast_iter/policy_model")
-
 
 
 move_number = 1
@@ -41,11 +40,10 @@ while not board.is_game_over():
     # print(f"Policy move: {policy_move}")
 
     # print(f"Move: {move}")
-    print('************************')
+    print("************************")
     # if USE_NEPTUNE:
     #     image = boards_to_img([board], [f"Move: {move}"])
     #     run["gameplay"].log(image)
     #
     # # print(f"Board: {board} \n move: {move}")
     # board.push(move)
-

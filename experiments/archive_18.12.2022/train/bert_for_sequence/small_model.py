@@ -23,7 +23,7 @@ base_config = {
     "BertConfig.attention_probs_dropout_prob": 0.1,
     "BertConfig.max_position_embeddings": 128,
     "BertConfig.layer_norm_eps": 1e-12,
-    "BertConfig.position_embedding_type": "absolute", #learnable
+    "BertConfig.position_embedding_type": "absolute",  # learnable
     "BertConfig.classifier_dropout": 0.1,
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 128,
