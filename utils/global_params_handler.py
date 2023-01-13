@@ -43,13 +43,9 @@ class GlobalParamsHandler:
 
             for folder_name in os.listdir(self.data_location):
                 if folder_name == "subgoals_data_train":
-                    path_to_train_dataset = (
-                        self.data_location + "/" + folder_name + "/" + "subgoals_k=" + str(self.k)
-                    )
+                    path_to_train_dataset = self.data_location + "/" + folder_name + "/" + "subgoals_k=" + str(self.k)
                 elif folder_name == "subgoals_data_eval":
-                    path_to_eval_dataset = (
-                        self.data_location + "/" + folder_name + "/" + "subgoals_k=" + str(self.k)
-                    )
+                    path_to_eval_dataset = self.data_location + "/" + folder_name + "/" + "subgoals_k=" + str(self.k)
                 else:
                     continue
 
@@ -59,7 +55,7 @@ class GlobalParamsHandler:
             return path_to_train_dataset, path_to_eval_dataset
 
         elif self.path_type == "policy":
-            #TODO return paths for both train and eval
+            # TODO return paths for both train and eval
             return self.data_location
 
     def get_out_dir(self):

@@ -11,8 +11,8 @@ generator = BasicChessSubgoalGenerator("/generator_k_2/generator_model")
 source_files_register.register(__file__)
 
 neptune_logger = NeptuneLogger(
-    name=f"evaluate generator", tags=["generator", "eval"], params={}, properties={}
-, git_info=None)
+    name=f"evaluate generator", tags=["generator", "eval"], params={}, properties={}, git_info=None
+)
 
 register_logger(neptune_logger)
 

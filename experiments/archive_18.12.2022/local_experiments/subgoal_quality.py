@@ -7,8 +7,7 @@ quality_data_generator = SubgoalQualityDatabaseGenerator(
     n_subgoals=6,
     n_games=500,
     pgn_file="/chess_data_aa",
-    subgoal_generator=BasicChessSubgoalGenerator(
-        "/generator_k_2/generator_model"),
+    subgoal_generator=BasicChessSubgoalGenerator("/generator_k_2/generator_model"),
     take_transition_p=0.1,
     n_eval_datapoints=75,
     check_exhaustive_search=True,

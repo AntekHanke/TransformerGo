@@ -149,9 +149,8 @@ class CLLPPrepareAndSaveData(PandasPrepareAndSaveData):
             random.shuffle(self.file_names_queue[k])
 
         assert self.files_limit is not None, "files_limit must be set for CLLP"
-        for _ in range(self.files_limit//6):
+        for _ in range(self.files_limit // 6):
             self.files_names += [self.file_names_queue[k].pop() for k in range(1, MAX_MOVES_FOR_CLLP + 1)]
-
 
     def process_df(self, df: pd.DataFrame):
         df = df[["input_ids", "labels", "moves"]]

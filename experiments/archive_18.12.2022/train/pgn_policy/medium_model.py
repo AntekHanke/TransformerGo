@@ -5,23 +5,17 @@ VERSION = "3"
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.chess_database_cls": "@data.PolicyGamesDataGenerator",
-
     "PolicyGamesDataGenerator.pgn_file": "/pgn/solved_games.pgn",
     "PolicyGamesDataGenerator.chess_filter": "@filters.NoFilter",
     "PolicyGamesDataGenerator.n_data": 10**7,
     "PolicyGamesDataGenerator.log_samples_limit": 0.1,
     "PolicyGamesDataGenerator.p_sample": 0.1,
-
-
     # "ResultFilter.winner_or_looser": "winner",
-
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-
     "GlobalParamsHandler.out_dir": f"/leela_models/v{VERSION}/policy/medium_model",
     "GlobalParamsHandler.learning_rate": 0.0003,
     "GlobalParamsHandler.path_format": ["learning_rate"],
-
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 256,
     "BartConfig.encoder_layers": 8,
@@ -32,7 +26,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 2048,
     "BartConfig.d_model": 512,
     "BartConfig.dropout": 0.1,
-
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 512,
     "TrainingArguments.per_device_eval_batch_size": 512,
@@ -42,7 +35,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 0.0003,
-
     "use_neptune": True,
 }
 

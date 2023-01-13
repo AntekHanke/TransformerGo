@@ -146,12 +146,12 @@ from utils.global_params_handler import GlobalParamsHandler
 
 class IterableDataLoader(IterableDataset):
     def __init__(
-            self,
-            data_path: Union[str, List[str]],
-            files_batch_size: int = 10,
-            p_sample: Optional[float] = None,
-            cycle: bool = True,
-            database: str = 'leela'
+        self,
+        data_path: Union[str, List[str]],
+        files_batch_size: int = 10,
+        p_sample: Optional[float] = None,
+        cycle: bool = True,
+        database: str = "leela",
     ) -> None:
         self.data_path = data_path
         self.files_batch_size = files_batch_size
@@ -267,13 +267,13 @@ class IterableCLLPDataLoader(IterableDataLoader):
             moves_encoded = [ChessTokenizer.encode(move)[0] for move in datapoint["moves"]]
             if len(moves_encoded) < MAX_MOVES_FOR_CLLP:
                 moves_encoded += [ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (
-                        MAX_MOVES_FOR_CLLP - len(moves_encoded)
+                    MAX_MOVES_FOR_CLLP - len(moves_encoded)
                 )
             return {
                 "input_ids": datapoint["input_ids"]
-                             + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
-                             + datapoint["labels"]
-                             + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
+                + datapoint["labels"]
+                + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                 "labels": moves_encoded,
             }
 

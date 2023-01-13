@@ -7,7 +7,7 @@ from mrunner_utils import mrunner_client
 from mrunner_utils.mrunner_client import get_configuration
 from runner import run
 
-import configures.gin_configurable_classes  #keep this import
+import configures.gin_configurable_classes  # keep this import
 
 
 def local_run(experiment_path: str, use_neptune: bool, local_path_bindings: Optional[dict] = None):

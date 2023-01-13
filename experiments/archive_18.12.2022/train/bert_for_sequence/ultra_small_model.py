@@ -25,7 +25,6 @@ base_config = {
     "BertConfig.layer_norm_eps": 1e-12,
     "BertConfig.position_embedding_type": "absolute",
     "BertConfig.classifier_dropout": 0.1,
-
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 1024,
     "TrainingArguments.per_device_eval_batch_size": 1024,

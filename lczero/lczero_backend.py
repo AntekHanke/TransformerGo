@@ -4,6 +4,7 @@ from lczero.backends import Weights, Backend, GameState
 global lczero_backend
 lczero_backend = None
 
+
 class LCZeroBackend:
     def __init__(self):
         self.weights = Weights()

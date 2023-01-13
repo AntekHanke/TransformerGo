@@ -225,7 +225,7 @@ params_grid = {
         "/home/plgrid/plggracjangoral/data/chess_database/splited_solved_games/xhd",
         "/home/plgrid/plggracjangoral/data/chess_database/splited_solved_games/xhj",
         "/home/plgrid/plggracjangoral/data/chess_database/splited_solved_games/xhp",
-        "/home/plgrid/plggracjangoral/data/chess_database/splited_solved_games/xhv"
+        "/home/plgrid/plggracjangoral/data/chess_database/splited_solved_games/xhv",
     ],
 }
 

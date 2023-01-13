@@ -11,7 +11,8 @@ def generate_quality_database():
         n_games=20,
         pgn_file="/home/tomek/Research/subgoal_chess_data/chess_data_aa",
         subgoal_generator=BasicChessSubgoalGenerator(
-            f"/home/tomek/Research/subgoal_chess_data/eagle_model/k_2/checkpoint-11500"),
+            f"/home/tomek/Research/subgoal_chess_data/eagle_model/k_2/checkpoint-11500"
+        ),
         take_transition_p=0.1,
         n_eval_datapoints=8,
         top_n_actions_max=3,
@@ -20,5 +21,6 @@ def generate_quality_database():
 
     df = quality_data_generator.execute()
     df.to_csv(f"/home/tomek/Research/subgoal_chess_data/stats/subgoal_quality_database_k_{k}.csv", index=False)
+
 
 generate_quality_database()

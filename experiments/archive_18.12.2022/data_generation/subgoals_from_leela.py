@@ -5,7 +5,7 @@ base_config = {
     "LeelaDatasetGenerator.mcts_gen_class": "@data.SubgoalMCGamesDataGenerator",
     "SubgoalMCGamesDataGenerator.k": 1,
     "SubgoalMCGamesDataGenerator.n_subgoals": 1,
-    "SubgoalMCGamesDataGenerator.total_datapoints": 10 ** 9,
+    "SubgoalMCGamesDataGenerator.total_datapoints": 10**9,
     "SubgoalMCGamesDataGenerator.log_samples_limit": 50,
     "SubgoalMCGamesDataGenerator.input_data_dir": "/leela_data",
     "SubgoalMCGamesDataGenerator.save_data_path": "/save_data/policy_dataset",

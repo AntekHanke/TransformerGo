@@ -334,7 +334,7 @@ contexts:
     account: plgrlresearch
     backend_type: slurm
     cmd_type: sbatch
-    time: 59
+    time: 1000
     cpu: 1
     mem: 40G
     modules_to_load:

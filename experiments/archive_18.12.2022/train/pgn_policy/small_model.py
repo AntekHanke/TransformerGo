@@ -4,22 +4,16 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.chess_database_cls": "@data.PolicyGamesDataGenerator",
-
     "PolicyGamesDataGenerator.pgn_file": "/pgn/solved_games.pgn",
     "PolicyGamesDataGenerator.chess_filter": "@filters.NoFilter",
     "PolicyGamesDataGenerator.n_data": 10**4,
     "PolicyGamesDataGenerator.log_samples_limit": 0.1,
-
-
     # "ResultFilter.winner_or_looser": "winner",
-
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-
     "GlobalParamsHandler.out_dir": "/leela_models/v1/pgn_policy/small_model",
     # "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
     "GlobalParamsHandler.path_format": ["learning_rate"],
-
     "BartConfig.vocab_size": 512,
     "BartConfig.max_position_embeddings": 128,
     "BartConfig.encoder_layers": 12,
@@ -30,7 +24,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 4096,
     "BartConfig.d_model": 1024,
     "BartConfig.dropout": 0.01,
-
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 128,
     "TrainingArguments.per_device_eval_batch_size": 128,
@@ -40,7 +33,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 0.0003,
-
     "use_neptune": True,
 }
 

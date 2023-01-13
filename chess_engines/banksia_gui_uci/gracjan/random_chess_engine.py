@@ -1,6 +1,7 @@
 #!/home/gracjan/anaconda3/envs/subgoal_chess/bin/python3 -u
 import sys
 import os
+
 sys.path.append("/home/gracjan/subgoal/subgoal_search_chess-uci_engines")
 os.environ["SUBGOAL_PROJECT_ROOT"] = "/home/gracjan/subgoal/subgoal_search_chess-uci_engines"
 

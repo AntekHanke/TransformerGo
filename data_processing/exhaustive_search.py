@@ -54,7 +54,7 @@ class ExhaustiveSearch:
             boards_samples.append(random.sample(list(self.dist_to_states[i]), 1)[0])
         return immutable_boards_to_img(boards_samples, ["dist_" + str(i) for i in range(self.depth + 1)])
 
-    def check_subgoals(self, subgoals : List[ImmutableBoard]) -> dict:
+    def check_subgoals(self, subgoals: List[ImmutableBoard]) -> dict:
         data = {"accessible": [], "distance": []}
         for subgoal in subgoals:
             if subgoal.board in self.boards_to_dist:

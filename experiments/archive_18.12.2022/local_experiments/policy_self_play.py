@@ -15,7 +15,7 @@ if USE_NEPTUNE:
         name="weak pgn_policy self play",
         project=NEPTUNE_PROJECT,
         api_token=NEPTUNE_API_TOKEN,
-        source_files=source_files_register.get()
+        source_files=source_files_register.get(),
     )
 
 
@@ -28,7 +28,7 @@ while not board.is_game_over():
     print(f"Board to generate move: \n {board}")
     move = chess_policy.get_best_move(ImmutableBoard.from_board(board))
     print(f"Move: {move}")
-    print('************************')
+    print("************************")
 
     if USE_NEPTUNE:
         image = immutable_boards_to_img([ImmutableBoard.from_board(board)], [f"Move {move_number}: {move}"])
@@ -36,4 +36,3 @@ while not board.is_game_over():
 
     print(f"Board: {board} \n move: {move}")
     board.push(move)
-

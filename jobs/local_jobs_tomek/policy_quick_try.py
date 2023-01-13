@@ -12,4 +12,3 @@ def run_policy(checkpoint_path):
 
 
 run_policy("/home/tomasz/Research/subgoal_chess_data/local_leela_models/policy/ares_19.12")
-

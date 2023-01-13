@@ -1,27 +1,22 @@
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-#Lizard: shallower or wider
+# Lizard: shallower or wider
 
 VERSION = "3"
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.iterable_dataset_class": "@data.IterableSubgoalDataLoader",
-
     "PandasPolicyDataProvider.data_path": "/leela_generator_data/prom_full_dataset_k=4.pkl",
     "PandasPolicyDataProvider.eval_datapoints": 64,
-
     "TrainModel.path_to_training_data": "/leela_generator_data/train",
     "TrainModel.path_to_eval_data": "/leela_generator_data/eval",
-
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-
     "GlobalParamsHandler.out_dir": "/leela_models/v1/subgoals_k=1/ultra_small_model",
     # "GlobalParamsHandler.data_location": "/leela_data_processed/full_dataset",
     "GlobalParamsHandler.learning_rate": 0.0003,
     "GlobalParamsHandler.path_format": ["learning_rate"],
-
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 128,
     "BartConfig.encoder_layers": 2,
@@ -32,7 +27,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 128,
     "BartConfig.d_model": 32,
     "BartConfig.dropout": 0.05,
-
     "TrainingArguments.num_train_epochs": 1,
     "TrainingArguments.per_device_train_batch_size": 2,
     "TrainingArguments.per_device_eval_batch_size": 2,
@@ -42,7 +36,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 5,
     "TrainingArguments.learning_rate": 0.0002,
-
     "use_neptune": True,
 }
 

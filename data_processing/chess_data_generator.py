@@ -258,11 +258,18 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
     def log_progress(self, n_iterations: int) -> None:
         if n_iterations % self.log_stats_after_n == 0:
-            self.size_of_computed_dataset += len(self.eval_data_queue) + len(self.train_data_queue)
             log_value(f"Train dataset points in batch {self.save_data_every}", n_iterations, len(self.train_data_queue))
             log_value(f"Eval dataset points in batch {self.save_data_every}", n_iterations, len(self.eval_data_queue))
             log_value("Dataset games", n_iterations, self.n_games)
-            log_value("Dataset size", n_iterations, self.size_of_computed_dataset)
+            if n_iterations % self.save_data_every != 0:
+                log_value(
+                    "Dataset size",
+                    n_iterations,
+                    self.size_of_computed_dataset + len(self.eval_data_queue) + len(self.train_data_queue),
+                )
+            else:
+                self.size_of_computed_dataset += len(self.eval_data_queue) + len(self.train_data_queue)
+                log_value("Dataset size", n_iterations, self.size_of_computed_dataset)
 
 
 class PolicyGamesDataGenerator(ChessGamesDataGenerator):
@@ -315,11 +322,7 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             }
             self.log_sample(sample, one_game_data.metadata)
 
-    def game_to_datapoints(
-        self,
-        one_game_data: OneGameData,
-        current_dataset: List[Dict[str, List[int]]]
-    ) -> None:
+    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: List[Dict[str, List[int]]]) -> None:
 
         # TODO: Here You can create chess endings: TO
         game_length: int = len(one_game_data.transitions)
