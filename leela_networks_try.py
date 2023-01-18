@@ -1,6 +1,6 @@
 import time
 
-from lczero.backends import Weights, Backend, GameState
+from lczero_backend_local.backends import Weights, Backend, GameState
 
 w = Weights()
 print(w.filters())

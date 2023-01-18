@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any, Optional, List, Type
+from typing import Dict, Any, Optional, List, Type, Union
 
 import chess.pgn
 import random
@@ -12,12 +12,14 @@ from collections import namedtuple
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
+from configures.global_config import MAX_GAME_LENGTH
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
 from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
 from data_processing.probability_subgoal_selector_tools import prob_table_for_diff_n, prob_select_function
+from policy.chess_policy import LCZeroPolicy
 
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
@@ -125,11 +127,13 @@ class ChessGamesDataGenerator(ChessDataProvider):
         p_sample: Optional[float] = None,
         n_data: Optional[int] = None,
         train_eval_split: float = 0.95,
+        do_sample_finish: bool = True,
         log_samples_limit: Optional[int] = None,
         log_stats_after_n: int = 1000,
         p_log_sample: float = 0.01,
         only_eval: bool = False,
         save_data_path: Optional[str] = None,
+        save_filtred_data: Optional[str] = None,
         save_data_every: int = 1000,
     ):
         self.size_of_computed_dataset: int = 0
@@ -139,15 +143,16 @@ class ChessGamesDataGenerator(ChessDataProvider):
         assert chess_filter is not None, "Chess filter must be specified"
         self.chess_filter = chess_filter()
 
-        print(1000 * "=")
+        print(100 * "=")
         print(
             f"Name of used filter: {type(self.chess_filter)}." f" Atributs of used filter: {self.chess_filter.__dict__}"
         )
-        print(1000 * "=")
+        print(100 * "=")
 
         self.p_sample = p_sample
         self.n_data = n_data
         self.train_eval_split = train_eval_split
+        self.do_sample_finish = do_sample_finish
         self.log_samples_limit = log_samples_limit
         self.log_stats_after_n = log_stats_after_n
         self.p_log_sample = p_log_sample
@@ -160,7 +165,10 @@ class ChessGamesDataGenerator(ChessDataProvider):
         self.data_constructed: bool = False
 
         self.save_data_path = save_data_path
+        self.save_filtred_data = save_filtred_data
         self.save_data_every = save_data_every
+
+        self.lc_zero_policy = LCZeroPolicy()
 
     def next_game_to_raw_data(self) -> Optional[OneGameData]:
         """
@@ -171,6 +179,18 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
         current_game: chess.pgn.Game = chess.pgn.read_game(self.pgn_database)
 
+        #TODO" save games with endings
+        if self.save_filtred_data is not None:
+            print(f"Filtred data will be saved in: {self.save_filtred_data}")
+            if isinstance(self.chess_filter, ELOFilter):
+                self.save_filtred_data = self.save_filtred_data + "/" + f"_{self.chess_filter.elo_threshold}.pgn"
+            else:
+                self.save_filtred_data = self.save_filtred_data + "/" + f"_{type(self.chess_filter)}.pgn"
+
+            with open(self.save_filtred_data, "a") as f:
+                print(current_game, file=f)
+                print("\n", file=f)
+
         if current_game is None:  # Condition is met if there are no more games in the dataset.
             return None
         else:
@@ -178,16 +198,58 @@ class ChessGamesDataGenerator(ChessDataProvider):
             transitions: List[Transition] = []
 
             if self.chess_filter.use_game(chess_metadata):
-                board = chess.Board()
-                for move in enumerate(current_game.mainline_moves()):
-                    move_num, chess_move = move
-                    try:
-                        transitions.append(Transition(ImmutableBoard.from_board(board), chess_move, move_num))
-                        board.push(chess_move)
-                    except:
-                        break
+                transitions, final_pgn_board, is_game_over = self.moves_to_transitions(
+                    initial_immutable_board=None, moves=current_game.mainline_moves()
+                )
+
+                if not is_game_over:
+                    lc_zero_transitions, result = self.finish_game(
+                        pgn_final_board=final_pgn_board, move_num=len(transitions)
+                    )
+
+                    transitions.extend(lc_zero_transitions)
+                    chess_metadata.Result = result
 
             return OneGameData(chess_metadata, transitions)
+
+    def moves_to_transitions(
+        self, initial_immutable_board: Optional[ImmutableBoard], moves
+    ) -> Tuple[List[Transition], ImmutableBoard, bool]:
+        if initial_immutable_board is None:
+            board = chess.Board()
+        else:
+            board = initial_immutable_board.to_board()
+
+        transitions: List[Transition] = []
+        for move in enumerate(moves):
+            move_num, chess_move = move
+            try:
+                transitions.append(Transition(ImmutableBoard.from_board(board), chess_move, move_num))
+                board.push(chess_move)
+            except:
+                break
+        return transitions, ImmutableBoard.from_board(board), board.is_game_over()
+
+    def finish_game(self, pgn_final_board: ImmutableBoard, move_num: int) -> Tuple[List[Transition], str]:
+        """Adds transitions to the end of the game."""
+        lc_zero_transitions = []
+        board = pgn_final_board.to_board()
+        while len(lc_zero_transitions) < MAX_GAME_LENGTH:
+            if self.do_sample_finish:
+                move = self.lc_zero_policy.sample_move(ImmutableBoard.from_board(board))
+            else:
+                move = self.lc_zero_policy.get_best_moves(ImmutableBoard.from_board(board), 1)[0]
+            lc_zero_transitions.append(
+                Transition(ImmutableBoard.from_board(board), move, move_num + len(lc_zero_transitions))
+            )
+            board.push(move)
+            if board.is_game_over():
+                lc_zero_transitions.append(
+                    Transition(ImmutableBoard.from_board(board), None, move_num + len(lc_zero_transitions))
+                )
+                break
+
+        return lc_zero_transitions, board.result()
 
     def create_data(self) -> None:
         try:
@@ -203,7 +265,6 @@ class ChessGamesDataGenerator(ChessDataProvider):
             if not self.only_eval or train_eval == "eval":
                 current_dataset = self.select_dataset(train_eval)
                 game: Optional[OneGameData] = self.next_game_to_raw_data()
-
                 if game is None:
                     break
                 else:
@@ -322,7 +383,9 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             }
             self.log_sample(sample, one_game_data.metadata)
 
-    def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: List[Dict[str, List[int]]]) -> None:
+    def game_to_datapoints(
+        self, one_game_data: OneGameData, current_dataset: List[Dict[str, Union[List[int], str, int]]]
+    ) -> None:
 
         # TODO: Here You can create chess endings: TO
         game_length: int = len(one_game_data.transitions)
@@ -344,12 +407,35 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
                 input_board: ImmutableBoard = one_game_data.transitions[key].immutable_board
                 target_board_num = min(game_length - 1, key + self.k)
                 target_board: ImmutableBoard = one_game_data.transitions[target_board_num].immutable_board
-
-                current_dataset[len(current_dataset)] = {
+                position: int = len(current_dataset)
+                current_dataset[position] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
                     "labels": ChessTokenizer.encode_immutable_board(target_board),
                 }
+                all_moves_from_start: Dict[str, List[int]] = {
+                    "all_moves_from_start": [
+                        ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0] for i in range(key)
+                    ]
+                }
+                moves_between_input_and_target: Dict[str, List[int]] = {
+                    "moves_between_input_and_target": [
+                        ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
+                        for i in range(key, target_board_num)
+                    ]
+                }
+
+                boards_stats: Dict[str, str] = {"Result": "", "WhiteElo": "", "BlackElo": "", "Opening": ""}
+
+                for stat in one_game_data.metadata.__dict__:
+                    if stat in boards_stats:
+                        boards_stats[stat] = one_game_data.metadata.__dict__[stat]
+
+                current_dataset[position].update(all_moves_from_start)
+                current_dataset[position].update(moves_between_input_and_target)
+                current_dataset[position].update(boards_stats)
+                current_dataset[position].update({"move_number_form_start": key})
+                current_dataset[position].update({"game_length": game_length})
 
     def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
         return immutable_boards_to_img(

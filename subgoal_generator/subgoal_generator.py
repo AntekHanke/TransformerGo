@@ -36,5 +36,5 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         for sequence in outputs:
             subgoals.append(ChessTokenizer.decode_board(sequence))
 
-        subgoals = list({subgoal for subgoal in subgoals if subgoal.board != input_board.board})
+        # subgoals = list({subgoal for subgoal in subgoals if subgoal.board != input_board.board})
         return subgoals
