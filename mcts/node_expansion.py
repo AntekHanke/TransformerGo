@@ -39,13 +39,18 @@ class ChessStateExpander:
         return_raw_subgoals=False,
         **subgoal_generation_kwargs,
     ):
-        subgoals = self.subgoal_generator.generate_subgoals(input_immutable_board, **subgoal_generation_kwargs)
-        paths = self.cllp.get_paths_batch(
-            [(input_immutable_board, subgoal) for subgoal in subgoals], cllp_num_beams, cllp_num_return_sequences
+        subgoals = self.subgoal_generator.generate_subgoals(
+            input_immutable_board, **subgoal_generation_kwargs
         )
 
         if return_raw_subgoals:
             return {subgoals[i]: None for i in range(len(subgoals))}
+
+
+        paths = self.cllp.get_paths_batch(
+            [(input_immutable_board, subgoal) for subgoal in subgoals], cllp_num_beams, cllp_num_return_sequences
+        )
+
 
         subgoals_info = {}
         for subgoal, paths_to_subgoal in zip(subgoals, paths):

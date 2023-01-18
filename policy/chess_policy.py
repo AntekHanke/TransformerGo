@@ -9,7 +9,7 @@ from transformers import BartForConditionalGeneration
 from configures.global_config import MAX_NEW_TOKENS_FOR_POLICY
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
-from lczero.lczero_backend import LCZeroBackend, get_lczero_backend
+from lczero_general_backend.lczero_classes import get_lczero_backend
 from utils.chess960_conversion import chess960_to_standard
 
 
@@ -140,3 +140,12 @@ class LCZeroPolicy(ChessPolicy):
                 probs.append(0)
             board.push(move)
         return probs
+
+
+    def sample_move(self, immutable_board: ImmutableBoard) -> chess.Move:
+        print("Sampling move")
+        prob_distribution = self.lczero_backend.get_policy_distribution(immutable_board)
+        moves, probs = zip(*prob_distribution)
+        probs = np.array(probs)/np.sum(probs)
+        move_idx = np.random.choice(list(range(len(moves))), p=probs)
+        return chess.Move.from_uci(moves[move_idx])

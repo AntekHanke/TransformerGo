@@ -4,8 +4,8 @@ contexts:
     backend_type: slurm
     cmd_type: sbatch
     cpu: 2
-    mem: 20G
-    gpu: 1
+    mem: 80G
+    gpu: 4
     nodes: 1
     ntasks: 1
     partition: plgrid-gpu-a100
@@ -16,13 +16,12 @@ contexts:
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/leela_models/:/leela_models
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/save_data
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/subgoal_chess_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/:/main_storage
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/:/leela_generator_data_train
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/eval_data/:/leela_generator_data_eval
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/ubuntu_22.04_full.sif
+                            -B $TMPDIR:/tmp /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_15.01.2023.sif
     slurm_url: plgtodrzygozdz@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/mrunner_scratch
-    time: 20
+    time: 2880
 
   athena_cpu:
     backend_type: slurm

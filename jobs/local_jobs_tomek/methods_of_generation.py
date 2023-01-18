@@ -31,34 +31,42 @@ def print_summary(input_immutable_board, generation_kwargs, k):
     policy_subgoal = ImmutableBoard.from_board(board)
 
     subgoals_info = expander.expand_state(
-        input_immutable_board=b, cllp_num_beams=32, cllp_num_return_sequences=2, **generation_kwargs
+        input_immutable_board=b, cllp_num_beams=32, cllp_num_return_sequences=2, return_raw_subgoals=True,  **generation_kwargs
     )
 
     subgoals = list(subgoals_info.keys())
+
     fig = immutable_boards_to_img(
         [b] + [policy_subgoal] + subgoals,
         ["input", f"policy {[x.uci() for x in policy_moves]}"]
-        + [f"s{i}:{[x.uci() for x in subgoals_info[subgoals[i]]['paths'][0]]}" for i in range(len(subgoals))],
+        + [f"s{i}" for i in range(len(subgoals))],
     )
     fig.show()
 
-    def show_subgoal_info(one_subgoal_info, num):
-        print(
-            f"Subgoal {num}: total_p = {one_subgoal_info['highest_total_probability']:.6f} "
-            f"| min_p = {one_subgoal_info['highest_min_probability']:.6f} "
-            f"| max_p = {one_subgoal_info['highest_max_probability']:.6f} "
-            f"| value = {one_subgoal_info['value']:.6f}"
-            f"| path = {[m.uci() for m in one_subgoal_info['paths'][0]]}"
-            f"| path_p = {one_subgoal_info['path_raw_probabilities'][0]}"
-        )
+    # fig = immutable_boards_to_img(
+    #     [b] + [policy_subgoal] + subgoals,
+    #     ["input", f"policy {[x.uci() for x in policy_moves]}"]
+    #     + [f"s{i}:{[x.uci() for x in subgoals_info[subgoals[i]]['paths'][0]]}" for i in range(len(subgoals))],
+    # )
+    # fig.show()
+
+    # def show_subgoal_info(one_subgoal_info, num):
+    #     print(
+    #         f"Subgoal {num}: total_p = {one_subgoal_info['highest_total_probability']:.6f} "
+    #         f"| min_p = {one_subgoal_info['highest_min_probability']:.6f} "
+    #         f"| max_p = {one_subgoal_info['highest_max_probability']:.6f} "
+    #         f"| value = {one_subgoal_info['value']:.6f}"
+    #         f"| path = {[m.uci() for m in one_subgoal_info['paths'][0]]}"
+    #         f"| path_p = {one_subgoal_info['path_raw_probabilities'][0]}"
+    #     )
 
     print("*****************************************************")
     print(f"Summary correct subgoals: {len(subgoals_info)/generation_kwargs['num_return_sequences']}")
-    print(f"Summary: best total probability = {max([x['highest_total_probability'] for x in subgoals_info.values()])}")
-    print(f"Summary: best min probability = {max([x['highest_min_probability'] for x in subgoals_info.values()])}")
+    # print(f"Summary: best total probability = {max([x['highest_total_probability'] for x in subgoals_info.values()])}")
+    # print(f"Summary: best min probability = {max([x['highest_min_probability'] for x in subgoals_info.values()])}")
 
-    for num, subgoal_info in enumerate(subgoals_info.values()):
-        show_subgoal_info(subgoal_info, num)
+    # for num, subgoal_info in enumerate(subgoals_info.values()):
+    #     show_subgoal_info(subgoal_info, num)
 
 
 MEDIUM_K3 = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/4pgu_medium/k=3"
@@ -66,8 +74,9 @@ MEDIUM_LARGE_K3 = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/g
 MEDIUM_LARGE_K1 = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/generator_athena/k=1"
 # EAGLE_OLD = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/eagle_old_models"
 EAGLE_SMALL = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/eagle_old_models/k=3_small/final_model"
+SMALL = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/small_generator"
 
-generator = BasicChessSubgoalGenerator(MEDIUM_K3)
+generator = BasicChessSubgoalGenerator(SMALL)
 cllp = CLLP("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium")
 policy = LCZeroPolicy()
 value = LCZeroValue()

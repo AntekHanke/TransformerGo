@@ -10,11 +10,12 @@ from data_processing.chess_data_generator import (
     PolicyGamesDataGenerator,
 )
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
-from data_processing.pandas_data_provider import IterableSubgoalDataLoader, IterablePolicyDataLoader
+from data_processing.pandas_data_provider import (
+    IterableSubgoalDataLoader, IterablePolicyDataLoader
+)
 from data_processing.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
 from jobs.create_pgn_dataset import CreatePGNDataset
-
-# from jobs.evaluate_cllp import EvaluateCLLP
+from jobs.debug_job import DebugJob
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
@@ -32,13 +33,13 @@ def configure_classes(classes, module=None) -> None:
 # configure_classes([GlobalParamsHandler], "params")
 configure_classes(
     [
+        DebugJob,
         TrainModel,
         CreatePGNDataset,
         LeelaCCLPDataProcessing,
-        # EvaluateCLLP,
         TrainBertForSequenceModel,
         LeelaParallelDatasetGenerator,
-        LeelaPrepareAndSaveData,
+        LeelaPrepareAndSaveData
     ],
     "jobs",
 )
@@ -53,7 +54,7 @@ configure_classes(
         IterableSubgoalDataLoader,
         IterablePolicyDataLoader,
         PandasPolicyPrepareAndSaveData,
-        CLLPPrepareAndSaveData,
+        CLLPPrepareAndSaveData
     ],
     "data",
 )
