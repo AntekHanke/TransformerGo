@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any, Optional, List, Type, Union
+from typing import Dict, Any, Optional, List, Type, Union, Tuple
 
 import chess.pgn
 import random
