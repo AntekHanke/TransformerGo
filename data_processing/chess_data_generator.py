@@ -125,16 +125,16 @@ class ChessGamesDataGenerator(ChessDataProvider):
         pgn_file: Optional[str] = None,
         chess_filter: Optional[Type[ChessFilter]] = None,
         p_sample: Optional[float] = None,
-        n_data: Optional[int] = None,
+        max_games: Optional[int] = None,
         train_eval_split: float = 0.95,
         do_sample_finish: bool = True,
         log_samples_limit: Optional[int] = None,
-        log_stats_after_n: int = 1000,
+        log_stats_after_n_games: int = 1000,
         p_log_sample: float = 0.01,
         only_eval: bool = False,
         save_data_path: Optional[str] = None,
-        save_filtred_data: Optional[str] = None,
-        save_data_every: int = 1000,
+        save_filtered_data: Optional[str] = None,
+        save_data_every_n_games: int = 1000,
     ):
         self.size_of_computed_dataset: int = 0
         self.path_to_pgn_file = pgn_file
@@ -150,11 +150,11 @@ class ChessGamesDataGenerator(ChessDataProvider):
         print(100 * "=")
 
         self.p_sample = p_sample
-        self.n_data = n_data
+        self.max_games = max_games
         self.train_eval_split = train_eval_split
         self.do_sample_finish = do_sample_finish
         self.log_samples_limit = log_samples_limit
-        self.log_stats_after_n = log_stats_after_n
+        self.log_stats_after_n_games = log_stats_after_n_games
         self.p_log_sample = p_log_sample
         self.only_eval = only_eval
 
@@ -165,8 +165,8 @@ class ChessGamesDataGenerator(ChessDataProvider):
         self.data_constructed: bool = False
 
         self.save_data_path = save_data_path
-        self.save_filtred_data = save_filtred_data
-        self.save_data_every = save_data_every
+        self.save_filtered_data = save_filtered_data
+        self.save_data_every_n_games = save_data_every_n_games
 
         self.lc_zero_policy = LCZeroPolicy()
 
@@ -179,38 +179,42 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
         current_game: chess.pgn.Game = chess.pgn.read_game(self.pgn_database)
 
-        #TODO" save games with endings
-        if self.save_filtred_data is not None:
-            print(f"Filtred data will be saved in: {self.save_filtred_data}")
-            if isinstance(self.chess_filter, ELOFilter):
-                self.save_filtred_data = self.save_filtred_data + "/" + f"_{self.chess_filter.elo_threshold}.pgn"
-            else:
-                self.save_filtred_data = self.save_filtred_data + "/" + f"_{type(self.chess_filter)}.pgn"
-
-            with open(self.save_filtred_data, "a") as f:
-                print(current_game, file=f)
-                print("\n", file=f)
-
         if current_game is None:  # Condition is met if there are no more games in the dataset.
             return None
-        else:
-            chess_metadata: ChessMetadata = ChessMetadata(**current_game.headers)
-            transitions: List[Transition] = []
 
-            if self.chess_filter.use_game(chess_metadata):
-                transitions, final_pgn_board, is_game_over = self.moves_to_transitions(
-                    initial_immutable_board=None, moves=current_game.mainline_moves()
+        chess_metadata: ChessMetadata = ChessMetadata(**current_game.headers)
+        transitions: List[Transition] = []
+
+        if self.chess_filter.use_game(chess_metadata):
+            transitions, final_pgn_board, is_game_over = self.moves_to_transitions(
+                initial_immutable_board=None, moves=current_game.mainline_moves()
+            )
+
+            if not is_game_over:
+                lc_zero_transitions, result = self.finish_game(
+                    pgn_final_board=final_pgn_board, move_num=len(transitions)
                 )
 
-                if not is_game_over:
-                    lc_zero_transitions, result = self.finish_game(
-                        pgn_final_board=final_pgn_board, move_num=len(transitions)
-                    )
+                transitions.extend(lc_zero_transitions)
+                chess_metadata.Result = result
 
-                    transitions.extend(lc_zero_transitions)
-                    chess_metadata.Result = result
+        # if self.save_filtered_data is not None:
+        #     completed_game = chess.pgn.Game()
+        #     completed_game.headers = chess_metadata.__dict__
+        #     completed_game.setup(final_pgn_board)
+        #
+        #     print(f"Filtered data will be saved in: {self.save_filtered_data}")
+        #     if isinstance(self.chess_filter, ELOFilter):
+        #         self.save_filtered_data = os.path.join(self.save_filtered_data,
+        #                                                f"{type(self.chess_filter)}_ELO_{self.chess_filter.elo_threshold}.pgn")
+        #     else:
+        #         self.save_filtered_data = os.path.join(self.save_filtered_data, f"_{type(self.chess_filter)}.pgn")
+        #
+        #     with open(self.save_filtered_data, "a") as f:
+        #         print(current_game, file=f)
+        #         print("\n", file=f)
 
-            return OneGameData(chess_metadata, transitions)
+        return OneGameData(chess_metadata, transitions)
 
     def moves_to_transitions(
         self, initial_immutable_board: Optional[ImmutableBoard], moves
@@ -260,7 +264,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
         part: int = 0
 
-        for n_iterations in range(1, self.n_data):
+        for n_iterations in range(self.max_games):
             train_eval = get_split(n_iterations, self.train_eval_split)
             if not self.only_eval or train_eval == "eval":
                 current_dataset = self.select_dataset(train_eval)
@@ -272,7 +276,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
                     self.n_games += 1
                     self.log_progress(n_iterations)
 
-            if self.save_data_path is not None and n_iterations % self.save_data_every == 0:
+            if self.save_data_path is not None and n_iterations % self.save_data_every_n_games == 0:
                 self.save_data(part)
                 part += 1
 
@@ -318,11 +322,11 @@ class ChessGamesDataGenerator(ChessDataProvider):
         raise NotImplementedError
 
     def log_progress(self, n_iterations: int) -> None:
-        if n_iterations % self.log_stats_after_n == 0:
-            log_value(f"Train dataset points in batch {self.save_data_every}", n_iterations, len(self.train_data_queue))
-            log_value(f"Eval dataset points in batch {self.save_data_every}", n_iterations, len(self.eval_data_queue))
+        if n_iterations % self.log_stats_after_n_games == 0:
+            log_value(f"Train dataset points in batch {self.save_data_every_n_games}", n_iterations, len(self.train_data_queue))
+            log_value(f"Eval dataset points in batch {self.save_data_every_n_games}", n_iterations, len(self.eval_data_queue))
             log_value("Dataset games", n_iterations, self.n_games)
-            if n_iterations % self.save_data_every != 0:
+            if n_iterations % self.save_data_every_n_games != 0:
                 log_value(
                     "Dataset size",
                     n_iterations,
@@ -355,7 +359,7 @@ class PolicyGamesDataGenerator(ChessGamesDataGenerator):
 class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
     def __init__(self, k, number_of_datapoint_from_one_game, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.save_data_path = self.save_data_path + "subgoals_k=" + str(k) + "/"
+        self.save_data_path = os.path.join(self.save_data_path, "subgoals_k=" + str(k) + "/")
         self.k = k
         self.prob_selector = prob_table_for_diff_n((5, 500))
         self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game

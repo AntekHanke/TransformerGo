@@ -7,19 +7,22 @@ base_config = {
 
     # class's parametres (ChessSubgoalGamesDataGenerator)
     "ChessSubgoalGamesDataGenerator.pgn_file": "/home/tomasz/Research/subgoal_search_chess/assets/cas_small.pgn",
+    "ChessSubgoalGamesDataGenerator.chess_filter": "@filters.ELOFilter",
     "ChessSubgoalGamesDataGenerator.p_sample": 1.0,
-    "ChessSubgoalGamesDataGenerator.n_data": 10000,
+    "ChessSubgoalGamesDataGenerator.max_games": 1,
     "ChessSubgoalGamesDataGenerator.train_eval_split": 0.5,
     "ChessSubgoalGamesDataGenerator.do_sample_finish": True,
-    "ChessSubgoalGamesDataGenerator.save_data_path": "/home/tomasz/Research/subgoal_chess_data/temp/",
-    "ChessSubgoalGamesDataGenerator.save_data_every": 1,
-    "ChessSubgoalGamesDataGenerator.log_stats_after_n": 4,
+    "ChessSubgoalGamesDataGenerator.log_stats_after_n_games": 1,
+    "ChessSubgoalGamesDataGenerator.save_data_path": "/home/tomasz/Research/subgoal_chess_data/temp/main_data/",
+    "ChessSubgoalGamesDataGenerator.save_filtered_data": "/home/tomasz/Research/subgoal_chess_data/temp/main_data/filtered_data",
+    "ChessSubgoalGamesDataGenerator.save_data_every_n_games": 1,
+
     "ChessSubgoalGamesDataGenerator.k": 2,
     "ChessSubgoalGamesDataGenerator.number_of_datapoint_from_one_game": 3,
-    "ChessSubgoalGamesDataGenerator.chess_filter": "@filters.ELOFilter",
+
 
     # class's parameters (ELOFilter)
-    "ELOFilter.elo_threshold": 1500,
+    "ELOFilter.elo_threshold": 150,
 
     "use_neptune": False,
 }
