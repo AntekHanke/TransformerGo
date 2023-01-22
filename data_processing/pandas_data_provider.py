@@ -285,3 +285,38 @@ class IterableCLLPDataLoader(IterableDataLoader):
 
     def log_samples(self, log_samples_limit: int):
         raise NotImplementedError
+
+
+
+class PandasBertForSequenceDataProvider(ChessDataProvider):
+    def __init__(self, data_path=None, eval_datapoints: int = 10000):
+
+        print(f"Reading pickle")
+        df = pd.read_pickle(data_path)
+        print(f"Finished reading pickle")
+        print(f"Processing df")
+        processed_df = self.process_df(df)
+        print(f"Finished processing df")
+        self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
+        self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
+
+        log_param("Train set size", len(self.data_train))
+        log_param("Eval set size", len(self.data_eval))
+
+    def pandas_to_dict(self, df: pd.DataFrame) -> Dict:
+        data = {}
+        for (id, (_, row)) in enumerate(df[["target_immutable_board", "Q"]].iterrows()):
+            data[id] = {
+                "input_ids": ChessTokenizer.encode_immutable_board(row["target_immutable_board"]),
+                "labels": row["Q"]
+            }
+        return data
+
+    def process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[["target_immutable_board", "Q"]]
+
+    def get_train_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_train)
+
+    def get_eval_set_generator(self) -> ChessDataset:
+        return ChessDataset(self.data_eval)
