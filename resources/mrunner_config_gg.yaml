@@ -334,7 +334,7 @@ contexts:
     account: plgrlresearch
     backend_type: slurm
     cmd_type: sbatch
-    time: 1000
+    time: 10
     cpu: 1
     mem: 40G
     modules_to_load:
@@ -343,10 +343,9 @@ contexts:
     ntasks: 1
     partition: plgrid
     slurm_url: plggracjangoral@prometheus.cyfronet.pl
-    storage_dir: /net/scratch/people/plggracjangoral/chessdata_from_chessengines
+    storage_dir: /net/scratch/people/plggracjangoral/chessdata_from_lichess
     singularity_container: -H $PWD:/homeplaceholder
+                           -B /net/scratch/people/plggracjangoral/lcezero_weights:/lcezero_weights
                            -B /net/scratch/people/plggracjangoral/chess_data/database_chess_lichess:/database_chess_lichess
                            -B /net/scratch/people/plggracjangoral/chess_data/subgoals_dataset_lichess:/subgoals_dataset_lichess
-                           -B $TMPDIR:/tmp /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
-
-
+                           -B $TMPDIR:/tmp /net/people/plggracjangoral/singularity/16.01.2023.sif
