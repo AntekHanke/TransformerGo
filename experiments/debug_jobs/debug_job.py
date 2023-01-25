@@ -4,7 +4,6 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {
     "run.job_class": "@jobs.DebugJob",
-
     "use_neptune": True,
 }
 

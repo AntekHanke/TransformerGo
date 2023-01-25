@@ -42,10 +42,10 @@ def get_lczero_backend(weights_path=None):
             lczero_backend = lc_zero_local_backend
         else:
             if LCZERO_CLUSTER == "athena":
-                from lczero.lczero_backend_athena import lc_zero_athena_backend
+                from lczero.lczero_backend_athena.lczero_athena import lc_zero_athena_backend
                 lczero_backend = lc_zero_athena_backend
             elif LCZERO_CLUSTER == "prometheus":
-                from lczero.lczero_backend_prometheus import lc_zero_prometheus_backend
+                from lczero.lczero_backend_prometheus.lczero_prometheus import lc_zero_prometheus_backend
                 lczero_backend = lc_zero_prometheus_backend
             else:
                 raise Exception("Invalid LCZero cluster. Set the value of LCZERO_CLUSTER in global config to either 'athena' or 'prometheus'.")
