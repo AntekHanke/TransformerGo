@@ -334,9 +334,9 @@ contexts:
     account: plgrlresearch
     backend_type: slurm
     cmd_type: sbatch
-    time: 10
+    time: 3-00:00:00
     cpu: 1
-    mem: 40G
+    mem: 30G
     modules_to_load:
      - plgrid/tools/singularity/stable
     nodes: 1
@@ -349,3 +349,21 @@ contexts:
                            -B /net/scratch/people/plggracjangoral/chess_data/database_chess_lichess:/database_chess_lichess
                            -B /net/scratch/people/plggracjangoral/chess_data/subgoals_dataset_lichess:/subgoals_dataset_lichess
                            -B $TMPDIR:/tmp /net/people/plggracjangoral/singularity/16.01.2023.sif
+
+    eagle_data:
+      account: 619
+      backend_type: slurm
+      cmd_type: sbatch
+      partition: standard
+      time: 50
+      cpu: 1
+      ntasks: 1
+      mem: 10G
+      nodes: 1
+      slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
+      storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
+      singularity_container: -H $PWD:/homeplaceholder
+        -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/leela_data
+        -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
+        -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
+        --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
