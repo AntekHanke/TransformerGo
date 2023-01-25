@@ -1,6 +1,7 @@
 from typing import Optional
 
-from assets.lczero.lczero_weights_path import DEFAULT_LC_ZERO_WEIGHTS_PATH
+from configures.global_config import LCZERO_CLUSTER
+from lczero.lczero_weights_path import DEFAULT_LC_ZERO_WEIGHTS_PATH
 from utils.detect_local_machine import is_local_machine
 
 # global lczero_backend
@@ -40,8 +41,14 @@ def get_lczero_backend(weights_path=None):
             from lczero.lczero_backend_local.lczero_local import lc_zero_local_backend
             lczero_backend = lc_zero_local_backend
         else:
-            from lczero.lczero_backend_athena import lc_zero_athena_backend
-            lczero_backend = lc_zero_athena_backend
+            if LCZERO_CLUSTER == "athena":
+                from lczero.lczero_backend_athena import lc_zero_athena_backend
+                lczero_backend = lc_zero_athena_backend
+            elif LCZERO_CLUSTER == "prometheus":
+                from lczero.lczero_backend_prometheus import lc_zero_prometheus_backend
+                lczero_backend = lc_zero_prometheus_backend
+            else:
+                raise Exception("Invalid LCZero cluster. Set the value of LCZERO_CLUSTER in global config to either 'athena' or 'prometheus'.")
         return lczero_backend
     else:
         return lczero_backend
