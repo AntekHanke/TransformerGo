@@ -143,7 +143,6 @@ class LCZeroPolicy(ChessPolicy):
 
 
     def sample_move(self, immutable_board: ImmutableBoard) -> chess.Move:
-        print("Sampling move")
         prob_distribution = self.lczero_backend.get_policy_distribution(immutable_board)
         moves, probs = zip(*prob_distribution)
         probs = np.array(probs)/np.sum(probs)

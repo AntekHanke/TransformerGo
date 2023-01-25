@@ -10,13 +10,6 @@ LeelaSubgoal = namedtuple(
     "LeelaSubgoal",
     "input_idx target_idx input_immutable_board target_immutable_board dist_from_input input_level moves N Q D M P input_N",
 )
-# LeelaNodeData = namedtuple("LeelaNodeData", "id state moves_from_root level N Q D M P")
-
-ImmutableBoardData = namedtuple(
-    "ImmutableBoard",
-    "board active_player castles en_passant_target halfmove_clock fullmove_clock",
-)
-
 
 SubgoalsFromModel = namedtuple("SubgoalFromModel", "input_immutable_board target_immutable_board")
 
@@ -28,6 +21,10 @@ class ChessMetadata:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+ImmutableBoardData = namedtuple(
+    "ImmutableBoard",
+    "board active_player castles en_passant_target halfmove_clock fullmove_clock",
+)
 
 class ImmutableBoard(ImmutableBoardData):
     @classmethod
