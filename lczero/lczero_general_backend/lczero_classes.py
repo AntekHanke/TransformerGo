@@ -37,10 +37,10 @@ def get_lczero_backend(weights_path=None):
     global lczero_backend
     if lczero_backend is None:
         if is_local_machine():
-            from lczero_backend_local.lczero_local import lc_zero_local_backend
+            from lczero.lczero_backend_local.lczero_local import lc_zero_local_backend
             lczero_backend = lc_zero_local_backend
         else:
-            from lczero_backend_athena.lczero_athena import lc_zero_athena_backend
+            from lczero.lczero_backend_athena import lc_zero_athena_backend
             lczero_backend = lc_zero_athena_backend
         return lczero_backend
     else:
