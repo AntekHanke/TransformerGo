@@ -276,7 +276,11 @@ class ChessGamesDataGenerator(ChessDataProvider):
                     self.n_games += 1
                     self.log_progress(n_iterations)
 
-            if self.save_data_path is not None and n_iterations % self.save_data_every_n_games == 0:
+            if (
+                self.save_data_path is not None
+                and n_iterations % self.save_data_every_n_games == 0
+                and n_iterations > 0
+            ):
                 self.save_data(part)
                 part += 1
 
@@ -323,8 +327,14 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
     def log_progress(self, n_iterations: int) -> None:
         if n_iterations % self.log_stats_after_n_games == 0:
-            log_value(f"Train dataset points in batch {self.save_data_every_n_games}", n_iterations, len(self.train_data_queue))
-            log_value(f"Eval dataset points in batch {self.save_data_every_n_games}", n_iterations, len(self.eval_data_queue))
+            log_value(
+                f"Train dataset points in batch {self.save_data_every_n_games}",
+                n_iterations,
+                len(self.train_data_queue),
+            )
+            log_value(
+                f"Eval dataset points in batch {self.save_data_every_n_games}", n_iterations, len(self.eval_data_queue)
+            )
             log_value("Dataset games", n_iterations, self.n_games)
             if n_iterations % self.save_data_every_n_games != 0:
                 log_value(
@@ -396,16 +406,19 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
         if game_length > 0 and game_length - self.k >= 0:
 
             if game_length <= len(self.prob_selector):
-                p: np.ndarray = self.prob_selector[game_length]
+                p: np.ndarray = self.prob_selector[game_length - 1]
             else:
-                p: np.ndarray = prob_select_function(game_length)
+                p: np.ndarray = prob_select_function(game_length - 1)
 
             assert (
                 self.number_of_datapoint_from_one_game is not None
             ), "Please select number of datapoints frome game. Must be integer."
+
             selected_datapoints = np.random.choice(
-                list(range(game_length)), size=self.number_of_datapoint_from_one_game, p=p
+                list(range(game_length - 1)), size=self.number_of_datapoint_from_one_game, p=p
             )
+
+            # selected_datapoints = list(range(game_length - 1))
 
             for key in selected_datapoints:
                 input_board: ImmutableBoard = one_game_data.transitions[key].immutable_board
