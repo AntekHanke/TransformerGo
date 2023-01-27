@@ -1,8 +1,4 @@
-from typing import Optional
-
-import chess
-
-from assets.lczero.lczero_weights_path import DEFAULT_LC_ZERO_WEIGHTS_PATH
+from lczero.lczero_weights_path import DEFAULT_LC_ZERO_WEIGHTS_PATH
 from lczero_backend_athena.backends import Weights, Backend, GameState
 
 from lczero_general_backend.lczero_classes import LCZeroBackend

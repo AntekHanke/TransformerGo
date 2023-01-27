@@ -1,6 +1,6 @@
 from typing import Optional
 
-from assets.lczero.lczero_weights_path import DEFAULT_LC_ZERO_WEIGHTS_PATH
+from lczero.lczero_weights_path import DEFAULT_LC_ZERO_WEIGHTS_PATH
 from utils.detect_local_machine import is_local_machine
 
 # global lczero_backend
