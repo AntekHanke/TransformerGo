@@ -23,15 +23,15 @@ base_config = {
     "BartConfig.d_model": 32,
     "BartConfig.dropout": 0.05,
 
-    "TrainingArguments.max_steps": 5000,
-    "TrainingArguments.per_device_train_batch_size": 512,
-    "TrainingArguments.per_device_eval_batch_size": 512,
-    "TrainingArguments.warmup_steps": 50,
+    "TrainingArguments.max_steps": 100,
+    "TrainingArguments.per_device_train_batch_size": 32,
+    "TrainingArguments.per_device_eval_batch_size": 32,
+    "TrainingArguments.warmup_steps": 10,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 2,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 200,
-    "TrainingArguments.learning_rate": 0.0002,
+    "TrainingArguments.eval_steps": 20,
+    "TrainingArguments.learning_rate": 2e-4,
 
     "use_neptune": True,
 }

@@ -10,12 +10,11 @@ import torch
 from collections import namedtuple
 
 from matplotlib import pyplot as plt
-from tqdm import tqdm
 
 from configures.global_config import MAX_GAME_LENGTH
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
-from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
+from utils.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
 from data_processing.probability_subgoal_selector_tools import prob_table_for_diff_n, prob_select_function

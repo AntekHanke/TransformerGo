@@ -5,15 +5,13 @@ from itertools import cycle
 from configures.global_config import MAX_MOVES_FOR_CLLP
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_utils import immutable_boards_to_img
 from metric_logging import log_param, log_value, log_object
 import os
 from os.path import isfile, join
-from typing import List, Dict, Iterator, Optional, Union
+from typing import List, Dict, Iterator, Optional
 import pandas as pd
 from tqdm import tqdm
 from torch.utils.data import IterableDataset
-from utils.global_params_handler import GlobalParamsHandler
 
 
 class IterableDataLoader(IterableDataset):
@@ -82,9 +80,6 @@ class IterableDataLoader(IterableDataset):
                     yield x
                 data.clear()
 
-    def log_samples(self, log_samples_limit: int):
-        raise NotImplementedError
-
 
 class IterableSubgoalDataLoader(IterableDataLoader):
     @staticmethod
@@ -95,20 +90,17 @@ class IterableSubgoalDataLoader(IterableDataLoader):
     def __getitem__(self, item):
         raise NotImplementedError
 
-    def log_samples(self, log_samples_limit: int):
-        raise NotImplementedError
-
 
 class IterablePolicyDataLoader(IterableDataLoader):
     @staticmethod
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
-        df = df[["input_ids", "labels"]]
+        df = df[["input_ids", "moves_between_input_and_target"]]
+        df = df[df["moves_between_input_and_target"].apply(len) > 0]
+        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
+        df.drop(columns=["moves_between_input_and_target"], inplace=True)
         return df.to_dict(orient="records")
 
     def __getitem__(self, item):
-        raise NotImplementedError
-
-    def log_samples(self, log_samples_limit: int):
         raise NotImplementedError
 
 
@@ -127,9 +119,6 @@ class IterableSubgoalToPolicyDataLoader(IterableDataLoader):
         return data
 
     def __getitem__(self, item):
-        raise NotImplementedError
-
-    def log_samples(self, log_samples_limit: int):
         raise NotImplementedError
 
 
@@ -156,9 +145,6 @@ class IterableCLLPDataLoader(IterableDataLoader):
         return data
 
     def __getitem__(self, item):
-        raise NotImplementedError
-
-    def log_samples(self, log_samples_limit: int):
         raise NotImplementedError
 
 
