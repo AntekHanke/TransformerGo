@@ -31,7 +31,9 @@ TRAIN_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/
 GEN_POLICY_DATA = "/home/tomasz/Research/subgoal_search_chess/experiments/data_generation/policy_data.py"
 GEN_CLLP_DATA = "/home/tomasz/Research/subgoal_search_chess/experiments/data_generation/cllp_data.py"
 
-TEST_LC_ZERO = "/home/tomasz/Research/subgoal_search_chess/experiments/debug_jobs/debug_job.py"
+TEST_LC_ZERO = "/home/tomasz/Research/subgoal_search_chess/experiments/debug_jobs/general_debug_job.py"
 TEST_DATA_LICHESS = "/home/tomasz/Research/subgoal_search_chess/experiments/temp/lichess_data_gen_local.py"
 
-local_run(TEST_DATA_LICHESS, False, LOCAL_PATH_BINDING)
+
+
+local_run(TRAIN_POLICY, False, None)
