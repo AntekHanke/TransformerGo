@@ -10,12 +10,11 @@ import torch
 from collections import namedtuple
 
 from matplotlib import pyplot as plt
-from tqdm import tqdm
 
 from configures.global_config import MAX_GAME_LENGTH
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
-from data_processing.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
+from utils.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
 from data_processing.probability_subgoal_selector_tools import prob_table_for_diff_n, prob_select_function
@@ -132,7 +131,8 @@ class ChessGamesDataGenerator(ChessDataProvider):
         log_stats_after_n_games: int = 1000,
         p_log_sample: float = 0.01,
         only_eval: bool = False,
-        save_data_path: Optional[str] = None,
+        save_path_to_train_set: Optional[str] = None,
+        save_path_to_eval_set: Optional[str] = None,
         save_filtered_data: Optional[str] = None,
         save_data_every_n_games: int = 1000,
     ):
@@ -164,7 +164,8 @@ class ChessGamesDataGenerator(ChessDataProvider):
         self.n_games: int = 0
         self.data_constructed: bool = False
 
-        self.save_data_path = save_data_path
+        self.save_path_to_train_set = save_path_to_train_set
+        self.save_path_to_eval_set = save_path_to_eval_set
         self.save_filtered_data = save_filtered_data
         self.save_data_every_n_games = save_data_every_n_games
 
@@ -256,12 +257,6 @@ class ChessGamesDataGenerator(ChessDataProvider):
         return lc_zero_transitions, board.result()
 
     def create_data(self) -> None:
-        try:
-            os.makedirs(self.save_data_path)
-            print(f"Directory {self.save_data_path} created successfully")
-        except OSError as error:
-            print(f"Directory {self.save_data_path} can not be created. Probably exists. Error {error}")
-
         part: int = 0
 
         for n_iterations in range(self.max_games):
@@ -277,7 +272,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
                     self.log_progress(n_iterations)
 
             if (
-                self.save_data_path is not None
+                (self.save_path_to_eval_set and self.save_path_to_train_set) is not None
                 and n_iterations % self.save_data_every_n_games == 0
                 and n_iterations > 0
             ):
@@ -297,8 +292,8 @@ class ChessGamesDataGenerator(ChessDataProvider):
     def save_data(self, part: int) -> None:
         pd_tarin: pd.DataFrame = pd.DataFrame(self.train_data_queue).transpose()
         pd_eval: pd.DataFrame = pd.DataFrame(self.eval_data_queue).transpose()
-        pd_tarin.to_pickle(self.save_data_path + f"{self.name_of_pgn_file}_train_part_{part}.pkl")
-        pd_eval.to_pickle(self.save_data_path + f"{self.name_of_pgn_file}_eval_part_{part}.pkl")
+        pd_tarin.to_pickle(self.save_path_to_train_set + f"{self.name_of_pgn_file}_train_part_{part}.pkl")
+        pd_eval.to_pickle(self.save_path_to_eval_set + f"{self.name_of_pgn_file}_eval_part_{part}.pkl")
 
         self.train_data_queue.clear()
         self.eval_data_queue.clear()
@@ -367,9 +362,25 @@ class PolicyGamesDataGenerator(ChessGamesDataGenerator):
 
 
 class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
-    def __init__(self, k, number_of_datapoint_from_one_game, *args, **kwargs):
+    def __init__(self, k: int, number_of_datapoint_from_one_game: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.save_data_path = os.path.join(self.save_data_path, "subgoals_k=" + str(k) + "/")
+        self.save_path_to_train_set: str = os.path.join(
+            self.save_path_to_train_set, "subgoals_k=" + str(k), "train" + "/"
+        )
+        self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set, "subgoals_k=" + str(k), "eval" + "/")
+
+        try:
+            os.makedirs(self.save_path_to_train_set)
+            os.makedirs(self.save_path_to_eval_set)
+            print(f"Directory {self.save_path_to_train_set} created successfully")
+            print(f"Directory {self.save_path_to_eval_set} created successfully")
+        except OSError as error:
+            print(
+                f"Directory {self.save_path_to_eval_set} or {self.save_path_to_train_set} can not be created. "
+                f"Probably exists."
+                f"Error {error}"
+            )
+
         self.k = k
         self.prob_selector = prob_table_for_diff_n((5, 500))
         self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game
@@ -401,7 +412,6 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
         self, one_game_data: OneGameData, current_dataset: List[Dict[str, Union[List[int], str, int]]]
     ) -> None:
 
-        # TODO: Here You can create chess endings: TO
         game_length: int = len(one_game_data.transitions)
         if game_length > 0 and game_length - self.k >= 0:
 

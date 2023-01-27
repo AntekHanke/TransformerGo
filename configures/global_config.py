@@ -33,3 +33,5 @@ MAX_NEW_TOKENS_FOR_POLICY = 2
 MAX_MOVES_FOR_CLLP = 6
 
 MAX_GAME_LENGTH = 500
+
+LCZERO_CLUSTER = "prometheus" # "prometheus" or "athena"

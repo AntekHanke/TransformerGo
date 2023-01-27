@@ -10,8 +10,7 @@ import chess.engine
 import numpy as np
 
 from chess_engines.third_party.stockfish import StockfishEngine
-from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_utils import immutable_boards_to_img
+from utils.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
 from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP

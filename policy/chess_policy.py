@@ -1,4 +1,3 @@
-from ctypes import Union
 from typing import List
 
 import chess
@@ -9,7 +8,7 @@ from transformers import BartForConditionalGeneration
 from configures.global_config import MAX_NEW_TOKENS_FOR_POLICY
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
-from lczero_general_backend.lczero_classes import get_lczero_backend
+from lczero.lczero_general_backend.lczero_classes import get_lczero_backend
 from utils.chess960_conversion import chess960_to_standard
 
 

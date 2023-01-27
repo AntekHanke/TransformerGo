@@ -23,8 +23,7 @@ class TrainModel(Job):
         path_to_training_data: Optional[str] = None,
         path_to_eval_data: Optional[str] = None,
         files_batch_size: int = 10,
-        p_sample: float = 1.0,
-        take_random_half_of_eval_data: bool = False,
+        prob_take_sample: float = 1.0,
         model_config_cls: Type[BartConfig] = None,
         training_args_cls: Type[TrainingArguments] = None,
         output_dir: str = None,
@@ -43,10 +42,6 @@ class TrainModel(Job):
         if output_dir_from_global_params_handler is not None:
             self.output_dir = output_dir_from_global_params_handler
 
-        self.take_random_half_of_training_data = p_sample
-        self.take_random_half_of_eval_data = take_random_half_of_eval_data
-
-        # TODO: How to fix typing and class initialization
         self.training_args = training_args_cls(output_dir=self.output_dir + "/out")
         if global_params_handler.learning_rate is not None:
             self.training_args.learning_rate = global_params_handler.learning_rate
@@ -54,14 +49,14 @@ class TrainModel(Job):
         self.iterable_subgoal_dataLoader_train = iterable_dataset_class(
             data_path=self.path_to_training_data,
             files_batch_size=files_batch_size,
-            p_sample=p_sample,
+            p_sample=prob_take_sample,
             cycle=True,
         )
 
         self.iterable_subgoal_dataLoader_eval = iterable_dataset_class(
             data_path=self.path_to_eval_data,
             files_batch_size=1,
-            p_sample=1.0,
+            p_sample=prob_take_sample,
             cycle=False,
         )
 

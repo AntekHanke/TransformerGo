@@ -1,5 +1,5 @@
 from data_structures.data_structures import ImmutableBoard
-from lczero_backend_local.lczero_local import LCZeroBackend, get_lczero_backend
+from lczero.lczero_backend_local import get_lczero_backend
 
 
 class ChessValue:

@@ -1,7 +1,7 @@
 import chess
 import numpy as np
 
-from data_processing.data_utils import immutable_boards_to_img
+from utils.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
 from policy.chess_policy import LCZeroPolicy

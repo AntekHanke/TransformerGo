@@ -1,13 +1,6 @@
-import chess
 import numpy as np
 
-from data_processing.data_utils import immutable_boards_to_img
 from data_structures.data_structures import ImmutableBoard
-from policy.chess_policy import LCZeroPolicy
-from policy.cllp import CLLP
-from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
-from utils.sample_fens import BLACK_MATE_IN_2
-from value.chess_value import LCZeroValue
 
 
 def verify_path(input_immutable_board, subgoal, path):

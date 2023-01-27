@@ -1,4 +1,4 @@
-from typing import Type, Union, List
+from typing import Type, List
 
 import pandas as pd
 
@@ -8,16 +8,13 @@ from transformers.integrations import NeptuneCallback
 
 from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_utils import immutable_boards_to_img
-from data_structures.data_structures import ImmutableBoard
+from utils.data_utils import immutable_boards_to_img
 from jobs.core import Job
 from transformers import (
     Trainer,
-    BartForConditionalGeneration,
     BartConfig,
     TrainingArguments,
     BertForSequenceClassification,
-    BertTokenizer,
 )
 
 from metric_logging import log_param, source_files_register, pytorch_callback_loggers, log_object
