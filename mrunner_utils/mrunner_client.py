@@ -9,7 +9,10 @@ import neptune.new as neptune
 
 from transformers import TrainerCallback
 
-from configures.global_config import NEPTUNE_API_TOKEN
+if "NEPTUNE_API_TOKEN" not in os.environ:
+    from configures.global_config import NEPTUNE_API_TOKEN
+else:
+    NEPTUNE_API_TOKEN = os.environ["NEPTUNE_API_TOKEN"]
 
 
 def get_configuration(spec_path):

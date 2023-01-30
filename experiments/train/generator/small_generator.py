@@ -4,6 +4,7 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
+
     "TrainModel.iterable_dataset_class": "@data.IterableSubgoalDataLoader",
     "TrainModel.path_to_training_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_train",
     "TrainModel.path_to_eval_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_eval",
