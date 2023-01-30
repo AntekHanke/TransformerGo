@@ -26,7 +26,7 @@ class TrainModel(Job):
         prob_take_sample: float = 1.0,
         model_config_cls: Type[BartConfig] = None,
         training_args_cls: Type[TrainingArguments] = None,
-        output_dir: str = None,
+        out_dir: str = None,
     ) -> None:
 
         global_params_handler: GlobalParamsHandler = GlobalParamsHandler()
@@ -38,11 +38,11 @@ class TrainModel(Job):
         if data_paths_from_gloabl_params_handler is not None:
             self.path_to_training_data, self.path_to_eval_data = data_paths_from_gloabl_params_handler
 
-        self.output_dir = output_dir
+        self.out_dir = out_dir
         if output_dir_from_global_params_handler is not None:
-            self.output_dir = output_dir_from_global_params_handler
+            self.out_dir = output_dir_from_global_params_handler
 
-        self.training_args = training_args_cls(output_dir=self.output_dir + "/out")
+        self.training_args = training_args_cls(output_dir=self.out_dir + "/out")
         if global_params_handler.learning_rate is not None:
             self.training_args.learning_rate = global_params_handler.learning_rate
 
@@ -73,10 +73,10 @@ class TrainModel(Job):
         for callback_logger in pytorch_callback_loggers:
             self.trainer.add_callback(callback_logger.get_pytorch_callback())
         self.trainer.pop_callback(NeptuneCallback)
-        self.save_model_path = self.output_dir + "/final_model"
+        self.save_model_path = self.out_dir + "/final_model"
 
         log_param("max learning rate", self.training_args.learning_rate)
-        log_param("output_dir", self.output_dir)
+        log_param("output_dir", self.out_dir)
         log_param("path_to_training_data", self.path_to_training_data)
         log_param("path_to_eval_data", self.path_to_eval_data)
         log_param("Save model path", self.save_model_path)
