@@ -8,6 +8,8 @@ def get_local_machine():
         return "tomasz"
     elif hostname == "g":
         return "gracjan"
+    elif hostname == "dell-latitude-e7450":
+        return "malgorzata"
     else:
         raise Exception("Unknown hostname: " + hostname + ". Please add it to the list of known machines.")
 

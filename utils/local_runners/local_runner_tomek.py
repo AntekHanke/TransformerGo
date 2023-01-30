@@ -31,4 +31,4 @@ TEST_DATA_LICHESS = "/home/tomasz/Research/subgoal_search_chess/experiments/temp
 ULTRA_SMALL_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_model.py"
 
 
-local_run(TRAIN_POLICY, False, None)
+local_run(TRAIN_POLICY, True, LOCAL_PATH_BINDING)
