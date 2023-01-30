@@ -40,6 +40,7 @@ class IterableDataLoader(IterableDataset):
             if self.data_path.endswith("/"):
                 self.data_path = self.data_path[:-1]
             self.files_names = list(glob.glob(f"{self.data_path}/**/*.pkl", recursive=True))
+        assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
 
     def __iter__(self) -> Iterator[Dict[str, List[int]]]:

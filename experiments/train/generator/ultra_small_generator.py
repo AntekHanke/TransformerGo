@@ -11,7 +11,6 @@ base_config = {
     "TrainModel.files_batch_size": 1,
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-    "TrainModel.out_dir": "/out/ultra_small_generator",
 
     "GlobalParamsHandler.path_type": "generator",
     "GlobalParamsHandler.k": 3,
@@ -31,8 +30,8 @@ base_config = {
     "BartConfig.dropout": 0.1,
 
     "TrainingArguments.max_steps": 5000,
-    "TrainingArguments.per_device_train_batch_size": 1024,
-    "TrainingArguments.per_device_eval_batch_size": 1024,
+    "TrainingArguments.per_device_train_batch_size": 128,
+    "TrainingArguments.per_device_eval_batch_size": 128,
     "TrainingArguments.warmup_steps": 10,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 10,
