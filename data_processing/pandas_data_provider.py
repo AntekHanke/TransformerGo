@@ -1,3 +1,4 @@
+import glob
 import random
 import time
 from itertools import cycle
@@ -36,12 +37,10 @@ class IterableDataLoader(IterableDataset):
         if os.path.isfile(self.data_path):
             self.files_names.append(self.data_path)
         else:
-            for folder_name in tqdm(os.listdir(self.data_path)):
-                path: str = self.data_path + "/" + str(folder_name)
-                for file_name in os.listdir(path):
-                    path_to_file: str = join(path, file_name)
-                    if isfile(path_to_file):
-                        self.files_names.append(path_to_file)
+            if self.data_path.endswith("/"):
+                self.data_path = self.data_path[:-1]
+            self.files_names = list(glob.glob(f"{self.data_path}/**/*.pkl", recursive=True))
+
 
     def __iter__(self) -> Iterator[Dict[str, List[int]]]:
         return self.generate_data()
