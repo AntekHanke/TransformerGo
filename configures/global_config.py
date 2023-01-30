@@ -8,6 +8,9 @@ if get_local_machine() == "tomasz":
 elif get_local_machine() == "gracjan":
     NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI2ZmZjYmYxOS1mNGFmLTQzNzktOWU5NC00NzQyNDYyZGEyZGMifQ=="
 
+elif get_local_machine() == "malgorzata":
+    NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIyZjIzMTAwNi0xZTkxLTQ1MWQtOTkzYy1mZGIzMGJmODk0NTYifQ=="
+
 NEPTUNE_PROJECT = "pmtest/subgoal-chess"
 
 EAGLE_DATASET = ""
