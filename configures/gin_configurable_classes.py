@@ -11,8 +11,13 @@ from data_processing.chess_data_generator import (
 )
 from data_processing.archive.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.pandas_iterable_data_provider import (
-    PandasIterableSubgoalDataProvider, PandasIterablePolicyDataProvider, PandasBertForSequenceDataProvider,
-    PandasIterableSubgoalToPolicyDataProvider, PandasIterableCLLPDataProvider
+    PandasIterableSubgoalDataProvider,
+    PandasIterablePolicyDataProvider,
+    IterablePolicyDataWithHistoryLoader,
+    IterablePolicyDataOnlyHistoryLoader,
+    PandasBertForSequenceDataProvider,
+    PandasIterableSubgoalToPolicyDataProvider,
+    PandasIterableCLLPDataProvider
 )
 from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider, PandasStaticSubgoalDataProvider, \
     PandasStaticPolicyDataProvider, PandasStaticSubgoalToPolicyDataProvider, PandasStaticCLLPDataProvider
@@ -57,6 +62,8 @@ configure_classes(
         SubgoalMCGamesDataGenerator,
         PandasIterableSubgoalDataProvider,
         PandasIterablePolicyDataProvider,
+        IterablePolicyDataWithHistoryLoader,
+        IterablePolicyDataOnlyHistoryLoader,
         PandasIterableSubgoalToPolicyDataProvider,
         PandasIterableCLLPDataProvider,
         PandasStaticSubgoalDataProvider,

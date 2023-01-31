@@ -105,6 +105,49 @@ class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
         return policy_process_df(df)
 
 
+class IterablePolicyDataLoader(IterableDataLoader):
+    @staticmethod
+    def process_df(df: pd.DataFrame):
+        df = df[["input_ids", "moves_between_input_and_target"]]
+        df = df[df["moves_between_input_and_target"].apply(len) > 0]
+        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
+        df.drop(columns=["moves_between_input_and_target"], inplace=True)
+        return df.to_dict(orient="records")
+
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+
+class IterablePolicyDataWithHistoryLoader(IterableDataLoader):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> list:
+        df = df[["input_ids", "all_moves_from_start", "moves_between_input_and_target"]]
+        df = df[df["moves_between_input_and_target"].apply(len) > 0]
+        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
+        df["input_ids"] = df["input_ids"] + df["all_moves_from_start"]
+        df["input_ids"].apply(lambda x: x.append(ChessTokenizer.vocab_to_tokens["<SEP>"]))
+        df.drop(columns=["all_moves_from_start", "moves_between_input_and_target"], inplace=True)
+        return df.to_dict(orient="records")
+
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+
+class IterablePolicyDataOnlyHistoryLoader(IterableDataLoader):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> list:
+        df = df[["all_moves_from_start", "moves_between_input_and_target"]]
+        df = df[df["moves_between_input_and_target"].apply(len) > 0]
+        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
+        df.rename(columns={"all_moves_from_start": "input_ids"}, inplace=True)
+        df["input_ids"].apply(lambda x: x.append(ChessTokenizer.vocab_to_tokens["<SEP>"]))
+        df.drop(columns=["moves_between_input_and_target"], inplace=True)
+        return df.to_dict(orient="records")
+
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+
 class PandasIterableSubgoalToPolicyDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
