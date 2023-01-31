@@ -64,6 +64,9 @@ class IterableDataLoader(IterableDataset):
 
         for file_num, path_to_file in files_iterable:
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
+            if len(load_df) == 0:
+                log_object("Empty file", path_to_file)
+                continue
             log_value("load_df", file_num, file_num)
 
             if self.p_sample:
@@ -83,7 +86,7 @@ class IterableDataLoader(IterableDataset):
 
 class IterableSubgoalDataLoader(IterableDataLoader):
     @staticmethod
-    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+    def process_df(df: pd.DataFrame):
         df = df[["input_ids", "labels"]]
         return df.to_dict(orient="records")
 

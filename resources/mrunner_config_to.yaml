@@ -5,7 +5,7 @@ contexts:
     cmd_type: sbatch
     cpu: 2
     mem: 20G
-    gpu: 4
+    gpu: 1
     nodes: 1
     ntasks: 1
     partition: plgrid-gpu-a100
