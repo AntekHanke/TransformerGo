@@ -22,13 +22,14 @@ class IterableDataLoader(IterableDataset):
         files_batch_size: int = 10,
         p_sample: Optional[float] = None,
         cycle: bool = True,
-        database: str = "leela",
+        name: str = "default",
     ) -> None:
+
         self.data_path = data_path
         self.files_batch_size = files_batch_size
         self.p_sample = p_sample
         self.cycle = cycle
-        self.database = database
+        self.name = name
 
         self.files_names: List[str] = []
         self.prepare_files_list()
@@ -41,6 +42,11 @@ class IterableDataLoader(IterableDataset):
                 self.data_path = self.data_path[:-1]
             self.files_names = list(glob.glob(f"{self.data_path}/**/*.pkl", recursive=True))
 
+        log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
+        random.shuffle(self.files_names)
+        log_object(f"files_names_after_shuffle", self.files_names)
+
+        assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
     def __iter__(self) -> Iterator[Dict[str, List[int]]]:
         return self.generate_data()
@@ -63,18 +69,18 @@ class IterableDataLoader(IterableDataset):
 
         for file_num, path_to_file in files_iterable:
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
+            if len(load_df) == 0:
+                log_object("Empty file", path_to_file)
+                continue
             log_value("load_df", file_num, file_num)
 
             if self.p_sample:
                 log_value("p_sample", 0, self.p_sample)
-                load_df = load_df.sample(frac=self.p_sample, random_state=1)
+                load_df = load_df.sample(frac=self.p_sample)
 
             data.extend(self.process_df(load_df))
             if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
-                print(f"Will shuflle data from {file_num - self.files_batch_size + 1} to {file_num} len = {len(data)}")
-                time_s = time.time()
                 random.shuffle(data)
-                print(f"Shuffled in {time.time() - time_s}")
                 for x in data:
                     yield x
                 data.clear()
@@ -82,7 +88,7 @@ class IterableDataLoader(IterableDataset):
 
 class IterableSubgoalDataLoader(IterableDataLoader):
     @staticmethod
-    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+    def process_df(df: pd.DataFrame):
         df = df[["input_ids", "labels"]]
         return df.to_dict(orient="records")
 
