@@ -120,7 +120,7 @@ class IterablePolicyDataLoader(IterableDataLoader):
 
 class IterablePolicyDataWithHistoryLoader(IterableDataLoader):
     @staticmethod
-    def process_df(df: pd.DataFrame) -> list:
+    def process_df(df: pd.DataFrame):
         df = df[["input_ids", "all_moves_from_start", "moves_between_input_and_target"]]
         df = df[df["moves_between_input_and_target"].apply(len) > 0]
         df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
@@ -135,7 +135,7 @@ class IterablePolicyDataWithHistoryLoader(IterableDataLoader):
 
 class IterablePolicyDataOnlyHistoryLoader(IterableDataLoader):
     @staticmethod
-    def process_df(df: pd.DataFrame) -> list:
+    def process_df(df: pd.DataFrame):
         df = df[["all_moves_from_start", "moves_between_input_and_target"]]
         df = df[df["moves_between_input_and_target"].apply(len) > 0]
         df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
