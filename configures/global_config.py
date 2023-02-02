@@ -27,4 +27,7 @@ MAX_MOVES_FOR_CLLP = 6
 
 MAX_GAME_LENGTH = 500
 
+TOKENIZER = "pieces" # "board" or "pieces"
+RANDOM_TOKENIZATION_ORDER = True # True or False
+
 LCZERO_CLUSTER = "prometheus" # "prometheus" or "athena"
