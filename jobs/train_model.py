@@ -1,4 +1,7 @@
-from typing import Type, Union, List, Optional
+from typing import Type, Optional
+
+import evaluate
+import numpy as np
 from transformers.integrations import NeptuneCallback
 from data_processing.pandas_data_provider import IterableDataLoader
 
@@ -63,11 +66,19 @@ class TrainModel(Job):
         self.model_config = model_config_cls()
         self.model = BartForConditionalGeneration(self.model_config)
 
+        def compute_metrics(eval_preds):
+            # metric = evaluate.load("accuracy")
+            logits, labels = eval_preds
+            predictions = np.argmax(logits[0], axis=-1)
+            return {'accuracy': (predictions == labels).astype(np.float32).mean().item()}
+            # return metric.compute(predictions=predictions, references=labels)
+
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
             train_dataset=self.iterable_subgoal_dataLoader_train,
             eval_dataset=self.iterable_subgoal_dataLoader_eval,
+            compute_metrics=compute_metrics,
         )
 
         for callback_logger in pytorch_callback_loggers:

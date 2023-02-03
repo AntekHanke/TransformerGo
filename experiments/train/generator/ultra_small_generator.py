@@ -31,12 +31,12 @@ base_config = {
 
     "TrainingArguments.max_steps": 5000,
     "TrainingArguments.per_device_train_batch_size": 128,
-    "TrainingArguments.per_device_eval_batch_size": 128,
+    "TrainingArguments.per_device_eval_batch_size": 2,
     "TrainingArguments.warmup_steps": 10,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 10,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 20,
+    "TrainingArguments.eval_steps": 50,
     "TrainingArguments.learning_rate": 3e-5,
     "use_neptune": True,
 }
