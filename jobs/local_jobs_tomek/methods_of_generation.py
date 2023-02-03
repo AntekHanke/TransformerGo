@@ -11,7 +11,7 @@ from utils.sample_fens import BLACK_MATE_IN_2
 from value.chess_value import LCZeroValue
 
 
-def print_summary(input_immutable_board, generation_kwargs, k):
+def print_summary(input_immutable_board, generation_kwargs, k, raw_subgoals):
     print("=============================================================")
     print("Generation kwargs:", generation_kwargs)
 
@@ -35,8 +35,9 @@ def print_summary(input_immutable_board, generation_kwargs, k):
     policy_subgoal = ImmutableBoard.from_board(board)
 
     subgoals_info = expander.expand_state(
-        input_immutable_board=b, cllp_num_beams=32, cllp_num_return_sequences=2, return_raw_subgoals=False,  **generation_kwargs
+        input_immutable_board=b, cllp_num_beams=32, cllp_num_return_sequences=2, return_raw_subgoals=raw_subgoals,  **generation_kwargs
     )
+
 
     subgoals = list(subgoals_info.keys())
 
@@ -46,6 +47,9 @@ def print_summary(input_immutable_board, generation_kwargs, k):
         + [f"s{i}" for i in range(len(subgoals))],
     )
     fig.show()
+
+    if raw_subgoals:
+        return
 
     # fig = immutable_boards_to_img(
     #     [b] + [policy_subgoal] + subgoals,
@@ -80,13 +84,14 @@ MEDIUM_LARGE_K1 = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/g
 NEW_GEN_0 = "/home/tomasz/Research/subgoal_chess_data/models/generator_medium_v0"
 NEW_GEN_1 = "/home/tomasz/Research/subgoal_chess_data/models/generator_medium_v1"
 # NEW_GEN_2 = "/home/tomasz/Research/subgoal_chess_data/models/generator_medium_v2"
+BABY_ENDINGS = "/home/tomasz/Research/subgoal_chess_data/models/baby_model_endings"
 
 
 # EAGLE_OLD = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/eagle_old_models"
 EAGLE_SMALL = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/eagle_old_models/k=3_small/final_model"
 SMALL = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/small_generator"
 
-generator = BasicChessSubgoalGenerator(NEW_GEN_0)
+generator = BasicChessSubgoalGenerator(BABY_ENDINGS)
 cllp = CLLP("/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium")
 policy = LCZeroPolicy()
 value = LCZeroValue()
@@ -96,7 +101,7 @@ expander = ChessStateExpander(policy, value, generator, cllp)
 
 board = chess.Board()
 
-board = chess.Board(fen="r1b1kb1r/1pp4p/2p2p2/p3p3/4P1n1/2N2N2/PPP2PPP/R2Q2RK w Qkq - 0 31")
+# board = chess.Board(fen="r1b1kb1r/1pp4p/2p2p2/p3p3/4P1n1/2N2N2/PPP2PPP/R2Q2RK w Qkq - 0 31")
 # board.push(chess.Move.from_uci("e2e4"))
 # board.push(chess.Move.from_uci("e7e5"))
 # board.push(chess.Move.from_uci("g1f3"))
@@ -113,8 +118,8 @@ b = ImmutableBoard.from_fen_str(BLACK_MATE_IN_2)
 # fig = immutable_boards_to_img([b], ["input"])
 # fig.show()
 
-generation_kwargs = {"top_p": 0.999, "do_sample": True, "num_return_sequences": 4}
-# generation_kwargs = {"num_beams": 32, "do_sample": False, "num_return_sequences": 16}
+# generation_kwargs = {"top_p": 0.999, "do_sample": True, "num_return_sequences": 4}
+generation_kwargs = {"num_beams": 32, "do_sample": False, "num_return_sequences": 16}
 
 
-print_summary(b, generation_kwargs, 3)
+print_summary(b, generation_kwargs, 8, True)
