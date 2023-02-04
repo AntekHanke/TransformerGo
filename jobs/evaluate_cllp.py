@@ -8,7 +8,7 @@ from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.core import Job
 
 from metric_logging import log_object, log_value
-from policy.cllp import CLLP, CLLPOneMove
+from policy.cllp import CLLP
 
 
 class EvaluateCLLP(Job):
