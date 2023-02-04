@@ -11,4 +11,4 @@ TRAIN_POLICY = "/home/tomasz/Research/subgoal_search_chess/experiments/train/pol
 TRAIN_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_generator.py"
 
 
-local_run(TRAIN_GENERATOR, False, LOCAL_PATH_BINDING)
+local_run(TRAIN_GENERATOR, True, LOCAL_PATH_BINDING)
