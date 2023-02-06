@@ -1,16 +1,12 @@
-from typing import List, Union
-from abc import abstractmethod
 import random
+from abc import abstractmethod
+from typing import List, Union
 
-import chess  # Nie potrzebujemy?
-from chess import Move, PIECE_SYMBOLS
+from chess import Move
 
-from data_structures.data_structures import ImmutableBoard
 from configures.global_config import TOKENIZER, RANDOM_TOKENIZATION_ORDER
+from data_structures.data_structures import ImmutableBoard
 
-PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}  # Czy są potrzebne?
-INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
-TOKENIZED_BOARD_LENGTH = 73  # Póżniej poprawione do 76, czemu w ten sposób?
 NON_SPECIAL_TOKENS_START = 11
 
 
@@ -120,7 +116,7 @@ class ChessTokenizer:
     def decode_moves(cls, tokens):
         """Decode moves"""
         return [
-            chess.Move.from_uci(cls.tokens_to_vocab[token])  # Shouldn't be "Move.from_uci..."?
+            Move.from_uci(cls.tokens_to_vocab[token])  # Shouldn't be "Move.from_uci..."?
             for token in tokens
             if token not in cls.special_vocab_to_tokens.values()
         ]
