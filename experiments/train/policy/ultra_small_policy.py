@@ -14,7 +14,7 @@ base_config = {
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-    "TrainModel.out_dir": "/out/policy/ultra_small",
+    "TrainModel.out_dir": "/out/policy/ultra_small/no_history",
 
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 100,

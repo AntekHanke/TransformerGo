@@ -7,7 +7,7 @@ base_config = {
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
     "TrainModel.path_to_training_data": "/data/k_3",
     "TrainModel.path_to_eval_data": "/data/k_3_eval",
-    "TrainModel.files_batch_size": 1,
+    "TrainModel.files_batch_size": 1000,
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
     "TrainModel.out_dir": "/out/policy/medium/no_history",
