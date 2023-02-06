@@ -26,6 +26,10 @@ def is_promotion_possible(algebraic_move: str) -> bool:
     )
 
 
+def padding(sequence: List, pad_value: int, final_len: int) -> List:
+    return sequence + [pad_value] * (final_len - len(sequence))
+
+
 class ChessTokenizer:
     """Custom tokenizer for chess data."""
 
@@ -72,8 +76,6 @@ class ChessTokenizer:
     vocab_to_tokens = {symbol: i + NON_SPECIAL_TOKENS_START for i, symbol in enumerate(non_special_vocab)}
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
-
-    TOKENIZED_BOARD_LENGTH = 76
 
     def __new__(cls):
         if TOKENIZER == "board":
@@ -125,6 +127,8 @@ class ChessTokenizer:
 
 
 class ChessTokenizerBoard(ChessTokenizer):
+    TOKENIZED_BOARD_LENGTH = 76
+
     def __new__(cls):
         self = object.__new__(cls)
         return self
@@ -180,6 +184,8 @@ class ChessTokenizerBoard(ChessTokenizer):
 
 
 class ChessTokenizerPiece(ChessTokenizer):
+    TOKENIZED_BOARD_LENGTH = 60
+
     def __new__(cls):
         self = object.__new__(cls)
         return self
@@ -211,6 +217,11 @@ class ChessTokenizerPiece(ChessTokenizer):
         fullmove_clock = min(int(immutable_board.fullmove_clock), 255)
         board_tokens.append(cls.vocab_to_tokens[str(fullmove_clock)])
 
+        board_tokens = padding(board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH)
+
+        assert (
+                len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
+        ), f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, got len(board_tokens) = {len(board_tokens)}"
         return board_tokens
 
     @classmethod
@@ -227,8 +238,10 @@ class ChessTokenizerPiece(ChessTokenizer):
                     x = int(vocab[1])-1
                     y = cls.letter_to_column[vocab[0]]
                     board_with_dots[x][y] = cls.pieces[1:-2][piece_number]
-            else:
+            elif vocab != "<PAD>":
                 additional_data += vocab + " "
+            else:
+                break
         flat_board_with_dots = [square for row in board_with_dots for square in row]
         additional_data = additional_data[:-1]
 
