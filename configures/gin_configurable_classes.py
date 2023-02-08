@@ -19,7 +19,7 @@ from jobs.debug_job import DebugJob
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
-
+from jobs.chess_retokenization import RetokenizationJob
 
 def configure_class(cls, module=None) -> None:
     gin.external_configurable(cls, module=module)
@@ -39,7 +39,8 @@ configure_classes(
         LeelaCCLPDataProcessing,
         TrainBertForSequenceModel,
         LeelaParallelDatasetGenerator,
-        LeelaPrepareAndSaveData
+        LeelaPrepareAndSaveData,
+        RetokenizationJob
     ],
     "jobs",
 )

@@ -1,13 +1,12 @@
+import random
+from abc import abstractmethod
 from typing import List, Union
 
-import chess
-from chess import Move, PIECE_SYMBOLS
+from chess import Move
 
+from configures.global_config import TOKENIZER, RANDOM_TOKENIZATION_ORDER
 from data_structures.data_structures import ImmutableBoard
 
-PIECE_SYMBOL_TO_INT = {PIECE_SYMBOLS[i]: i for i in range(1, 7)}
-INT_TO_PIECE_SYMBOL = {i: PIECE_SYMBOLS[i] for i in range(1, 7)}
-TOKENIZED_BOARD_LENGTH = 73
 NON_SPECIAL_TOKENS_START = 11
 
 
@@ -23,12 +22,18 @@ def is_promotion_possible(algebraic_move: str) -> bool:
     )
 
 
+def padding(sequence: List, pad_value: int, final_len: int) -> List:
+    return sequence + [pad_value] * (final_len - len(sequence))
+
+
 class ChessTokenizer:
     """Custom tokenizer for chess data."""
 
     pieces = [" ", "P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k", "/", "."]
+    column_letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    letter_to_column = {letter: i for i, letter in enumerate(column_letters)}
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)]
+    algebraic_fields = [f"{i}{j}" for j in range(1, 9) for i in ["a", "b", "c", "d", "e", "f", "g", "h"]]
     algebraic_moves = []
     for start in algebraic_fields:
         for end in algebraic_fields:
@@ -68,7 +73,63 @@ class ChessTokenizer:
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
 
+    def __new__(cls):
+        if TOKENIZER == "board":
+            self = ChessTokenizerBoard.__new__(ChessTokenizerBoard)
+        elif TOKENIZER == "pieces":
+            self = ChessTokenizerPiece.__new__(ChessTokenizerPiece)
+        else:
+            raise Exception(f"Tokenizer {TOKENIZER} not recognized. Should be either 'board' or 'pieces'.")
+        return self
+
+    @classmethod
+    @abstractmethod
+    def encode_immutable_board(cls, immutable_board: ImmutableBoard) -> List[int]:
+        return cls.__new__(cls).encode_immutable_board(immutable_board)
+
+    @classmethod
+    @abstractmethod
+    def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
+        return cls.__new__(cls).decode_board(board_tokens)
+
+    @classmethod
+    def encode_move(cls, chess_move: Move) -> List[int]:
+        return [cls.vocab_to_tokens[chess_move.uci()]]
+
+    @classmethod
+    def decode_move(cls, move_token: List[int]) -> Move:
+        return Move.from_uci(cls.tokens_to_vocab[move_token[0]])
+
+    @classmethod
+    def encode(cls, str_or_str_list: Union[List[str], str]) -> List[int]:
+        if isinstance(str_or_str_list, list):
+            return [cls.vocab_to_tokens[s] for s in str_or_str_list]
+        elif isinstance(str_or_str_list, str):
+            return [cls.vocab_to_tokens[str_or_str_list]]
+        else:
+            raise ValueError("str_or_str_list must be a list of strings or a string")
+
+    @classmethod
+    def decode(cls, tokens):
+        """General decode method"""
+        return [cls.tokens_to_vocab[token] for token in tokens]
+
+    @classmethod
+    def decode_moves(cls, tokens):
+        """Decode moves"""
+        return [
+            Move.from_uci(cls.tokens_to_vocab[token])
+            for token in tokens
+            if token not in cls.special_vocab_to_tokens.values()
+        ]
+
+
+class ChessTokenizerBoard(ChessTokenizer):
     TOKENIZED_BOARD_LENGTH = 76
+
+    def __new__(cls):
+        self = object.__new__(cls)
+        return self
 
     @classmethod
     def encode_immutable_board(cls, immutable_board: ImmutableBoard) -> List[int]:
@@ -119,33 +180,86 @@ class ChessTokenizer:
                 board_string += c
         return ImmutableBoard(*board_string.split())
 
-    @classmethod
-    def encode_move(cls, chess_move: Move) -> List[int]:
-        return [cls.vocab_to_tokens[chess_move.uci()]]
+
+class ChessTokenizerPiece(ChessTokenizer):
+    TOKENIZED_BOARD_LENGTH = 60
+
+    def __new__(cls):
+        self = object.__new__(cls)
+        return self
 
     @classmethod
-    def decode_move(cls, move_token: List[int]) -> Move:
-        return Move.from_uci(cls.tokens_to_vocab[move_token[0]])
+    def encode_immutable_board(cls, immutable_board: ImmutableBoard) -> List[int]:
+        board_tokens = []
+        board_position = 0
+        piece_positions = {piece: [] for piece in cls.pieces[1:-2]}
+        for c in immutable_board.board:
+            if c.isdigit() in list(range(1, 9)):
+                board_position += int(c)
+            elif c in cls.pieces[1:-2]:
+                piece_positions[c].append(cls.algebraic_fields[board_position])
+                board_position += 1
+
+        for piece in cls.pieces[1:-2]:
+            if RANDOM_TOKENIZATION_ORDER:
+                random.shuffle(piece_positions[piece])
+            for position in piece_positions[piece]:
+                board_tokens.append(cls.vocab_to_tokens[position])
+            board_tokens.append(cls.vocab_to_tokens["<SEP>"])
+
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.active_player])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.castles])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.en_passant_target])
+        halfmove_clock = min(int(immutable_board.halfmove_clock), 255)
+        board_tokens.append(cls.vocab_to_tokens[str(halfmove_clock)])
+        fullmove_clock = min(int(immutable_board.fullmove_clock), 255)
+        board_tokens.append(cls.vocab_to_tokens[str(fullmove_clock)])
+
+        assert len(board_tokens) <= cls.TOKENIZED_BOARD_LENGTH, (
+            f"The number of tokens encoding the board must be less or equal than {cls.TOKENIZED_BOARD_LENGTH}, "
+            f"got len(board_tokens) = {len(board_tokens)}"
+        )
+        board_tokens = padding(board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH)
+
+        assert len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH, (
+            f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, "
+            f"got len(board_tokens) = {len(board_tokens)}"
+        )
+        return board_tokens
 
     @classmethod
-    def encode(cls, str_or_str_list: Union[List[str], str]) -> List[int]:
-        if isinstance(str_or_str_list, list):
-            return [cls.vocab_to_tokens[s] for s in str_or_str_list]
-        elif isinstance(str_or_str_list, str):
-            return [cls.vocab_to_tokens[str_or_str_list]]
-        else:
-            raise ValueError("str_or_str_list must be a list of strings or a string")
+    def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
+        board_with_dots = [["." for j in range(8)] + ["/"] for j in range(8)]
+        additional_data = ""
+        piece_number = 0
+        for token in board_tokens:
+            vocab = cls.tokens_to_vocab[token]
+            if piece_number < len(cls.pieces[1:-2]):
+                if vocab == "<SEP>":
+                    piece_number += 1
+                else:
+                    x = int(vocab[1]) - 1
+                    y = cls.letter_to_column[vocab[0]]
+                    board_with_dots[x][y] = cls.pieces[1:-2][piece_number]
+            elif vocab != "<PAD>":
+                additional_data += vocab + " "
+            else:
+                break
+        flat_board_with_dots = [square for row in board_with_dots for square in row]
+        additional_data = additional_data[:-1]
 
-    @classmethod
-    def decode(cls, tokens):
-        """General decode method"""
-        return [cls.tokens_to_vocab[token] for token in tokens]
+        board_string = ""
+        dots_counter = 0
 
-    @classmethod
-    def decode_moves(cls, tokens):
-        """Decode moves"""
-        return [
-            chess.Move.from_uci(cls.tokens_to_vocab[token])
-            for token in tokens
-            if token not in cls.special_vocab_to_tokens.values()
-        ]
+        for c in flat_board_with_dots:
+            if c == ".":
+                dots_counter += 1
+            else:
+                if dots_counter > 0:
+                    board_string += str(dots_counter)
+                    dots_counter = 0
+                board_string += c
+        board_string = board_string[:-1]
+        board_string += " " + additional_data
+
+        return ImmutableBoard(*board_string.split())
