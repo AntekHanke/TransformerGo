@@ -33,7 +33,7 @@ class ChessTokenizer:
     column_letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
     letter_to_column = {letter: i for i, letter in enumerate(column_letters)}
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [f"{i}{j}" for j in range(1, 9) for i in ["a", "b", "c", "d", "e", "f", "g", "h"]]  # Nie rozumiem czemu nie chce przyjąć column_letters w zewnętrznej pętli?
+    algebraic_fields = [f"{i}{j}" for j in range(1, 9) for i in ["a", "b", "c", "d", "e", "f", "g", "h"]]
     algebraic_moves = []
     for start in algebraic_fields:
         for end in algebraic_fields:
@@ -116,7 +116,7 @@ class ChessTokenizer:
     def decode_moves(cls, tokens):
         """Decode moves"""
         return [
-            Move.from_uci(cls.tokens_to_vocab[token])  # Shouldn't be "Move.from_uci..."?
+            Move.from_uci(cls.tokens_to_vocab[token])
             for token in tokens
             if token not in cls.special_vocab_to_tokens.values()
         ]
@@ -151,7 +151,7 @@ class ChessTokenizerBoard(ChessTokenizer):
         board_tokens.append(cls.vocab_to_tokens[str(fullmove_clock)])
 
         assert (
-                len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
+            len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
         ), f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, got len(board_tokens) = {len(board_tokens)}"
         return board_tokens
 
@@ -216,7 +216,7 @@ class ChessTokenizerPiece(ChessTokenizer):
         board_tokens = padding(board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH)
 
         assert (
-                len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
+            len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
         ), f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, got len(board_tokens) = {len(board_tokens)}"
         return board_tokens
 
@@ -231,7 +231,7 @@ class ChessTokenizerPiece(ChessTokenizer):
                 if vocab == "<SEP>":
                     piece_number += 1
                 else:
-                    x = int(vocab[1])-1
+                    x = int(vocab[1]) - 1
                     y = cls.letter_to_column[vocab[0]]
                     board_with_dots[x][y] = cls.pieces[1:-2][piece_number]
             elif vocab != "<PAD>":
