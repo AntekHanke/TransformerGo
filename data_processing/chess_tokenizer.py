@@ -215,11 +215,16 @@ class ChessTokenizerPiece(ChessTokenizer):
         fullmove_clock = min(int(immutable_board.fullmove_clock), 255)
         board_tokens.append(cls.vocab_to_tokens[str(fullmove_clock)])
 
+        assert len(board_tokens) <= cls.TOKENIZED_BOARD_LENGTH, (
+            f"The number of tokens encoding the board must be less or equal than {cls.TOKENIZED_BOARD_LENGTH}, "
+            f"got len(board_tokens) = {len(board_tokens)}"
+        )
         board_tokens = padding(board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH)
 
-        assert (
-            len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH
-        ), f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, got len(board_tokens) = {len(board_tokens)}"
+        assert len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH, (
+            f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, "
+            f"got len(board_tokens) = {len(board_tokens)}"
+        )
         return board_tokens
 
     @classmethod
