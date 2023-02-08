@@ -76,8 +76,10 @@ class ChessTokenizer:
     def __new__(cls):
         if TOKENIZER == "board":
             self = ChessTokenizerBoard.__new__(ChessTokenizerBoard)
-        else:
+        elif TOKENIZER == "pieces":
             self = ChessTokenizerPiece.__new__(ChessTokenizerPiece)
+        else:
+            raise Exception(f"Tokenizer {TOKENIZER} not recognized. Should be either 'board' or 'pieces'.")
         return self
 
     @classmethod
