@@ -26,6 +26,9 @@ class RetokenizationJob(Job):
                         df["input_ids"] = df["input_ids"].apply(
                             lambda x: ChessTokenizerPiece.encode_immutable_board(ChessTokenizerBoard.decode_board(x))
                         )
+                        df["labels"] = df["labels"].apply(
+                            lambda x: ChessTokenizerPiece.encode_immutable_board(ChessTokenizerBoard.decode_board(x))
+                        )
                     df.to_pickle(target_path)
                     if os.path.isfile(target_path):
                         print(f"Saved {target_path}")
