@@ -3,7 +3,6 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
-
     "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataOnlyHistoryLoader",
     "TrainModel.path_to_training_data": "/ultra_small_data/train_small.pkl",
     "TrainModel.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
@@ -11,7 +10,6 @@ base_config = {
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
     "TrainModel.out_dir": "/out/policy/ultra_small/only_history",
-
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 300,
     "BartConfig.encoder_layers": 4,
@@ -22,7 +20,6 @@ base_config = {
     "BartConfig.encoder_ffn_dim": 128,
     "BartConfig.d_model": 32,
     "BartConfig.dropout": 0.05,
-
     "TrainingArguments.max_steps": 5000,
     "TrainingArguments.per_device_train_batch_size": 1,
     "TrainingArguments.per_device_eval_batch_size": 1,
@@ -32,7 +29,6 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 20,
     "TrainingArguments.learning_rate": 2e-4,
-
     "use_neptune": True,
 }
 
