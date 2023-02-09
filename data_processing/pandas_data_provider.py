@@ -60,6 +60,9 @@ class IterableDataLoader(IterableDataset):
 
     def generate_data(self) -> Iterator[Dict[str, List[int]]]:
 
+        if self.p_sample:
+            log_value("p_sample", 0, self.p_sample)
+
         data: List[Dict[str, List[int]]] = []
 
         if self.cycle:
@@ -75,7 +78,6 @@ class IterableDataLoader(IterableDataset):
             log_value("load_df", file_num, file_num)
 
             if self.p_sample:
-                log_value("p_sample", 0, self.p_sample)
                 load_df = load_df.sample(frac=self.p_sample)
 
             data.extend(self.process_df(load_df))
