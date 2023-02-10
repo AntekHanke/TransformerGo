@@ -51,7 +51,8 @@ class TrainModel(Job):
         if global_params_handler.learning_rate is not None:
             self.training_args.learning_rate = global_params_handler.learning_rate
 
-        self.iterable_subgoal_dataLoader_train = train_data_provider(
+        assert isinstance(train_data_provider, PandasIterableDataProvider), "train_data_provider must be PandasIterableDataProvider"
+        self.train_data_provider = train_data_provider(
             data_path=self.path_to_training_data,
             files_batch_size=files_batch_size,
             p_sample=prob_take_sample,
@@ -59,7 +60,8 @@ class TrainModel(Job):
             name="train",
         )
 
-        self.iterable_subgoal_dataLoader_eval = eval_data_provider(
+        assert isinstance(eval_data_provider, PandasStaticDataProvider), "eval_data_provider must be PandasStaticDataProvider"
+        self.eval_data_provider = eval_data_provider(
             data_path=self.path_to_eval_data,
             files_batch_size=files_batch_size,
             p_sample=prob_take_sample,
@@ -87,8 +89,8 @@ class TrainModel(Job):
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
-            train_dataset=self.iterable_subgoal_dataLoader_train,
-            eval_dataset=self.iterable_subgoal_dataLoader_eval,
+            train_dataset=self.train_data_provider,
+            eval_dataset=self.eval_data_provider,
             preprocess_logits_for_metrics=preprocess_logits_for_metrics,
             compute_metrics=compute_metrics,
         )
