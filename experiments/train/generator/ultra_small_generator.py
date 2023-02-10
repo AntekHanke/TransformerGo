@@ -7,8 +7,8 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
     "TrainModel.train_data_provider": "@data.IterableSubgoalDataLoader",
     "TrainModel.eval_data_provider": "@data.PandasStaticDataProvider",
-    "TrainModel.path_to_training_data": "/ultra_small_data/lichess_elite_2015-10.pgn_train_part_0.pkl",
-    "TrainModel.path_to_eval_data": "/ultra_small_data/lichess_elite_2015-10.pgn_train_part_0.pkl",
+    "TrainModel.path_to_training_data": "/ultra_small_data/train_small.pkl",
+    "TrainModel.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
     "TrainModel.files_batch_size": 1,
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
@@ -39,7 +39,8 @@ base_config = {
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 2,
     "TrainingArguments.learning_rate": 3e-5,
-    "TrainingArguments.eval_accumulation_steps": 2,
+    "TrainModel.eval_n_batches": 3,
+
     "use_neptune": True,
 }
 

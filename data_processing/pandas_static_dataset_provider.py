@@ -9,36 +9,31 @@ import torch
 from metric_logging import log_object, log_value
 
 
-# class ChessDataset(torch.utils.data.Dataset):
-#     """Used by Pytorch DataLoader to get batches of data."""
-#
-#     def __init__(self, data: Dict):
-#         self.data = data
-#
-#     def __getitem__(self, idx: int):
-#         return self.data[idx]
-#
-#     def __len__(self):
-#         return len(self.data)
-
 class PandasStaticDataProvider(torch.utils.data.Dataset):
     def __init__(
         self,
         data_path: str,
-        files_batch_size: int = 10,
+        files_batch_size: int = None,
         p_sample: Optional[float] = None,
+        eval_num_samples: Optional[int] = None,
         name: str = "default",
     ) -> None:
 
         self.data_path = data_path
         self.files_batch_size = files_batch_size
         self.p_sample = p_sample
+        self.eval_num_samples = eval_num_samples
         self.name = name
 
         self.successfully_loaded_files = 0
         self.files_names: List[str] = []
-        self.prepare_files_list()
+        self.all_data: List[Dict[str, List[int]]] = []
+        self.curent_data_for_eval: List[Dict[str, List[int]]] = []
 
+        self.prepare_files_list()
+        self.generate_data()
+        self.generate_data_for_eval()
+        self.get_item_counter = 0
 
     def prepare_files_list(self):
         if os.path.isfile(self.data_path):
@@ -54,12 +49,15 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
 
         assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
-
     def __getitem__(self, idx: int):
-        return self.data[idx]
+        self.get_item_counter += 1
+        if self.eval_num_samples and self.get_item_counter % self.eval_num_samples == 0:
+            self.generate_data_for_eval()
+            print(f"Generated new data for eval {self.name} | {self.get_item_counter}")
+        return self.curent_data_for_eval[idx]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.curent_data_for_eval)
 
     # @staticmethod
     # def process_df(df: pd.DataFrame) -> List[Dict[str, List[int]]]:
@@ -75,9 +73,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
         if self.p_sample:
             log_value(f"p_sample_{self.name}", 0, self.p_sample)
 
-        data: List[Dict[str, List[int]]] = []
-
-        for file_num, path_to_file in self.files_names:
+        for file_num, path_to_file in enumerate(self.files_names):
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
 
             if len(load_df) == 0:
@@ -85,11 +81,11 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
                 continue
 
             self.successfully_loaded_files += 1
-
             log_value(f"load_df_all_files_{self.name}", self.successfully_loaded_files, self.successfully_loaded_files)
-
             if self.p_sample:
                 load_df = load_df.sample(frac=self.p_sample)
+            self.all_data.extend(self.process_df(load_df))
 
-            data.extend(self.process_df(load_df))
-
+    def generate_data_for_eval(self):
+        random.shuffle(self.all_data)
+        self.curent_data_for_eval = self.all_data[: self.eval_num_samples]

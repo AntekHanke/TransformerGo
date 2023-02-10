@@ -27,6 +27,7 @@ class TrainModel(Job):
             path_to_training_data: Optional[str] = None,
             path_to_eval_data: Optional[str] = None,
             files_batch_size: int = 10,
+            eval_n_batches: int = 10,
             prob_take_sample: float = 1.0,
             model_config_cls: Type[BartConfig] = None,
             training_args_cls: Type[TrainingArguments] = None,
@@ -62,6 +63,7 @@ class TrainModel(Job):
             data_path=self.path_to_eval_data,
             files_batch_size=files_batch_size,
             p_sample=prob_take_sample,
+            eval_num_samples=eval_n_batches * training_args_cls.per_device_eval_batch_size,
             name="eval",
         )
 
@@ -72,12 +74,12 @@ class TrainModel(Job):
             pred_ids = torch.argmax(logits[0], dim=-1)
             return pred_ids, labels
 
-        # def compute_metrics(eval_preds):
-        #     predictions, labels = eval_preds
-        #     return {
-        #         "accuracy": (predictions == labels).astype(np.float32).mean().item(),
-        #         "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
-        #     }
+        def compute_metrics(eval_preds):
+            predictions, labels = eval_preds
+            return {
+                "accuracy": (predictions == labels).astype(np.float32).mean().item(),
+                "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
+            }
 
         print("Training arguments:")
         print(self.training_args)
@@ -87,8 +89,8 @@ class TrainModel(Job):
             args=self.training_args,
             train_dataset=self.iterable_subgoal_dataLoader_train,
             eval_dataset=self.iterable_subgoal_dataLoader_eval,
-            # preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-            # compute_metrics=compute_metrics,
+            preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+            compute_metrics=compute_metrics,
         )
 
         for callback_logger in pytorch_callback_loggers:
