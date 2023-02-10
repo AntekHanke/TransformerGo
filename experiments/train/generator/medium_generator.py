@@ -35,9 +35,9 @@ base_config = {
     "TrainingArguments.per_device_eval_batch_size": 400,
     "TrainingArguments.warmup_steps": 1500,
     "TrainingArguments.weight_decay": 0.01,
-    "TrainingArguments.logging_steps": 5,
+    "TrainingArguments.logging_steps": 50,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 10,
+    "TrainingArguments.eval_steps": 200,
     "TrainingArguments.learning_rate": 3e-5,
 
     "use_neptune": True,
