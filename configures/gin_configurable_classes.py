@@ -10,9 +10,10 @@ from data_processing.chess_data_generator import (
     PolicyGamesDataGenerator,
 )
 from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
-from data_processing.pandas_data_provider import (
+from data_processing.pandas_iterable_data_provider import (
     IterableSubgoalDataLoader, IterablePolicyDataLoader, PandasBertForSequenceDataProvider
 )
+from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider
 from data_processing.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
@@ -56,6 +57,7 @@ configure_classes(
         IterablePolicyDataLoader,
         PandasPolicyPrepareAndSaveData,
         PandasBertForSequenceDataProvider,
+        PandasStaticDataProvider,
         CLLPPrepareAndSaveData
     ],
     "data",

@@ -31,8 +31,10 @@ class IterableDataLoader(IterableDataset):
         self.cycle = cycle
         self.name = name
 
+        self.successfully_loaded_files = 0
         self.files_names: List[str] = []
         self.prepare_files_list()
+
 
     def prepare_files_list(self):
         if os.path.isfile(self.data_path):
@@ -72,16 +74,20 @@ class IterableDataLoader(IterableDataset):
 
         for file_num, path_to_file in files_iterable:
             load_df: pd.DataFrame = pd.read_pickle(path_to_file)
+
             if len(load_df) == 0:
                 log_object("Empty file", path_to_file)
                 continue
-            log_value("load_df", file_num, file_num)
+
+            self.successfully_loaded_files += 1
+
+            log_value(f"load_df_all_files_{self.name}", self.successfully_loaded_files, self.successfully_loaded_files)
 
             if self.p_sample:
                 load_df = load_df.sample(frac=self.p_sample)
 
             data.extend(self.process_df(load_df))
-            if (file_num + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
+            if (self.successfully_loaded_files + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
                 random.shuffle(data)
                 for x in data:
                     yield x

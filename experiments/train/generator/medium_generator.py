@@ -8,7 +8,7 @@ base_config = {
     "TrainModel.iterable_dataset_class": "@data.IterableSubgoalDataLoader",
     "TrainModel.path_to_training_data": "/data/k_3",
     "TrainModel.path_to_eval_data": "/data/k_3_eval",
-    "TrainModel.files_batch_size": 500,
+    "TrainModel.files_batch_size": 100,
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
 
@@ -29,13 +29,13 @@ base_config = {
     "BartConfig.dropout": 0.1,
 
     "TrainingArguments.max_steps": 60000,
-    "TrainingArguments.per_device_train_batch_size": 2600,
-    "TrainingArguments.per_device_eval_batch_size": 2600,
+    "TrainingArguments.per_device_train_batch_size": 400,
+    "TrainingArguments.per_device_eval_batch_size": 400,
     "TrainingArguments.warmup_steps": 1500,
     "TrainingArguments.weight_decay": 0.01,
-    "TrainingArguments.logging_steps": 50,
+    "TrainingArguments.logging_steps": 5,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 200,
+    "TrainingArguments.eval_steps": 10,
     "TrainingArguments.learning_rate": 3e-5,
 
     "use_neptune": True,

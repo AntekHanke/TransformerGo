@@ -5,9 +5,10 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
-    "TrainModel.iterable_dataset_class": "@data.IterableSubgoalDataLoader",
-    "TrainModel.path_to_training_data": "/ultra_small_data/train_small.pkl",
-    "TrainModel.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
+    "TrainModel.train_data_provider": "@data.IterableSubgoalDataLoader",
+    "TrainModel.eval_data_provider": "@data.PandasStaticDataProvider",
+    "TrainModel.path_to_training_data": "/ultra_small_data/lichess_elite_2015-10.pgn_train_part_0.pkl",
+    "TrainModel.path_to_eval_data": "/ultra_small_data/lichess_elite_2015-10.pgn_train_part_0.pkl",
     "TrainModel.files_batch_size": 1,
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
@@ -30,14 +31,15 @@ base_config = {
     "BartConfig.dropout": 0.1,
 
     "TrainingArguments.max_steps": 5000,
-    "TrainingArguments.per_device_train_batch_size": 128,
-    "TrainingArguments.per_device_eval_batch_size": 2,
+    "TrainingArguments.per_device_train_batch_size": 4,
+    "TrainingArguments.per_device_eval_batch_size": 8,
     "TrainingArguments.warmup_steps": 10,
     "TrainingArguments.weight_decay": 0.01,
-    "TrainingArguments.logging_steps": 10,
+    "TrainingArguments.logging_steps": 1,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 50,
+    "TrainingArguments.eval_steps": 2,
     "TrainingArguments.learning_rate": 3e-5,
+    "TrainingArguments.eval_accumulation_steps": 2,
     "use_neptune": True,
 }
 
