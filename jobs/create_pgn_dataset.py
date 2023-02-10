@@ -2,7 +2,7 @@ from typing import Type
 
 # import evaluate
 
-from data_processing.auxiliary_code_for_data_processing.pgn.chess_data_generator import ChessDataProvider
+from data_processing.chess_data_generator import ChessDataProvider
 from jobs.core import Job
 
 from metric_logging import source_files_register

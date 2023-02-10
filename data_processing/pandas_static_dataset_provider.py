@@ -6,6 +6,12 @@ from typing import Dict, Optional, List
 import pandas as pd
 import torch
 
+from data_processing.data_processing_functions import (
+    subgoal_process_df,
+    policy_process_df,
+    subgoal_to_policy_process_df,
+    cllp_process_df,
+)
 from metric_logging import log_object, log_value
 
 
@@ -88,5 +94,22 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
 class PandasStaticSubgoalDataProvider(PandasStaticDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
-        df = df[["input_ids", "labels"]]
-        return df.to_dict(orient="records")
+        return subgoal_process_df(df)
+
+
+class PandasStaticPolicyDataProvider(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return policy_process_df(df)
+
+
+class PandasStaticSubgoalToPolicyDataProvider(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame):
+        return subgoal_to_policy_process_df(df)
+
+
+class PandasStaticCLLPDataProvider(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame):
+        return cllp_process_df(df)

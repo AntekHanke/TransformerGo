@@ -1,15 +1,17 @@
 import glob
+import os
 import random
 from itertools import cycle
-
-from configures.global_config import MAX_MOVES_FOR_CLLP
-from data_processing.auxiliary_code_for_data_processing.pgn.chess_data_generator import ChessDataProvider, ChessDataset
-from data_processing.chess_tokenizer import ChessTokenizer
-from metric_logging import log_param, log_value, log_object
-import os
 from typing import List, Dict, Iterator, Optional
+
 import pandas as pd
 from torch.utils.data import IterableDataset
+
+from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
+from data_processing.chess_tokenizer import ChessTokenizer
+from data_processing.data_processing_functions import subgoal_process_df, policy_process_df, \
+    subgoal_to_policy_process_df, cllp_process_df
+from metric_logging import log_param, log_value, log_object
 
 
 class PandasIterableDataProvider(IterableDataset):
@@ -94,79 +96,31 @@ class PandasIterableDataProvider(IterableDataset):
 class PandasIterableSubgoalDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
-        df = df[["input_ids", "labels"]]
-        return df.to_dict(orient="records")
-
-    def __getitem__(self, item):
-        raise NotImplementedError
+        return subgoal_process_df(df)
 
 
 class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
-        df = df[["input_ids", "moves_between_input_and_target"]]
-        df = df[df["moves_between_input_and_target"].apply(len) > 0]
-        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
-        df.drop(columns=["moves_between_input_and_target"], inplace=True)
-        return df.to_dict(orient="records")
-
-    def __getitem__(self, item):
-        raise NotImplementedError
+        return policy_process_df(df)
 
 
 class PandasIterableSubgoalToPolicyDataProvider(PandasIterableDataProvider):
-    def process_df(self, df: pd.DataFrame):
-        df = df[["input_ids", "moves"]]
-        data_list = df.to_dict(orient="records")
-
-        def process_single_datapoint(datapoint):
-            return {
-                "input_ids": datapoint["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-                "labels": ChessTokenizer.encode(datapoint["moves"][0]),
-            }
-
-        data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
-        return data
-
-    def __getitem__(self, item):
-        raise NotImplementedError
+    @staticmethod
+    def process_df(df: pd.DataFrame):
+        return subgoal_to_policy_process_df(df)
 
 
 class PandasIterableCLLPDataProvider(PandasIterableDataProvider):
-    def process_df(self, df: pd.DataFrame):
-        df = df[["input_ids", "moves"]]
-        data_list = df.to_dict(orient="records")
-
-        def process_single_datapoint(datapoint):
-            moves_encoded = [ChessTokenizer.encode(move)[0] for move in datapoint["moves"]]
-            if len(moves_encoded) < MAX_MOVES_FOR_CLLP:
-                moves_encoded += [ChessTokenizer.special_vocab_to_tokens["<PAD>"]] * (
-                    MAX_MOVES_FOR_CLLP - len(moves_encoded)
-                )
-            return {
-                "input_ids": datapoint["input_ids"]
-                + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
-                + datapoint["labels"]
-                + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-                "labels": moves_encoded,
-            }
-
-        data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
-        return data
-
-    def __getitem__(self, item):
-        raise NotImplementedError
+    @staticmethod
+    def process_df(df: pd.DataFrame):
+        return cllp_process_df(df)
 
 
 class PandasBertForSequenceDataProvider(ChessDataProvider):
     def __init__(self, data_path=None, eval_datapoints: int = 10000):
-
-        print(f"Reading pickle")
         df = pd.read_pickle(data_path)
-        print(f"Finished reading pickle")
-        print(f"Processing df")
         processed_df = self.process_df(df)
-        print(f"Finished processing df")
         self.data_train = self.pandas_to_dict(processed_df.head(-eval_datapoints))
         self.data_eval = self.pandas_to_dict(processed_df.tail(eval_datapoints))
 

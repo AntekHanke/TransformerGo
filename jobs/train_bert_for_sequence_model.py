@@ -6,7 +6,7 @@ import pandas as pd
 
 from transformers.integrations import NeptuneCallback
 
-from data_processing.auxiliary_code_for_data_processing.pgn.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
+from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
 from data_processing.chess_tokenizer import ChessTokenizer
 from utils.data_utils import immutable_boards_to_img
 from jobs.core import Job
