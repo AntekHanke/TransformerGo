@@ -1,18 +1,11 @@
-from typing import Type, Union
+from typing import Type
 
 # import evaluate
-from transformers.integrations import NeptuneCallback
 
-from data_processing.chess_data_generator import ChessGamesDataGenerator, ChessDataProvider
+from data_processing.chess_data_generator import ChessDataProvider
 from jobs.core import Job
-from transformers import (
-    Trainer,
-    BartForConditionalGeneration,
-    BartConfig,
-    TrainingArguments,
-)
 
-from metric_logging import log_param, source_files_register, pytorch_callback_loggers
+from metric_logging import source_files_register
 
 source_files_register.register(__file__)
 

@@ -1,7 +1,6 @@
-import os
 from typing import Type
 
-from data_processing.prepare_and_save_data import PandasPolicyPrepareAndSaveData, PandasPrepareAndSaveData
+from data_processing.archive.pgn.prepare_and_save_data import PandasPrepareAndSaveData
 from jobs.core import Job
 
 

@@ -5,7 +5,7 @@ contexts:
     cmd_type: sbatch
     cpu: 2
     mem: 20G
-    gpu: 4
+    gpu: 1
     nodes: 1
     ntasks: 1
     partition: plgrid-gpu-a100
@@ -18,7 +18,7 @@ contexts:
                             -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
     slurm_url: plgtodrzygozdz@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/mrunner_scratch
-    time: 2880
+    time: 30
 
   athena_cpu:
     backend_type: slurm

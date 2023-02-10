@@ -8,7 +8,9 @@ MACHINE = "athena_4_gpu"
 
 base_config = {
     "run.job_class": "@jobs.TrainModel",
-    "TrainModel.iterable_dataset_class": "@data.IterablePolicyDataLoader",
+    "TrainModel.train_data_provider": "@data.PandasIterableCLLPDataProvider",
+    "TrainModel.eval_data_provider": "@data.PandasStaticCLLPDataProvider",
+    "TrainModel.eval_n_batches": 4,
     "TrainModel.files_batch_size": 10,
     "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_data",
     "TrainModel.path_to_eval_data": "/subgoal_chess_data/cllp_eval",
