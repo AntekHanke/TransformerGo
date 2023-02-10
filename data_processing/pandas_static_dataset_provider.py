@@ -9,6 +9,8 @@ import torch
 from data_processing.data_processing_functions import (
     subgoal_process_df,
     policy_process_df,
+    policy_with_history_process_df,
+    policy_only_history_process_df,
     subgoal_to_policy_process_df,
     cllp_process_df,
 )
@@ -101,6 +103,18 @@ class PandasStaticPolicyDataProvider(PandasStaticDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
         return policy_process_df(df)
+
+
+class PandasStaticPolicyWithHistoryDataProvider(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return policy_with_history_process_df(df)
+
+
+class PandasStaticPolicyOnlyHistoryDataProvider(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return policy_only_history_process_df(df)
 
 
 class PandasStaticSubgoalToPolicyDataProvider(PandasStaticDataProvider):

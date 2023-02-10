@@ -31,8 +31,8 @@ base_config = {
     "BartConfig.dropout": 0.1,
 
     "TrainingArguments.max_steps": 60000,
-    "TrainingArguments.per_device_train_batch_size": 400,
-    "TrainingArguments.per_device_eval_batch_size": 400,
+    "TrainingArguments.per_device_train_batch_size": 2600,
+    "TrainingArguments.per_device_eval_batch_size": 2600,
     "TrainingArguments.warmup_steps": 1500,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 50,

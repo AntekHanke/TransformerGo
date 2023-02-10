@@ -13,14 +13,21 @@ from data_processing.archive.pgn.mcts_data_generator import SubgoalMCGamesDataGe
 from data_processing.pandas_iterable_data_provider import (
     PandasIterableSubgoalDataProvider,
     PandasIterablePolicyDataProvider,
-    IterablePolicyDataWithHistoryLoader,
-    IterablePolicyDataOnlyHistoryLoader,
+    PandasIterablePolicyWithHistoryDataProvider,
+    PandasIterablePolicyOnlyHistoryDataProvider,
     PandasBertForSequenceDataProvider,
     PandasIterableSubgoalToPolicyDataProvider,
-    PandasIterableCLLPDataProvider
+    PandasIterableCLLPDataProvider,
 )
-from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider, PandasStaticSubgoalDataProvider, \
-    PandasStaticPolicyDataProvider, PandasStaticSubgoalToPolicyDataProvider, PandasStaticCLLPDataProvider
+from data_processing.pandas_static_dataset_provider import (
+    PandasStaticDataProvider,
+    PandasStaticSubgoalDataProvider,
+    PandasStaticPolicyDataProvider,
+    PandasStaticPolicyWithHistoryDataProvider,
+    PandasStaticPolicyOnlyHistoryDataProvider,
+    PandasStaticSubgoalToPolicyDataProvider,
+    PandasStaticCLLPDataProvider,
+)
 from data_processing.archive.pgn.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
@@ -28,6 +35,7 @@ from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDataset
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModel
 from jobs.chess_retokenization import RetokenizationJob
+
 
 def configure_class(cls, module=None) -> None:
     gin.external_configurable(cls, module=module)
@@ -48,7 +56,7 @@ configure_classes(
         TrainBertForSequenceModel,
         LeelaParallelDatasetGenerator,
         LeelaPrepareAndSaveData,
-        RetokenizationJob
+        RetokenizationJob,
     ],
     "jobs",
 )
@@ -62,18 +70,20 @@ configure_classes(
         SubgoalMCGamesDataGenerator,
         PandasIterableSubgoalDataProvider,
         PandasIterablePolicyDataProvider,
-        IterablePolicyDataWithHistoryLoader,
-        IterablePolicyDataOnlyHistoryLoader,
+        PandasIterablePolicyWithHistoryDataProvider,
+        PandasIterablePolicyOnlyHistoryDataProvider,
         PandasIterableSubgoalToPolicyDataProvider,
         PandasIterableCLLPDataProvider,
+        PandasStaticDataProvider,
         PandasStaticSubgoalDataProvider,
         PandasStaticPolicyDataProvider,
+        PandasStaticPolicyWithHistoryDataProvider,
+        PandasStaticPolicyOnlyHistoryDataProvider,
         PandasStaticSubgoalToPolicyDataProvider,
         PandasStaticCLLPDataProvider,
         PandasPolicyPrepareAndSaveData,
         PandasBertForSequenceDataProvider,
-
-        CLLPPrepareAndSaveData
+        CLLPPrepareAndSaveData,
     ],
     "data",
 )

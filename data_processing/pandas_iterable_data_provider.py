@@ -9,8 +9,14 @@ from torch.utils.data import IterableDataset
 
 from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_processing.data_processing_functions import subgoal_process_df, policy_process_df, \
-    subgoal_to_policy_process_df, cllp_process_df
+from data_processing.data_processing_functions import (
+    subgoal_process_df,
+    policy_process_df,
+    policy_with_history_process_df,
+    policy_only_history_process_df,
+    subgoal_to_policy_process_df,
+    cllp_process_df,
+)
 from metric_logging import log_param, log_value, log_object
 
 
@@ -105,47 +111,16 @@ class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
         return policy_process_df(df)
 
 
-class IterablePolicyDataLoader(IterableDataLoader):
+class PandasIterablePolicyWithHistoryDataProvider(PandasIterableDataProvider):
     @staticmethod
-    def process_df(df: pd.DataFrame):
-        df = df[["input_ids", "moves_between_input_and_target"]]
-        df = df[df["moves_between_input_and_target"].apply(len) > 0]
-        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
-        df.drop(columns=["moves_between_input_and_target"], inplace=True)
-        return df.to_dict(orient="records")
-
-    def __getitem__(self, item):
-        raise NotImplementedError
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return policy_with_history_process_df(df)
 
 
-class IterablePolicyDataWithHistoryLoader(IterableDataLoader):
+class PandasIterablePolicyOnlyHistoryDataProvider(PandasIterableDataProvider):
     @staticmethod
-    def process_df(df: pd.DataFrame):
-        df = df[["input_ids", "all_moves_from_start", "moves_between_input_and_target"]]
-        df = df[df["moves_between_input_and_target"].apply(len) > 0]
-        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
-        df["input_ids"] = df["input_ids"] + df["all_moves_from_start"]
-        df["input_ids"].apply(lambda x: x.append(ChessTokenizer.vocab_to_tokens["<SEP>"]))
-        df.drop(columns=["all_moves_from_start", "moves_between_input_and_target"], inplace=True)
-        return df.to_dict(orient="records")
-
-    def __getitem__(self, item):
-        raise NotImplementedError
-
-
-class IterablePolicyDataOnlyHistoryLoader(IterableDataLoader):
-    @staticmethod
-    def process_df(df: pd.DataFrame):
-        df = df[["all_moves_from_start", "moves_between_input_and_target"]]
-        df = df[df["moves_between_input_and_target"].apply(len) > 0]
-        df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
-        df.rename(columns={"all_moves_from_start": "input_ids"}, inplace=True)
-        df["input_ids"].apply(lambda x: x.append(ChessTokenizer.vocab_to_tokens["<SEP>"]))
-        df.drop(columns=["moves_between_input_and_target"], inplace=True)
-        return df.to_dict(orient="records")
-
-    def __getitem__(self, item):
-        raise NotImplementedError
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return policy_only_history_process_df(df)
 
 
 class PandasIterableSubgoalToPolicyDataProvider(PandasIterableDataProvider):

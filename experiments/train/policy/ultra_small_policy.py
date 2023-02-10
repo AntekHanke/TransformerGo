@@ -5,7 +5,7 @@ base_config = {
     "run.job_class": "@jobs.TrainModel",
 
     "TrainModel.train_data_provider": "@data.PandasIterablePolicyDataProvider",
-    "TrainModel.eval_data_provider": "@data.PandasStatiPolicyDataProvider",
+    "TrainModel.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
     "TrainModel.eval_n_batches": 4,
 
     "TrainModel.path_to_training_data": "/ultra_small_data/train_small.pkl",
@@ -50,7 +50,7 @@ experiments_list = create_experiments_helper(
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
-    exclude=["data", ".pytest_cache", "out", ".git", "venv", "venv37", "venv38"],
+    exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
     tags=["policy", "train", "ultra-small"],
     with_neptune=True,
