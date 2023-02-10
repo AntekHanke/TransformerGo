@@ -59,17 +59,11 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.curent_data_for_eval)
 
-    # @staticmethod
-    # def process_df(df: pd.DataFrame) -> List[Dict[str, List[int]]]:
-    #     raise NotImplementedError
-
     @staticmethod
-    def process_df(df: pd.DataFrame):
-        df = df[["input_ids", "labels"]]
-        return df.to_dict(orient="records")
+    def process_df(df: pd.DataFrame) -> List[Dict[str, List[int]]]:
+        raise NotImplementedError
 
     def generate_data(self):
-
         if self.p_sample:
             log_value(f"p_sample_{self.name}", 0, self.p_sample)
 
@@ -89,3 +83,10 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
     def generate_data_for_eval(self):
         random.shuffle(self.all_data)
         self.curent_data_for_eval = self.all_data[: self.eval_num_samples]
+
+
+class PandasStaticSubgoalDataProvider(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame):
+        df = df[["input_ids", "labels"]]
+        return df.to_dict(orient="records")

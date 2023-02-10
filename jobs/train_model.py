@@ -10,7 +10,7 @@ from transformers import (
 )
 from transformers.integrations import NeptuneCallback
 
-from data_processing.pandas_iterable_data_provider import IterableDataLoader
+from data_processing.pandas_iterable_data_provider import PandasIterableDataProvider
 from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider
 from jobs.core import Job
 from metric_logging import log_param, source_files_register, pytorch_callback_loggers
@@ -22,7 +22,7 @@ source_files_register.register(__file__)
 class TrainModel(Job):
     def __init__(
             self,
-            train_data_provider: Type[IterableDataLoader],
+            train_data_provider: Type[PandasIterableDataProvider],
             eval_data_provider: Type[PandasStaticDataProvider],
             path_to_training_data: Optional[str] = None,
             path_to_eval_data: Optional[str] = None,

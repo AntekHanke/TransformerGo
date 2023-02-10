@@ -17,7 +17,7 @@ from data_structures.data_structures import ImmutableBoard, ChessMetadata, Trans
 from utils.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
-from data_processing.probability_subgoal_selector_tools import prob_table_for_diff_n, prob_select_function
+from utils.probability_subgoal_selector_tools import prob_table_for_diff_n, prob_select_function
 from policy.chess_policy import LCZeroPolicy
 
 # TODO: fill in fields

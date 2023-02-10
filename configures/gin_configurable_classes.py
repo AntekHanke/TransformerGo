@@ -1,7 +1,7 @@
 import gin
 from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 
-from data_processing.chess_data_generator import (
+from data_processing.auxiliary_code_for_data_processing.pgn.chess_data_generator import (
     NoFilter,
     ResultFilter,
     ELOFilter,
@@ -9,12 +9,12 @@ from data_processing.chess_data_generator import (
     ChessSubgoalGamesDataGenerator,
     PolicyGamesDataGenerator,
 )
-from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
+from data_processing.auxiliary_code_for_data_processing.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.pandas_iterable_data_provider import (
-    IterableSubgoalDataLoader, IterablePolicyDataLoader, PandasBertForSequenceDataProvider
+    PandasIterableSubgoalDataProvider, PandasIterablePolicyDataProvider, PandasBertForSequenceDataProvider
 )
 from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider
-from data_processing.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
+from data_processing.auxiliary_code_for_data_processing.pgn.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
@@ -53,8 +53,8 @@ configure_classes(
         ChessSubgoalGamesDataGenerator,
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
-        IterableSubgoalDataLoader,
-        IterablePolicyDataLoader,
+        PandasIterableSubgoalDataProvider,
+        PandasIterablePolicyDataProvider,
         PandasPolicyPrepareAndSaveData,
         PandasBertForSequenceDataProvider,
         PandasStaticDataProvider,

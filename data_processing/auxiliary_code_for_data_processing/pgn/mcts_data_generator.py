@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from data_processing.chess_tokenizer import ChessTokenizer
 from utils.data_utils import immutable_boards_to_img
-from data_processing.leela.leela_graph_data_loader import LeelaGMLTree, data_trees_generator
+from data_processing.auxiliary_code_for_data_processing.leela.leela_graph_data_loader import LeelaGMLTree, data_trees_generator
 from data_structures.data_structures import LeelaSubgoal
 
 from metric_logging import log_value, log_object, log_param

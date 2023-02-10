@@ -4,7 +4,7 @@ from typing import List
 from tqdm import tqdm
 
 from utils.data_utils import immutable_boards_to_img
-from data_processing.mcts_data_generator import SubgoalMCGamesDataGenerator
+from data_processing.auxiliary_code_for_data_processing.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
 from jobs.core import Job
 
 from metric_logging import log_object, log_value

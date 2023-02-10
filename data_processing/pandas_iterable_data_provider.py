@@ -1,21 +1,18 @@
 import glob
 import random
-import time
 from itertools import cycle
 
 from configures.global_config import MAX_MOVES_FOR_CLLP
-from data_processing.chess_data_generator import ChessDataProvider, ChessDataset
+from data_processing.auxiliary_code_for_data_processing.pgn.chess_data_generator import ChessDataProvider, ChessDataset
 from data_processing.chess_tokenizer import ChessTokenizer
 from metric_logging import log_param, log_value, log_object
 import os
-from os.path import isfile, join
 from typing import List, Dict, Iterator, Optional
 import pandas as pd
-from tqdm import tqdm
 from torch.utils.data import IterableDataset
 
 
-class IterableDataLoader(IterableDataset):
+class PandasIterableDataProvider(IterableDataset):
     def __init__(
         self,
         data_path: str,
@@ -34,7 +31,6 @@ class IterableDataLoader(IterableDataset):
         self.successfully_loaded_files = 0
         self.files_names: List[str] = []
         self.prepare_files_list()
-
 
     def prepare_files_list(self):
         if os.path.isfile(self.data_path):
@@ -80,21 +76,22 @@ class IterableDataLoader(IterableDataset):
                 continue
 
             self.successfully_loaded_files += 1
-
             log_value(f"load_df_all_files_{self.name}", self.successfully_loaded_files, self.successfully_loaded_files)
 
             if self.p_sample:
                 load_df = load_df.sample(frac=self.p_sample)
 
             data.extend(self.process_df(load_df))
-            if (self.successfully_loaded_files + 1) % self.files_batch_size == 0 or (file_num + 1) == len(self.files_names):
+            if (self.successfully_loaded_files + 1) % self.files_batch_size == 0 or (file_num + 1) == len(
+                self.files_names
+            ):
                 random.shuffle(data)
                 for x in data:
                     yield x
                 data.clear()
 
 
-class IterableSubgoalDataLoader(IterableDataLoader):
+class PandasIterableSubgoalDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
         df = df[["input_ids", "labels"]]
@@ -104,7 +101,7 @@ class IterableSubgoalDataLoader(IterableDataLoader):
         raise NotImplementedError
 
 
-class IterablePolicyDataLoader(IterableDataLoader):
+class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
         df = df[["input_ids", "moves_between_input_and_target"]]
@@ -117,7 +114,7 @@ class IterablePolicyDataLoader(IterableDataLoader):
         raise NotImplementedError
 
 
-class IterableSubgoalToPolicyDataLoader(IterableDataLoader):
+class PandasIterableSubgoalToPolicyDataProvider(PandasIterableDataProvider):
     def process_df(self, df: pd.DataFrame):
         df = df[["input_ids", "moves"]]
         data_list = df.to_dict(orient="records")
@@ -135,7 +132,7 @@ class IterableSubgoalToPolicyDataLoader(IterableDataLoader):
         raise NotImplementedError
 
 
-class IterableCLLPDataLoader(IterableDataLoader):
+class PandasIterableCLLPDataProvider(PandasIterableDataProvider):
     def process_df(self, df: pd.DataFrame):
         df = df[["input_ids", "moves"]]
         data_list = df.to_dict(orient="records")

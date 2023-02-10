@@ -5,6 +5,6 @@ LOCAL_PATH_BINDING = {
     "/out": "/home/gosia/dane/subgoal_chess_data/local_leela_models",
 }
 
-TRAIN_POLICY = "/home/gosia/PycharmProjects/subgoal_search_chess/experiments/train/policy/ultra_small_model.py"
+TRAIN_POLICY = "/home/gosia/PycharmProjects/subgoal_search_chess/experiments/train/policy/ultra_small_policy.py"
 
 local_run(TRAIN_POLICY, True, LOCAL_PATH_BINDING)
