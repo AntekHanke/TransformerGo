@@ -5,7 +5,9 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.TrainModel",
 
-    "TrainModel.iterable_dataset_class": "@data.IterableSubgoalDataLoader",
+    "TrainModel.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
+    "TrainModel.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
+    "TrainModel.eval_n_batches": 4,
     "TrainModel.path_to_training_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_train",
     "TrainModel.path_to_eval_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_eval",
     "TrainModel.files_batch_size": 10,

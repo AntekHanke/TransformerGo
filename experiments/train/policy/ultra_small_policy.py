@@ -4,8 +4,10 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.TrainModel",
 
-    "TrainModel.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
-    "TrainModel.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
+    "TrainModel.train_data_provider": "@data.PandasIterablePolicyDataProvider",
+    "TrainModel.eval_data_provider": "@data.PandasStatiPolicyDataProvider",
+    "TrainModel.eval_n_batches": 4,
+
     "TrainModel.path_to_training_data": "/ultra_small_data/train_small.pkl",
     "TrainModel.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
     "TrainModel.files_batch_size": 1,

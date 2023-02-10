@@ -13,7 +13,7 @@ from transformers.integrations import NeptuneCallback
 from data_processing.pandas_iterable_data_provider import PandasIterableDataProvider
 from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider
 from jobs.core import Job
-from metric_logging import log_param, source_files_register, pytorch_callback_loggers
+from metric_logging import log_param, source_files_register, pytorch_callback_loggers, log_object
 from utils.global_params_handler import GlobalParamsHandler
 
 source_files_register.register(__file__)
@@ -21,18 +21,20 @@ source_files_register.register(__file__)
 
 class TrainModel(Job):
     def __init__(
-            self,
-            train_data_provider: Type[PandasIterableDataProvider],
-            eval_data_provider: Type[PandasStaticDataProvider],
-            path_to_training_data: Optional[str] = None,
-            path_to_eval_data: Optional[str] = None,
-            files_batch_size: int = None,
-            eval_n_batches: int = None,
-            prob_take_sample: float = 1.0,
-            model_config_cls: Type[BartConfig] = None,
-            training_args_cls: Type[TrainingArguments] = None,
-            out_dir: str = None,
+        self,
+        train_data_provider: Type[PandasIterableDataProvider],
+        eval_data_provider: Type[PandasStaticDataProvider],
+        path_to_training_data: Optional[str] = None,
+        path_to_eval_data: Optional[str] = None,
+        files_batch_size: int = None,
+        eval_n_batches: int = None,
+        prob_take_sample: float = 1.0,
+        model_config_cls: Type[BartConfig] = None,
+        training_args_cls: Type[TrainingArguments] = None,
+        out_dir: str = None,
     ) -> None:
+
+        assert files_batch_size is not None, "files_batch_size is not set"
 
         global_params_handler: GlobalParamsHandler = GlobalParamsHandler()
         data_paths_from_gloabl_params_handler = global_params_handler.get_data_path()
@@ -51,7 +53,6 @@ class TrainModel(Job):
         if global_params_handler.learning_rate is not None:
             self.training_args.learning_rate = global_params_handler.learning_rate
 
-        assert isinstance(train_data_provider, PandasIterableDataProvider), "train_data_provider must be PandasIterableDataProvider"
         self.train_data_provider = train_data_provider(
             data_path=self.path_to_training_data,
             files_batch_size=files_batch_size,
@@ -59,8 +60,10 @@ class TrainModel(Job):
             cycle=True,
             name="train",
         )
+        assert isinstance(
+            self.train_data_provider, PandasIterableDataProvider
+        ), f"train_data_provider must be PandasIterableDataProvider, got {train_data_provider}"
 
-        assert isinstance(eval_data_provider, PandasStaticDataProvider), "eval_data_provider must be PandasStaticDataProvider"
         self.eval_data_provider = eval_data_provider(
             data_path=self.path_to_eval_data,
             files_batch_size=files_batch_size,
@@ -68,6 +71,9 @@ class TrainModel(Job):
             eval_num_samples=eval_n_batches * training_args_cls.per_device_eval_batch_size,
             name="eval",
         )
+        assert isinstance(
+            self.eval_data_provider, PandasStaticDataProvider
+        ), f"eval_data_provider must be PandasStaticDataProvider, got {eval_data_provider}"
 
         self.model_config = model_config_cls()
         self.model = BartForConditionalGeneration(self.model_config)
@@ -83,8 +89,8 @@ class TrainModel(Job):
                 "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
             }
 
-        print("Training arguments:")
-        print(self.training_args)
+        for param_name, param_value in self.training_args.to_dict().items():
+            log_object(f"Training arguments/{param_name}", str(param_value))
 
         self.trainer = Trainer(
             model=self.model,
