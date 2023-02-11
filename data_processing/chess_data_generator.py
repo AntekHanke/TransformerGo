@@ -1,8 +1,8 @@
+import copy
 import os
 from typing import Dict, Any, Optional, List, Type, Union, Tuple
 
 import chess.pgn
-import random
 import numpy as np
 
 import pandas as pd
@@ -17,8 +17,10 @@ from data_structures.data_structures import ImmutableBoard, ChessMetadata, Trans
 from utils.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
 from metric_logging import log_value, log_object
 
-from utils.probability_subgoal_selector_tools import prob_table_for_diff_n, prob_select_function
+from utils.probability_subgoal_selector_tools import prob_table_for_diff_n
 from policy.chess_policy import LCZeroPolicy
+
+rng = np.random.default_rng(0)
 
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
@@ -133,7 +135,6 @@ class ChessGamesDataGenerator(ChessDataProvider):
         only_eval: bool = False,
         save_path_to_train_set: Optional[str] = None,
         save_path_to_eval_set: Optional[str] = None,
-        save_filtered_data: Optional[str] = None,
         save_data_every_n_games: int = 1000,
     ):
         self.size_of_computed_dataset: int = 0
@@ -143,11 +144,11 @@ class ChessGamesDataGenerator(ChessDataProvider):
         assert chess_filter is not None, "Chess filter must be specified"
         self.chess_filter = chess_filter()
 
-        print(100 * "=")
+        print(150 * "=")
         print(
             f"Name of used filter: {type(self.chess_filter)}." f" Atributs of used filter: {self.chess_filter.__dict__}"
         )
-        print(100 * "=")
+        print(150 * "=")
 
         self.p_sample = p_sample
         self.max_games = max_games
@@ -166,7 +167,6 @@ class ChessGamesDataGenerator(ChessDataProvider):
 
         self.save_path_to_train_set = save_path_to_train_set
         self.save_path_to_eval_set = save_path_to_eval_set
-        self.save_filtered_data = save_filtered_data
         self.save_data_every_n_games = save_data_every_n_games
 
         self.lc_zero_policy = LCZeroPolicy()
@@ -199,26 +199,11 @@ class ChessGamesDataGenerator(ChessDataProvider):
                 transitions.extend(lc_zero_transitions)
                 chess_metadata.Result = result
 
-        # if self.save_filtered_data is not None:
-        #     completed_game = chess.pgn.Game()
-        #     completed_game.headers = chess_metadata.__dict__
-        #     completed_game.setup(final_pgn_board)
-        #
-        #     print(f"Filtered data will be saved in: {self.save_filtered_data}")
-        #     if isinstance(self.chess_filter, ELOFilter):
-        #         self.save_filtered_data = os.path.join(self.save_filtered_data,
-        #                                                f"{type(self.chess_filter)}_ELO_{self.chess_filter.elo_threshold}.pgn")
-        #     else:
-        #         self.save_filtered_data = os.path.join(self.save_filtered_data, f"_{type(self.chess_filter)}.pgn")
-        #
-        #     with open(self.save_filtered_data, "a") as f:
-        #         print(current_game, file=f)
-        #         print("\n", file=f)
-
         return OneGameData(chess_metadata, transitions)
 
+    @staticmethod
     def moves_to_transitions(
-        self, initial_immutable_board: Optional[ImmutableBoard], moves
+        initial_immutable_board: Optional[ImmutableBoard], moves
     ) -> Tuple[List[Transition], ImmutableBoard, bool]:
         if initial_immutable_board is None:
             board = chess.Board()
@@ -259,7 +244,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
     def create_data(self) -> None:
         part: int = 0
 
-        for n_iterations in range(self.max_games):
+        for n_iterations in range(1, self.max_games):
             train_eval = get_split(n_iterations, self.train_eval_split)
             if not self.only_eval or train_eval == "eval":
                 current_dataset = self.select_dataset(train_eval)
@@ -312,7 +297,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
         raise NotImplementedError
 
     def log_sample(self, sample: Any, game_metadata: ChessMetadata) -> None:
-        if self.log_samples_limit is not None and random.random() <= self.p_log_sample:
+        if self.log_samples_limit is not None and rng.random() <= self.p_log_sample:
             if self.logged_samples < self.log_samples_limit:
                 log_object("Data sample", self.sample_to_log_object(sample, game_metadata))
                 self.logged_samples += 1
@@ -345,7 +330,7 @@ class ChessGamesDataGenerator(ChessDataProvider):
 class PolicyGamesDataGenerator(ChessGamesDataGenerator):
     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict):
         for num, transition in enumerate(one_game_data.transitions):
-            if random.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
+            if rng.random() <= self.p_sample and self.chess_filter.use_transition(transition, one_game_data):
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(transition.immutable_board)
                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
@@ -362,12 +347,24 @@ class PolicyGamesDataGenerator(ChessGamesDataGenerator):
 
 
 class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
-    def __init__(self, k: int, number_of_datapoint_from_one_game: int, *args, **kwargs):
+    def __init__(
+        self,
+        number_of_datapoint_from_one_game: Optional[int] = None,
+        range_of_k: Optional[List[int]] = None,
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self.save_path_to_train_set: str = os.path.join(
-            self.save_path_to_train_set, "subgoals_k=" + str(k), "train" + "/"
-        )
-        self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set, "subgoals_k=" + str(k), "eval" + "/")
+        self.range_of_k = range_of_k
+        self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game
+        self.prob_selector: Dict[int, np.ndarray] = prob_table_for_diff_n((1, 800))
+
+        assert (
+            self.range_of_k is not None and self.number_of_datapoint_from_one_game is not None
+        ), "Set range_of_k and number_of_datapoint_from_one_game must be set"
+
+        self.save_path_to_train_set: str = os.path.join(self.save_path_to_train_set, "subgoals_all_k", "train" + "/")
+        self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set, "subgoals_all_k", "eval" + "/")
 
         try:
             os.makedirs(self.save_path_to_train_set)
@@ -381,76 +378,51 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
                 f"Error {error}"
             )
 
-        self.k = k
-        self.prob_selector = prob_table_for_diff_n((5, 500))
-        self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game
-
-    def game_to_datapoints_all(self, one_game_data: OneGameData, current_dataset: List[Dict[str, List[int]]]) -> None:
-        game_length = len(one_game_data.transitions)
-        for num in range(game_length - self.k):
-
-            input_board = one_game_data.transitions[num].immutable_board
-            target_board_num = min(game_length - 1, num + self.k)
-            target_board = one_game_data.transitions[target_board_num].immutable_board
-
-            if random.random() <= self.p_sample:
-                current_dataset[len(current_dataset)] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-                    "labels": ChessTokenizer.encode_immutable_board(target_board),
-                }
-
-            sample = {
-                "input_board": input_board,
-                "target_board": target_board,
-                "num": num,
-                "move": one_game_data.transitions[num].move.uci(),
-            }
-            self.log_sample(sample, one_game_data.metadata)
-
     def game_to_datapoints(
-        self, one_game_data: OneGameData, current_dataset: List[Dict[str, Union[List[int], str, int]]]
+        self, one_game_data: OneGameData, current_dataset: Dict[int, Dict[str, Union[List[int], str, int]]]
     ) -> None:
-
         game_length: int = len(one_game_data.transitions)
-        if game_length > 0 and game_length - self.k >= 0:
+        if game_length > 0:
+            selected_datapoints_all_k: Dict[int, List[int]] = {}
+            temporary_dict_datapoints_for_k: Dict[str, Union[List[int], str, int]] = {}
+            p: np.ndarray = self.prob_selector[game_length]
 
-            if game_length <= len(self.prob_selector):
-                p: np.ndarray = self.prob_selector[game_length - 1]
-            else:
-                p: np.ndarray = prob_select_function(game_length - 1)
+            for k in self.range_of_k:
+                selected_datapoints = np.random.choice(
+                    list(range(game_length)), size=self.number_of_datapoint_from_one_game, p=p
+                )
+                selected_datapoints_all_k[k] = selected_datapoints
 
-            assert (
-                self.number_of_datapoint_from_one_game is not None
-            ), "Please select number of datapoints frome game. Must be integer."
+            for games_positions in zip(*selected_datapoints_all_k.values()):
+                for k, position in zip(self.range_of_k, games_positions):
+                    input_board: ImmutableBoard = one_game_data.transitions[position].immutable_board
+                    target_board_num = min(game_length - 1, position + k)
+                    target_board: ImmutableBoard = one_game_data.transitions[target_board_num].immutable_board
 
-            selected_datapoints = np.random.choice(
-                list(range(game_length - 1)), size=self.number_of_datapoint_from_one_game, p=p
-            )
-
-            # selected_datapoints = list(range(game_length - 1))
-
-            for key in selected_datapoints:
-                input_board: ImmutableBoard = one_game_data.transitions[key].immutable_board
-                target_board_num = min(game_length - 1, key + self.k)
-                target_board: ImmutableBoard = one_game_data.transitions[target_board_num].immutable_board
-                position: int = len(current_dataset)
-                current_dataset[position] = {
-                    "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-                    + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-                    "labels": ChessTokenizer.encode_immutable_board(target_board),
-                }
-                all_moves_from_start: Dict[str, List[int]] = {
-                    "all_moves_from_start": [
-                        ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0] for i in range(key)
-                    ]
-                }
-                moves_between_input_and_target: Dict[str, List[int]] = {
-                    "moves_between_input_and_target": [
-                        ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
-                        for i in range(key, target_board_num)
-                    ]
-                }
+                    temporary_dict_datapoints_for_k.update(
+                        {
+                            f"input_ids_{k}": ChessTokenizer.encode_immutable_board(input_board)
+                            + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                            f"labels_{k}": ChessTokenizer.encode_immutable_board(target_board),
+                        }
+                    )
+                    temporary_dict_datapoints_for_k.update(
+                        {
+                            f"all_moves_from_start_{k}": [
+                                ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
+                                for i in range(position)
+                            ]
+                        }
+                    )
+                    temporary_dict_datapoints_for_k.update(
+                        {
+                            f"moves_between_input_and_target_{k}": [
+                                ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
+                                for i in range(position, target_board_num)
+                            ]
+                        }
+                    )
+                    temporary_dict_datapoints_for_k.update({f"move_number_form_start_{k}": position})
 
                 boards_stats: Dict[str, str] = {"Result": "", "WhiteElo": "", "BlackElo": "", "Opening": ""}
 
@@ -458,11 +430,11 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
                     if stat in boards_stats:
                         boards_stats[stat] = one_game_data.metadata.__dict__[stat]
 
-                current_dataset[position].update(all_moves_from_start)
-                current_dataset[position].update(moves_between_input_and_target)
-                current_dataset[position].update(boards_stats)
-                current_dataset[position].update({"move_number_form_start": key})
-                current_dataset[position].update({"game_length": game_length})
+                temporary_dict_datapoints_for_k.update(boards_stats)
+                temporary_dict_datapoints_for_k.update({"game_length": game_length})
+
+                current_dataset[len(current_dataset)] = copy.deepcopy(temporary_dict_datapoints_for_k)
+                temporary_dict_datapoints_for_k.clear()
 
     def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
         return immutable_boards_to_img(
@@ -482,12 +454,12 @@ class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
 
             input_board = one_game_data.transitions[num].immutable_board
             max_target_board_num = min(game_length - 1, num + self.max_k)
-            target_board_num = random.randint(num + 1, max_target_board_num)
+            target_board_num = rng.integers(low=num + 1, high=max_target_board_num)
             move = one_game_data.transitions[num].move
             all_cllp_moves = [one_game_data.transitions[i].move for i in range(num + 1, target_board_num + 1)]
             target_board = one_game_data.transitions[target_board_num].immutable_board
 
-            if random.random() <= self.p_sample:
+            if rng.random() <= self.p_sample:
                 current_dataset[len(current_dataset)] = {
                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
                     + ChessTokenizer.encode_immutable_board(input_board)

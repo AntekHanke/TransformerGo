@@ -7,7 +7,7 @@ def normal_density(x: float, mean: float = 0.0, standard_dev: float = 1.0) -> fl
     return norm.pdf(x, loc=mean, scale=standard_dev)
 
 
-def prob_select_function(number_of_samples: int) -> np.ndarray:
+def TO_314_distribution(number_of_samples: int) -> np.ndarray:
     if number_of_samples > (4.0 / np.sqrt(np.pi)) * np.sqrt(np.log(100.0)):
         top: float = (4.0 / np.sqrt(np.pi)) * np.sqrt(np.log(100.0)) / number_of_samples
         mean: float = number_of_samples / 4.0
@@ -28,5 +28,5 @@ def prob_select_function(number_of_samples: int) -> np.ndarray:
 def prob_table_for_diff_n(n_range: Tuple[int, int]) -> Dict[int, np.ndarray]:
     low, hight = n_range
     assert low < hight
-    prob_for_diff_n: Dict[int, np.ndarray] = {n: prob_select_function(n) for n in range(low, hight + 1)}
+    prob_for_diff_n: Dict[int, np.ndarray] = {n: TO_314_distribution(n) for n in range(low, hight + 1)}
     return prob_for_diff_n
