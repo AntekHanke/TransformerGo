@@ -84,6 +84,7 @@ class TrainModel(Job):
 
         def compute_metrics(eval_preds):
             predictions, labels = eval_preds
+            predictions, _ = predictions
             return {
                 "accuracy": (predictions == labels).astype(np.float32).mean().item(),
                 "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
