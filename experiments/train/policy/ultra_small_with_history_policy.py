@@ -4,8 +4,8 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 base_config = {
     "run.job_class": "@jobs.TrainModel",
 
-    "TrainModel.train_data_provider": "@data.PandasIterablePolicyDataProvider",
-    "TrainModel.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
+    "TrainModel.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+    "TrainModel.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
     "TrainModel.eval_n_batches": 4,
 
     "TrainModel.path_to_training_data": "/ultra_small_data/train_small.pkl",
@@ -14,10 +14,10 @@ base_config = {
 
     "TrainModel.model_config_cls": "@transformers.BartConfig",
     "TrainModel.training_args_cls": "@transformers.TrainingArguments",
-    "TrainModel.out_dir": "/out/policy/ultra_small/no_history",
+    "TrainModel.out_dir": "/out/policy/ultra_small/with_history",
 
     "BartConfig.vocab_size": 4600,
-    "BartConfig.max_position_embeddings": 100,
+    "BartConfig.max_position_embeddings": 300,
     "BartConfig.encoder_layers": 4,
     "BartConfig.decoder_layers": 4,
     "BartConfig.encoder_attention_heads": 2,
@@ -45,14 +45,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra-small-policy-model",
+    experiment_name=f"ultra-small-policy-model-with-history",
     project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
     python_path="",
-    tags=["policy", "train", "ultra-small"],
+    tags=["policy", "train", "ultra-small", "with-history"],
     with_neptune=True,
     env={},
 )
