@@ -20,15 +20,15 @@ data_generator = ChessSubgoalGamesDataGenerator(
 data_generator.create_data()
 
 
-data = load("/home/gracjan/test_data_new_data_generator/subgoals_all_k/train/cas_small.pgn_train_part_0.pkl")
-t = ChessTokenizer()
-input_board_k_1 = t.decode_board(data.loc[0]["input_ids_1"])
-subgoal_k_1 = t.decode_board(data.loc[0]["labels_1"])
-input_board_k_2 = t.decode_board(data.loc[0]["input_ids_2"])
-subgoal_k_2 = t.decode_board(data.loc[0]["labels_2"])
-input_board_k_1_next = t.decode_board(data.loc[1]["input_ids_1"])
-subgoal_k_1_next = t.decode_board(data.loc[1]["labels_1"])
-input_board_k_2_next = t.decode_board(data.loc[1]["input_ids_2"])
-subgoal_k_2_next = t.decode_board(data.loc[1]["labels_2"])
-
-print(data.columns)
+# data = load("/home/gracjan/test_data_new_data_generator/subgoals_all_k/train/cas_small.pgn_train_part_0.pkl")
+# t = ChessTokenizer()
+# input_board_k_1 = t.decode_board(data.loc[0]["input_ids_1"])
+# subgoal_k_1 = t.decode_board(data.loc[0]["labels_1"])
+# input_board_k_2 = t.decode_board(data.loc[0]["input_ids_2"])
+# subgoal_k_2 = t.decode_board(data.loc[0]["labels_2"])
+# input_board_k_1_next = t.decode_board(data.loc[1]["input_ids_1"])
+# subgoal_k_1_next = t.decode_board(data.loc[1]["labels_1"])
+# input_board_k_2_next = t.decode_board(data.loc[1]["input_ids_2"])
+# subgoal_k_2_next = t.decode_board(data.loc[1]["labels_2"])
+#
+# print(data.columns)
