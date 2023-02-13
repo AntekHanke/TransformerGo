@@ -33,7 +33,7 @@ class ChessTokenizer:
     column_letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
     letter_to_column = {letter: i for i, letter in enumerate(column_letters)}
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [f"{i}{j}" for j in range(1, 9) for i in ["a", "b", "c", "d", "e", "f", "g", "h"]]
+    algebraic_fields = [f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)]
     algebraic_moves = []
     for start in algebraic_fields:
         for end in algebraic_fields:
@@ -191,14 +191,18 @@ class ChessTokenizerPiece(ChessTokenizer):
     @classmethod
     def encode_immutable_board(cls, immutable_board: ImmutableBoard) -> List[int]:
         board_tokens = []
-        board_position = 0
+        board_row = 7
+        board_column = 0
         piece_positions = {piece: [] for piece in cls.pieces[1:-2]}
         for c in immutable_board.board:
             if c.isdigit() in list(range(1, 9)):
-                board_position += int(c)
+                board_column += int(c)
             elif c in cls.pieces[1:-2]:
-                piece_positions[c].append(cls.algebraic_fields[board_position])
-                board_position += 1
+                piece_positions[c].append(cls.column_letters[board_column] + str(board_row+1))
+                board_column += 1
+            if board_column == 8:
+                board_row -= 1
+                board_column = 0
 
         for piece in cls.pieces[1:-2]:
             if RANDOM_TOKENIZATION_ORDER:
@@ -238,9 +242,9 @@ class ChessTokenizerPiece(ChessTokenizer):
                 if vocab == "<SEP>":
                     piece_number += 1
                 else:
-                    x = int(vocab[1]) - 1
-                    y = cls.letter_to_column[vocab[0]]
-                    board_with_dots[x][y] = cls.pieces[1:-2][piece_number]
+                    x = cls.letter_to_column[vocab[0]]
+                    y = 8 - int(vocab[1])
+                    board_with_dots[y][x] = cls.pieces[1:-2][piece_number]
             elif vocab != "<PAD>":
                 additional_data += vocab + " "
             else:
