@@ -21,7 +21,7 @@ from utils.probability_subgoal_selector_tools import prob_table_for_diff_n
 from policy.chess_policy import LCZeroPolicy
 
 rng = np.random.default_rng(0)
-
+NUMBER_OF_PRINT_SEPARATORS: int = 150
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
 
@@ -144,11 +144,11 @@ class ChessGamesDataGenerator(ChessDataProvider):
         assert chess_filter is not None, "Chess filter must be specified"
         self.chess_filter = chess_filter()
 
-        print(150 * "=")
+        print(NUMBER_OF_PRINT_SEPARATORS * "=")
         print(
             f"Name of used filter: {type(self.chess_filter)}." f" Atributs of used filter: {self.chess_filter.__dict__}"
         )
-        print(150 * "=")
+        print(NUMBER_OF_PRINT_SEPARATORS * "=")
 
         self.p_sample = p_sample
         self.max_games = max_games
@@ -349,8 +349,8 @@ class PolicyGamesDataGenerator(ChessGamesDataGenerator):
 class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
     def __init__(
         self,
-        number_of_datapoint_from_one_game: Optional[int] = None,
-        range_of_k: Optional[List[int]] = None,
+        number_of_datapoint_from_one_game: int,
+        range_of_k: [List[int]],
         *args,
         **kwargs,
     ) -> None:
@@ -363,8 +363,8 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
             self.range_of_k is not None and self.number_of_datapoint_from_one_game is not None
         ), "Set range_of_k and number_of_datapoint_from_one_game must be set"
 
-        self.save_path_to_train_set: str = os.path.join(self.save_path_to_train_set, "subgoals_all_k", "train" + "/")
-        self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set, "subgoals_all_k", "eval" + "/")
+        self.save_path_to_train_set: str = os.path.join(self.save_path_to_train_set, "subgoals_all_k", "train/")
+        self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set, "subgoals_all_k", "eval/")
 
         try:
             os.makedirs(self.save_path_to_train_set)
@@ -383,17 +383,17 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
     ) -> None:
         game_length: int = len(one_game_data.transitions)
         if game_length > 0:
-            selected_datapoints_all_k: Dict[int, List[int]] = {}
+            selected_input_datapoints_all_k: Dict[int, List[int]] = {}
             temporary_dict_datapoints_for_k: Dict[str, Union[List[int], str, int]] = {}
-            p: np.ndarray = self.prob_selector[game_length]
+            pdf: np.ndarray = self.prob_selector[game_length]
 
             for k in self.range_of_k:
                 selected_datapoints = np.random.choice(
-                    list(range(game_length)), size=self.number_of_datapoint_from_one_game, p=p
+                    list(range(game_length)), size=self.number_of_datapoint_from_one_game, p=pdf
                 )
-                selected_datapoints_all_k[k] = selected_datapoints
+                selected_input_datapoints_all_k[k] = selected_datapoints
 
-            for games_positions in zip(*selected_datapoints_all_k.values()):
+            for games_positions in zip(*selected_input_datapoints_all_k.values()):
                 for k, position in zip(self.range_of_k, games_positions):
                     input_board: ImmutableBoard = one_game_data.transitions[position].immutable_board
                     target_board_num = min(game_length - 1, position + k)
