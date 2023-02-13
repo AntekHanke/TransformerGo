@@ -6,7 +6,7 @@ base_config = {
 
     "TrainModel.train_data_provider": "@data.PandasIterablePolicyDataProvider",
     "TrainModel.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
-    "TrainModel.eval_n_batches": 4,
+    "TrainModel.eval_n_batches": 40,
 
     "TrainModel.path_to_training_data": "/data/k_3",
     "TrainModel.path_to_eval_data": "/data/k_3_eval",
