@@ -1,7 +1,13 @@
+import os
+import sys
+
+experiment_dir_path = os.path.dirname(os.path.abspath('__file__'))
+sys.path.append(experiment_dir_path)
+
 import random
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
-from common_training_params import medium_model_config
+from experiments.train.cllp.common_training_params import medium_model_config
 
 batch_size = {"ares": 1024, "athena": 700, "athena_2_gpu": 1350, "athena_4_gpu": 2700}
 

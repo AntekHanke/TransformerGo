@@ -1,6 +1,12 @@
+import os
+import sys
+
+experiment_dir_path = os.path.dirname(os.path.abspath('__file__'))
+sys.path.append(experiment_dir_path)
+
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
-from common_training_params import medium_model_config, generator_global_params
+from experiments.train.generator.common_training_params import medium_model_config, generator_global_params
 
 base_config = {
     "GlobalParamsHandler.out_dir": f"/models/generator/medium_model/{date.today()}",
