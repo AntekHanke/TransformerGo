@@ -1,5 +1,11 @@
+import os
+import sys
+
+experiment_dir_path = os.path.dirname(os.path.abspath('__file__'))
+sys.path.append(experiment_dir_path)
+
 from mrunner.helpers.specification_helper import create_experiments_helper
-from common_training_params import ultra_small_model_config
+from experiments.train.policy.common_training_params import ultra_small_model_config
 
 base_config = {
     "TrainModel.train_data_provider": "@data.PandasIterablePolicyOnlyHistoryDataProvider",

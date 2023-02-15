@@ -1,6 +1,12 @@
+import os
+import sys
+
+experiment_dir_path = os.path.dirname(os.path.abspath('__file__'))
+sys.path.append(experiment_dir_path)
+
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
-from common_training_params import small_model_config, generator_global_params
+from experiments.train.generator.common_training_params import small_model_config, generator_global_params
 
 base_config = {
     "TrainModel.files_batch_size": 10,
