@@ -8,7 +8,7 @@ generator_global_params = {
     "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
 
     "TrainingArguments.save_strategy": "steps",
-    "TrainingArguments.save_steps": 100,
+    "TrainingArguments.save_steps": 500,
 }
 
 ultra_small_train_header = {

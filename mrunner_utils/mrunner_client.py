@@ -86,6 +86,10 @@ class NeptuneLogger:
         """Logs a param (for example: string) to Neptune."""
         self._experiment[name].log(value)
 
+    def get_experiment_label(self) -> str:
+        """Returns the Neptune experiment label."""
+        return self._experiment._label
+
     def get_pytorch_callback(self) -> NeptunePytorchCallback:
         return NeptunePytorchCallback(self._experiment)
 
