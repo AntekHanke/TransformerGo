@@ -11,13 +11,6 @@ generator_global_params = {
     "TrainingArguments.save_steps": 500,
 }
 
-ultra_small_train_header = {
-    "TrainModelFromScratch.eval_n_batches": 4,
-    "TrainModelFromScratch.path_to_training_data": "/ultra_small_data/train_small.pkl",
-    "TrainModelFromScratch.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
-    "TrainModelFromScratch.files_batch_size": 5,
-}
-
 ultra_small_model_config = {
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 128,

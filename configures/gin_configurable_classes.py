@@ -34,7 +34,7 @@ from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
-from jobs.train_model import TrainModelFromScratch
+from jobs.train_model import TrainModelFromScratch, ResumeTraining
 
 
 def configure_class(cls, module=None) -> None:
@@ -46,11 +46,11 @@ def configure_classes(classes, module=None) -> None:
         configure_class(cls, module)
 
 
-# configure_classes([GlobalParamsHandler], "params")
 configure_classes(
     [
         DebugJob,
         TrainModelFromScratch,
+        ResumeTraining,
         CreatePGNDataset,
         LeelaCCLPDataProcessing,
         TrainBertForSequenceModel,

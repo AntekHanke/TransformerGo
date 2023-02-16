@@ -11,10 +11,12 @@ from transformers import (
 )
 from transformers.integrations import NeptuneCallback
 
+import metric_logging
 from data_processing.pandas_iterable_data_provider import PandasIterableDataProvider
 from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider
 from jobs.core import Job
 from metric_logging import log_param, source_files_register, pytorch_callback_loggers, log_object, get_experiment_label
+from mrunner_utils.mrunner_client import resume_neptune
 
 source_files_register.register(__file__)
 
@@ -140,6 +142,17 @@ class TrainModelFromScratch(TrainModel):
 
 
 class ResumeTraining(TrainModel):
+    def __init__(self, checkpoint_path, checkpoint_num, **kwargs):
+        super().__init__(**kwargs)
+        self.checkpoint_path = checkpoint_path
+        self.checkpoint_num = checkpoint_num
+
+        with open(self.training_args.output_dir + "/neptune_experiment_label.txt", "r") as f:
+            experiment_label = f.read().replace("\n", "")
+
+        resumed_neptune_experiment = resume_neptune(experiment_label)
+        metric_logging.register_logger(resumed_neptune_experiment)
+
     def get_training_args(self):
         with open(self.training_args.output_dir + "/training_args.pkl", "w") as f:
             return pickle.load(f)
