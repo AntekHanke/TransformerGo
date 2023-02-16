@@ -143,22 +143,23 @@ class TrainModelFromScratch(TrainModel):
 
 class ResumeTraining(TrainModel):
     def __init__(self, checkpoint_path, checkpoint_num, **kwargs):
-        super().__init__(**kwargs)
         self.checkpoint_path = checkpoint_path
         self.checkpoint_num = checkpoint_num
-
-        with open(self.training_args.output_dir + "/neptune_experiment_label.txt", "r") as f:
+        with open(self.checkpoint_path + "/neptune_experiment_label.txt", "r") as f:
             experiment_label = f.read().replace("\n", "")
 
         resumed_neptune_experiment = resume_neptune(experiment_label)
         metric_logging.register_logger(resumed_neptune_experiment)
+        metric_logging.register_pytorch_callback_logger(resumed_neptune_experiment)
+
+        super().__init__(**kwargs)
 
     def get_training_args(self):
-        with open(self.training_args.output_dir + "/training_args.pkl", "w") as f:
+        with open(self.checkpoint_path + "/training_args.pkl", "rb") as f:
             return pickle.load(f)
 
-    def get_model(self, model_config_cls, checkpoint_to_resume):
-        return BartForConditionalGeneration.from_pretrained(checkpoint_to_resume)
+    def get_model(self):
+        return BartForConditionalGeneration.from_pretrained(self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")
 
     def train_model(self):
         self.trainer.train()

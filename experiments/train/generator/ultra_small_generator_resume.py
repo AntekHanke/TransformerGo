@@ -1,26 +1,31 @@
 import os
 import sys
 
+from experiments.train.generator.data_loading_params import data_loading_header, ultra_small_data
+
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
+from experiments.train.generator.models_params import common_train_params, ultra_small_model
 from mrunner.helpers.specification_helper import create_experiments_helper
 
+TRAIN_TYPE = "resume"
+OUT_DIR = "/out_models/ultra_small_generator_resume"
 
-experiment_config = {
-    "TrainModelFromScratch.out_dir": "/out_models/ultra_small_generator_from_scratch",
-}
+experiment_config = dict(**common_train_params[TRAIN_TYPE], **data_loading_header, **ultra_small_data[TRAIN_TYPE])
+experiment_config["ResumeTraining.out_dir"] = OUT_DIR
 
-base_config = dict(ultra_small_model_config, **experiment_config, **generator_global_params, **ultra_small_train_header)
+experiment_config["ResumeTraining.checkpoint_path"] = "/out_models/ultra_small_generator_from_scratch/"
+experiment_config["ResumeTraining.checkpoint_num"] = 1000
 
 params_grid = {
     "idx": [0],
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra_small_generator_from_scratch",
+    experiment_name=f"ultra_small_generator_resume",
     project_name="pmtest/subgoal-chess",
-    base_config=base_config,
+    base_config=experiment_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git"],
