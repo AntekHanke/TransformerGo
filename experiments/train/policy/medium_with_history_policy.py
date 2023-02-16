@@ -12,6 +12,8 @@ base_config = {
     "TrainModel.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
     "TrainModel.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
     "TrainModel.out_dir": f"/models/policy/medium_model/with_history/{date.today()}",
+
+    "BartConfig.max_position_embeddings": 120,
 }
 
 params_grid = {

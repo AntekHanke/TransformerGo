@@ -13,7 +13,6 @@ from data_processing.data_processing_functions import (
     subgoal_process_df,
     policy_process_df,
     policy_with_history_process_df,
-    policy_only_history_process_df,
     subgoal_to_policy_process_df,
     cllp_process_df,
 )
@@ -115,12 +114,6 @@ class PandasIterablePolicyWithHistoryDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
         return policy_with_history_process_df(df)
-
-
-class PandasIterablePolicyOnlyHistoryDataProvider(PandasIterableDataProvider):
-    @staticmethod
-    def process_df(df: pd.DataFrame) -> pd.DataFrame:
-        return policy_only_history_process_df(df)
 
 
 class PandasIterableSubgoalToPolicyDataProvider(PandasIterableDataProvider):
