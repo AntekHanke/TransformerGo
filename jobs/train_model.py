@@ -1,3 +1,4 @@
+import pickle
 from typing import Type, Optional
 
 import numpy as np
@@ -10,11 +11,12 @@ from transformers import (
 )
 from transformers.integrations import NeptuneCallback
 
+import metric_logging
 from data_processing.pandas_iterable_data_provider import PandasIterableDataProvider
 from data_processing.pandas_static_dataset_provider import PandasStaticDataProvider
 from jobs.core import Job
-from metric_logging import log_param, source_files_register, pytorch_callback_loggers, log_object
-from utils.global_params_handler import GlobalParamsHandler
+from metric_logging import log_param, source_files_register, pytorch_callback_loggers, log_object, get_experiment_label
+from mrunner_utils.mrunner_client import resume_neptune
 
 source_files_register.register(__file__)
 
@@ -29,29 +31,20 @@ class TrainModel(Job):
         files_batch_size: int = None,
         eval_n_batches: int = None,
         prob_take_sample: float = 1.0,
-        model_config_cls: Type[BartConfig] = None,
+        model_config_cls: Optional[Type[BartConfig]] = None,
         training_args_cls: Type[TrainingArguments] = None,
         out_dir: str = None,
     ) -> None:
 
         assert files_batch_size is not None, "files_batch_size is not set"
 
-        global_params_handler: GlobalParamsHandler = GlobalParamsHandler()
-        data_paths_from_gloabl_params_handler = global_params_handler.get_data_path()
-        output_dir_from_global_params_handler = global_params_handler.get_out_dir()
-
         self.path_to_training_data = path_to_training_data
         self.path_to_eval_data = path_to_eval_data
-        if data_paths_from_gloabl_params_handler is not None:
-            self.path_to_training_data, self.path_to_eval_data = data_paths_from_gloabl_params_handler
-
         self.out_dir = out_dir
-        if output_dir_from_global_params_handler is not None:
-            self.out_dir = output_dir_from_global_params_handler
+        self.model_config_cls = model_config_cls
+        self.training_args_cls = training_args_cls
 
-        self.training_args = training_args_cls(output_dir=self.out_dir + "/out")
-        if global_params_handler.learning_rate is not None:
-            self.training_args.learning_rate = global_params_handler.learning_rate
+        self.training_args = self.get_training_args()
 
         self.train_data_provider = train_data_provider(
             data_path=self.path_to_training_data,
@@ -75,20 +68,7 @@ class TrainModel(Job):
             self.eval_data_provider, PandasStaticDataProvider
         ), f"eval_data_provider must be PandasStaticDataProvider, got {eval_data_provider}"
 
-        self.model_config = model_config_cls()
-        self.model = BartForConditionalGeneration(self.model_config)
-
-        def preprocess_logits_for_metrics(logits, labels):
-            pred_ids = torch.argmax(logits[0], dim=-1)
-            return pred_ids, labels
-
-        def compute_metrics(eval_preds):
-            predictions, labels = eval_preds
-            predictions, _ = predictions
-            return {
-                "accuracy": (predictions == labels).astype(np.float32).mean().item(),
-                "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
-            }
+        self.model = self.get_model()
 
         for param_name, param_value in self.training_args.to_dict().items():
             log_object(f"Training arguments/{param_name}", str(param_value))
@@ -98,8 +78,8 @@ class TrainModel(Job):
             args=self.training_args,
             train_dataset=self.train_data_provider,
             eval_dataset=self.eval_data_provider,
-            preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-            compute_metrics=compute_metrics,
+            preprocess_logits_for_metrics=self.preprocess_logits_for_metrics,
+            compute_metrics=self.compute_metrics,
         )
 
         for callback_logger in pytorch_callback_loggers:
@@ -113,7 +93,73 @@ class TrainModel(Job):
         log_param("path_to_eval_data", self.path_to_eval_data)
         log_param("Save model path", self.save_model_path)
 
+    @staticmethod
+    def compute_metrics(eval_preds):
+        predictions, labels = eval_preds
+        predictions, _ = predictions
+        return {
+            "accuracy": (predictions == labels).astype(np.float32).mean().item(),
+            "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
+        }
+
+    @staticmethod
+    def preprocess_logits_for_metrics(logits, labels):
+        pred_ids = torch.argmax(logits[0], dim=-1)
+        return pred_ids, labels
+
+    def get_training_args(self):
+        raise NotImplementedError
+
+    def get_model(self, model_config_cls, checkpoint_to_resume):
+        raise NotImplementedError
+
+    def train_model(self):
+        raise NotImplementedError
+
     def execute(self) -> None:
-        self.trainer.train()
-        print(f"Saving model at {self.save_model_path}")
+        self.train_model()
+        log_param("Save model path", self.save_model_path)
         self.trainer.save_model(self.save_model_path)
+
+
+class TrainModelFromScratch(TrainModel):
+    def get_training_args(self):
+        self.training_args = self.training_args_cls(output_dir=self.out_dir)
+        with open(self.training_args.output_dir + "/training_args.pkl", "wb") as f:
+            pickle.dump(self.training_args, f)
+
+        neptune_experiment_label = get_experiment_label()
+        if neptune_experiment_label is not None:
+            with open(self.training_args.output_dir + "/neptune_experiment_label.txt", "w") as f:
+                f.write(neptune_experiment_label)
+        return self.training_args
+
+    def get_model(self):
+        return BartForConditionalGeneration(self.model_config_cls())
+
+    def train_model(self):
+        self.trainer.train()
+
+
+class ResumeTraining(TrainModel):
+    def __init__(self, checkpoint_path, checkpoint_num, **kwargs):
+        self.checkpoint_path = checkpoint_path
+        self.checkpoint_num = checkpoint_num
+        with open(self.checkpoint_path + "/neptune_experiment_label.txt", "r") as f:
+            experiment_label = f.read().replace("\n", "")
+
+        resumed_neptune_experiment = resume_neptune(experiment_label)
+        metric_logging.register_logger(resumed_neptune_experiment)
+        metric_logging.register_pytorch_callback_logger(resumed_neptune_experiment)
+
+        super().__init__(**kwargs)
+
+    def get_training_args(self):
+        with open(self.checkpoint_path + "/training_args.pkl", "rb") as f:
+            return pickle.load(f)
+
+    def get_model(self):
+        return BartForConditionalGeneration.from_pretrained(self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")
+
+    def train_model(self):
+        self.trainer.train()
