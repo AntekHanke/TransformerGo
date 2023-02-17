@@ -11,7 +11,9 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 TRAIN_TYPE = "resume"
 OUT_DIR = "/out_models/ultra_small_generator_resume"
 
-experiment_config = dict(**common_train_params[TRAIN_TYPE], **data_loading_header, **ultra_small_data[TRAIN_TYPE])
+experiment_config = dict(
+    **common_train_params[TRAIN_TYPE], **data_loading_header[TRAIN_TYPE], **ultra_small_data[TRAIN_TYPE]
+)
 experiment_config["ResumeTraining.out_dir"] = OUT_DIR
 
 experiment_config["ResumeTraining.checkpoint_path"] = "/out_models/ultra_small_generator_from_scratch/"

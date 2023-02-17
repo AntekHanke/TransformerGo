@@ -12,7 +12,10 @@ TRAIN_TYPE = "from_scratch"
 OUT_DIR = "/out_models/ultra_small_generator_from_scratch"
 
 experiment_config = dict(
-    **common_train_params[TRAIN_TYPE], **data_loading_header, **ultra_small_data[TRAIN_TYPE], **ultra_small_model
+    **common_train_params[TRAIN_TYPE],
+    **data_loading_header[TRAIN_TYPE],
+    **ultra_small_data[TRAIN_TYPE],
+    **ultra_small_model,
 )
 experiment_config["TrainModelFromScratch.out_dir"] = OUT_DIR
 
