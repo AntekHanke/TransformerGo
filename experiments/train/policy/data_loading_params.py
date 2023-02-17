@@ -34,15 +34,15 @@ ultra_small_data = {
 
 standard_data_k3 = {
     "from_scratch": {
-        "TrainModel.eval_n_batches": 1000,
-        "TrainModel.path_to_training_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_train",
-        "TrainModel.path_to_eval_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_eval",
-        "TrainModel.files_batch_size": 1000,
+        "TrainModelFromScratch.eval_n_batches": 1000,
+        "TrainModelFromScratch.path_to_training_data": "/data/k_3",
+        "TrainModelFromScratch.path_to_eval_data": "/data/k_3_eval",
+        "TrainModelFromScratch.files_batch_size": 1000,
     },
     "resume": {
         "ResumeTraining.eval_n_batches": 1000,
-        "ResumeTraining.path_to_training_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_train",
-        "ResumeTraining.path_to_eval_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_eval",
+        "ResumeTraining.path_to_training_data": "/data/k_3",
+        "ResumeTraining.path_to_eval_data": "/data/k_3_eval",
         "ResumeTraining.files_batch_size": 1000,
     },
 }
