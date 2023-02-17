@@ -14,7 +14,7 @@ contexts:
     singularity_container:  -H $PWD:/homeplaceholder 
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/data/:/data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/models
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/out_models
                             -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
     slurm_url: plgmrog@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/mrunner_scratch
