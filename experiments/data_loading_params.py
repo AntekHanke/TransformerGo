@@ -24,17 +24,36 @@ ultra_small_data = {
     },
 }
 
-standard_data_k3 = {
+STANDARD_DATA_K_3_TRAIN = "/data_to/data/k_3"
+STANDARD_DATA_K_3_EVAL = "/data_to/data/k_3_eval"
+standard_data_k3_board_tokenizer = {
     "from_scratch": {
         "TrainModel.eval_n_batches": 50,
-        "TrainModel.path_to_training_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_train",
-        "TrainModel.path_to_eval_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_eval",
+        "TrainModel.path_to_training_data": STANDARD_DATA_K_3_TRAIN,
+        "TrainModel.path_to_eval_data": STANDARD_DATA_K_3_EVAL,
         "TrainModel.files_batch_size": 1000,
     },
     "resume": {
         "ResumeTraining.eval_n_batches": 50,
-        "ResumeTraining.path_to_training_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_train",
-        "ResumeTraining.path_to_eval_data": "/subgoals_dataset_lichess/subgoals_k=3/datapoints_eval",
+        "ResumeTraining.path_to_training_data": STANDARD_DATA_K_3_TRAIN,
+        "ResumeTraining.path_to_eval_data": STANDARD_DATA_K_3_EVAL,
+        "ResumeTraining.files_batch_size": 1000,
+    },
+}
+
+STANDARD_DATA_K_3_TRAIN_PIECES = "/data_mg/data/k_3"
+STANDARD_DATA_K_3_EVAL_PIECES = "/data_mg/data/k_3_eval"
+standard_data_k3_pieces_tokenizer = {
+    "from_scratch": {
+        "TrainModel.eval_n_batches": 50,
+        "TrainModel.path_to_training_data": STANDARD_DATA_K_3_TRAIN_PIECES,
+        "TrainModel.path_to_eval_data": STANDARD_DATA_K_3_EVAL_PIECES,
+        "TrainModel.files_batch_size": 1000,
+    },
+    "resume": {
+        "ResumeTraining.eval_n_batches": 50,
+        "ResumeTraining.path_to_training_data": STANDARD_DATA_K_3_TRAIN_PIECES,
+        "ResumeTraining.path_to_eval_data": STANDARD_DATA_K_3_EVAL_PIECES,
         "ResumeTraining.files_batch_size": 1000,
     },
 }

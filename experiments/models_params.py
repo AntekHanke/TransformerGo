@@ -47,7 +47,7 @@ medium_model = {
     "BartConfig.encoder_ffn_dim": 2048,
     "BartConfig.d_model": 512,
     "BartConfig.dropout": 0.1,
-    "TrainingArguments.max_steps": 60000,
+    "TrainingArguments.max_steps": 300000,
     "TrainingArguments.per_device_train_batch_size": 2600,
     "TrainingArguments.per_device_eval_batch_size": 2600,
     "TrainingArguments.warmup_steps": 1500,
