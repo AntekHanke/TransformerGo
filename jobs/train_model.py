@@ -1,3 +1,4 @@
+import os
 import pickle
 from typing import Type, Optional
 
@@ -124,6 +125,8 @@ class TrainModel(Job):
 
 class TrainModelFromScratch(TrainModel):
     def get_training_args(self):
+        if not os.path.exists(self.out_dir):
+            os.makedirs(self.out_dir, exist_ok=True)
         self.training_args = self.training_args_cls(output_dir=self.out_dir)
         with open(self.training_args.output_dir + "/training_args.pkl", "wb") as f:
             pickle.dump(self.training_args, f)

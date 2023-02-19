@@ -5,6 +5,7 @@ common_train_params = {
         "TrainModelFromScratch.training_args_cls": "@transformers.TrainingArguments",
         "TrainModelFromScratch.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
+        "use_neptune": True,
     },
     "resume": {
         "run.job_class": "@jobs.ResumeTraining",
@@ -12,6 +13,7 @@ common_train_params = {
         "ResumeTraining.training_args_cls": "@transformers.TrainingArguments",
         "ResumeTraining.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "ResumeTraining.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
+        "use_neptune": True,
     },
 }
 
@@ -47,13 +49,13 @@ medium_model = {
     "BartConfig.encoder_ffn_dim": 2048,
     "BartConfig.d_model": 512,
     "BartConfig.dropout": 0.1,
-    "TrainingArguments.max_steps": 300000,
+    "TrainingArguments.max_steps": 500000,
     "TrainingArguments.per_device_train_batch_size": 2600,
     "TrainingArguments.per_device_eval_batch_size": 2600,
-    "TrainingArguments.warmup_steps": 1500,
+    "TrainingArguments.warmup_steps": 2500,
     "TrainingArguments.weight_decay": 0.01,
-    "TrainingArguments.logging_steps": 50,
+    "TrainingArguments.logging_steps": 100,
     "TrainingArguments.evaluation_strategy": "steps",
-    "TrainingArguments.eval_steps": 200,
+    "TrainingArguments.eval_steps": 500,
     "TrainingArguments.learning_rate": 3e-5,
 }
