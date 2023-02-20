@@ -7,6 +7,14 @@ data_loading_header = {
         "ResumeTraining.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "ResumeTraining.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
     },
+    "from_scratch_with_history": {
+        "TrainModelFromScratch.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
+    },
+    "resume_with_history": {
+        "ResumeTraining.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+        "ResumeTraining.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
+    },
 }
 
 ultra_small_data = {
