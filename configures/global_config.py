@@ -30,4 +30,6 @@ MAX_GAME_LENGTH = 500
 TOKENIZER = "pieces" # "board" or "pieces"
 RANDOM_TOKENIZATION_ORDER = False # True or False
 
+HISTORY_LENGTH = 40
+
 LCZERO_CLUSTER = "prometheus" # "prometheus" or "athena"

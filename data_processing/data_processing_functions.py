@@ -1,6 +1,6 @@
 import pandas as pd
 
-from configures.global_config import MAX_MOVES_FOR_CLLP
+from configures.global_config import MAX_MOVES_FOR_CLLP, HISTORY_LENGTH
 from data_processing.chess_tokenizer import ChessTokenizer
 
 
@@ -20,10 +20,10 @@ def policy_process_df(df: pd.DataFrame):
 def policy_with_history_process_df(df: pd.DataFrame):
     df = df[["input_ids", "all_moves_from_start", "moves_between_input_and_target"]].copy(deep=True)
     df = df[df["moves_between_input_and_target"].apply(len) > 0].copy(deep=True)
-    df.loc[:, "input_ids"] = df["input_ids"] + df["all_moves_from_start"].apply(lambda x: x[-40:])
+    df.loc[:, "input_ids"] = df["input_ids"] + df["all_moves_from_start"].apply(lambda x: x[-HISTORY_LENGTH:])
     df.loc[:, "labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
     df.loc[:, "input_ids"] = df["input_ids"].apply(
-        lambda x: x + (120 - len(x)) * [ChessTokenizer.vocab_to_tokens["<PAD>"]]
+        lambda x: x + (80 + HISTORY_LENGTH - len(x)) * [ChessTokenizer.vocab_to_tokens["<PAD>"]]
     )
     df.drop(columns=["all_moves_from_start", "moves_between_input_and_target"], inplace=True)
     return df.to_dict(orient="records")
