@@ -4,7 +4,7 @@ import sys
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
-from experiments.data_loading_params import data_loading_header, ultra_small_data
+from experiments.data_loading_params import subgoal_data_loading_header, ultra_small_data
 from experiments.models_params import common_train_params
 from mrunner.helpers.specification_helper import create_experiments_helper
 
@@ -12,7 +12,7 @@ TRAIN_TYPE = "resume"
 OUT_DIR = "/out_models/ultra_small_generator_resume"
 
 experiment_config = dict(
-    **common_train_params[TRAIN_TYPE], **data_loading_header[TRAIN_TYPE], **ultra_small_data[TRAIN_TYPE]
+    **common_train_params[TRAIN_TYPE], **subgoal_data_loading_header[TRAIN_TYPE], **ultra_small_data[TRAIN_TYPE]
 )
 experiment_config["ResumeTraining.out_dir"] = OUT_DIR
 

@@ -4,7 +4,7 @@ import sys
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
-from experiments.data_loading_params import data_loading_header, ultra_small_data
+from experiments.data_loading_params import policy_data_loading_header, ultra_small_data
 from experiments.models_params import common_train_params, ultra_small_model
 from mrunner.helpers.specification_helper import create_experiments_helper
 
@@ -14,7 +14,7 @@ OUT_DIR = "/out_models/ultra_small_policy_from_scratch"
 
 experiment_config = dict(
     **common_train_params[TRAIN_TYPE],
-    **data_loading_header[TRAIN_TYPE + HISTORY],
+    **policy_data_loading_header[TRAIN_TYPE + HISTORY],
     **ultra_small_data[TRAIN_TYPE],
     **ultra_small_model,
 )
