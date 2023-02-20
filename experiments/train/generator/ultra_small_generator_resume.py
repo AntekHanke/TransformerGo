@@ -4,8 +4,8 @@ import sys
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
-from experiments.train.generator.data_loading_params import data_loading_header, ultra_small_data
-from experiments.train.generator.models_params import common_train_params, ultra_small_model
+from experiments.data_loading_params import data_loading_header, ultra_small_data
+from experiments.models_params import common_train_params
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 TRAIN_TYPE = "resume"
