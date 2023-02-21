@@ -1,4 +1,4 @@
-data_loading_header = {
+subgoal_data_loading_header = {
     "from_scratch": {
         "TrainModelFromScratch.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
@@ -6,6 +6,33 @@ data_loading_header = {
     "resume": {
         "ResumeTraining.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "ResumeTraining.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
+    },
+    "from_scratch_with_history": {
+        "TrainModelFromScratch.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
+    },
+    "resume_with_history": {
+        "ResumeTraining.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+        "ResumeTraining.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
+    },
+}
+
+policy_data_loading_header = {
+    "from_scratch": {
+        "TrainModelFromScratch.train_data_provider": "@data.PandasIterablePolicyDataProvider",
+        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
+    },
+    "resume": {
+        "ResumeTraining.train_data_provider": "@data.PandasIterablePolicyDataProvider",
+        "ResumeTraining.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
+    },
+    "from_scratch_with_history": {
+        "TrainModelFromScratch.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
+    },
+    "resume_with_history": {
+        "ResumeTraining.train_data_provider": "@data.PandasIterablePolicyWithHistoryDataProvider",
+        "ResumeTraining.eval_data_provider": "@data.PandasStaticPolicyWithHistoryDataProvider",
     },
 }
 

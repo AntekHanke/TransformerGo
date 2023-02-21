@@ -3,16 +3,12 @@ common_train_params = {
         "run.job_class": "@jobs.TrainModelFromScratch",
         "TrainModelFromScratch.model_config_cls": "@transformers.BartConfig",
         "TrainModelFromScratch.training_args_cls": "@transformers.TrainingArguments",
-        "TrainModelFromScratch.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
-        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
         "use_neptune": True,
     },
     "resume": {
         "run.job_class": "@jobs.ResumeTraining",
         "ResumeTraining.model_config_cls": "@transformers.BartConfig",
         "ResumeTraining.training_args_cls": "@transformers.TrainingArguments",
-        "ResumeTraining.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
-        "ResumeTraining.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
         "use_neptune": True,
     },
 }
