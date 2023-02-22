@@ -3,13 +3,13 @@ from typing import Union, List
 
 import chess.svg
 import matplotlib.pyplot as plt
-import cairosvg
+#import cairosvg
 
 from mpmath import mp, mpf, fmod
 from PIL import Image
 from io import BytesIO
 
-from configures.global_config import TRAIN_TEST_SPLIT_SEED
+#from configures.global_config import TRAIN_TEST_SPLIT_SEED
 from data_structures.data_structures import ImmutableBoard
 from metric_logging import log_object
 
@@ -19,7 +19,7 @@ RESULT_TO_WINNER = {"1-0": "w", "0-1": "b", "1/2-1/2": None}
 
 
 def hash_string_to_int(arg: Union[str, int]) -> int:
-    arg = str(arg) + str(TRAIN_TEST_SPLIT_SEED)
+    arg = str(arg) + str(0)
     return int(hashlib.sha256(arg.encode("utf-8")).hexdigest(), 16) % 10**30
 
 
