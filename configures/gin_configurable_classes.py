@@ -31,8 +31,11 @@ from jobs.chess_retokenization import RetokenizationJob
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
+from jobs.local_jobs_antek.go_data_generator_tokenized_policy import GoTokenizedPolicyGeneratorAlwaysBlack
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
+
+from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
 
 
 def configure_class(cls, module=None) -> None:
@@ -55,6 +58,7 @@ configure_classes(
         LeelaParallelDatasetGenerator,
         LeelaPrepareAndSaveData,
         RetokenizationJob,
+        GoTokenizedPolicyGeneratorAlwaysBlack,
     ],
     "jobs",
 )
@@ -80,6 +84,7 @@ configure_classes(
         PandasPolicyPrepareAndSaveData,
         PandasBertForSequenceDataProvider,
         CLLPPrepareAndSaveData,
+        GoSimpleGamesDataGeneratorTokenizedAlwaysBlack,
     ],
     "data",
 )
