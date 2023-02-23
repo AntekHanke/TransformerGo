@@ -103,6 +103,11 @@ class PandasStaticPolicyDataProvider(PandasStaticDataProvider):
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
         return policy_process_df(df)
 
+class PandasStaticPolicyDataProviderGo(PandasStaticDataProvider):
+    @staticmethod
+    def process_df(df: pd.DataFrame) -> pd.DataFrame:
+        return policy_process_df(df)
+
 
 class PandasStaticPolicyWithHistoryDataProvider(PandasStaticDataProvider):
     @staticmethod
