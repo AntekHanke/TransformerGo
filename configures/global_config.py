@@ -12,6 +12,9 @@ if is_local_machine():
     elif get_local_machine() == "malgorzata":
         NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIyZjIzMTAwNi0xZTkxLTQ1MWQtOTkzYy1mZGIzMGJmODk0NTYifQ=="
 
+    elif get_local_machine() == "antek":
+        NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIyNzdhMDQzNi0yOTJmLTQ3MzAtYmU1Yi1hYTgzNWEwNzUyZjMifQ=="
+
 NEPTUNE_PROJECT = "pmtest/subgoal-chess"
 
 EAGLE_DATASET = ""
@@ -33,3 +36,6 @@ RANDOM_TOKENIZATION_ORDER = False # True or False
 N_MOVES_HISTORY_FOR_MODEL_INPUT = 10
 
 LCZERO_CLUSTER = "prometheus" # "prometheus" or "athena"
+
+if __name__ == '__main__':
+    print(get_local_machine())
