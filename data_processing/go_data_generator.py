@@ -164,12 +164,14 @@ class GoGamesDataGenerator(GoDataProvider):
         save_data_every_n_games: int = 1000,
     ):
         self.size_of_computed_dataset: int = 0
+        self.anchor = os.path.dirname(sgf_files)
+
         with open(sgf_files, encoding="utf8") as f:
             self.sgf_files_directories = f.readlines()
         self.sgf_file = self.sgf_files_directories[0]
         if self.sgf_files_directories is not None:
             self.path_to_sgf_file = sgf_file
-            self.name_of_sgf_file: str = sgf_files
+            self.name_of_sgf_file: str = 'parsed_data'
             #self.sgf_database = open(self.path_to_sgf_file, errors="ignore")
 
         if go_filter is None:
@@ -212,7 +214,8 @@ class GoGamesDataGenerator(GoDataProvider):
         :return: OneGameData contains inforamtion about chess game.
         """
 
-        current_game = sente.sgf.load(self.path_to_sgf_file, disable_warnings=True)
+        sgf_dir = os.path.normpath(os.path.join(self.anchor, self.path_to_sgf_file))
+        current_game = sente.sgf.load(sgf_dir, disable_warnings=True)
 
         ### The following few lines are required to fix the handicap errors of Sente SGF loader
         sgf = sente.sgf.dumps(current_game)
@@ -603,11 +606,17 @@ if __name__ == '__main__':
     # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='sgf_directories.txt',save_data_every_n_games=1,p_sample=1,max_games=2,train_eval_split=1,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
     # generator.create_data()
 
-    generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=9950,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
-    generator.create_data()
+    # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=9950,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
+    # generator.create_data()
 
     # np.set_printoptions(threshold=10000)
     # aaa = pd.read_pickle("trainsgf_directories.txt_train_part_0.pkl")
     # print(aaa)
 
 
+    # #print(os.path.join(dirs, sgf))
+
+    # #print(os.path.dirname(dirs))
+
+    # for a in os.walk("."):
+    #    print(a)
