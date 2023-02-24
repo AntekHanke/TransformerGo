@@ -57,5 +57,5 @@ medium_model = {
     "TrainingArguments.logging_steps": 100,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 500,
-    "TrainingArguments.learning_rate": 3e-5,
+    "TrainingArguments.learning_rate": 1e-4,
 }

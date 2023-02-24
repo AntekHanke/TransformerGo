@@ -80,7 +80,7 @@ class TrainModel(Job):
             train_dataset=self.train_data_provider,
             eval_dataset=self.eval_data_provider,
             preprocess_logits_for_metrics=self.preprocess_logits_for_metrics,
-            compute_metrics=self.compute_metrics,
+            compute_metrics=self.compute_metrics
         )
 
         for callback_logger in pytorch_callback_loggers:
@@ -111,7 +111,7 @@ class TrainModel(Job):
     def get_training_args(self):
         raise NotImplementedError
 
-    def get_model(self, model_config_cls, checkpoint_to_resume):
+    def get_model(self):
         raise NotImplementedError
 
     def train_model(self):
@@ -165,4 +165,4 @@ class ResumeTraining(TrainModel):
         return BartForConditionalGeneration.from_pretrained(self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")
 
     def train_model(self):
-        self.trainer.train()
+        self.trainer.train(resume_from_checkpoint=self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")
