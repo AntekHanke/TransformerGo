@@ -23,6 +23,7 @@ def is_promotion_possible(algebraic_move: str) -> bool:
 
 
 def padding(sequence: List, pad_value: int, final_len: int) -> List:
+    assert len(sequence) <= final_len, "Sequence is longer than final_len"
     return sequence + [pad_value] * (final_len - len(sequence))
 
 
