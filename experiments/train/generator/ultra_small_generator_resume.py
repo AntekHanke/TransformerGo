@@ -17,7 +17,7 @@ experiment_config = dict(
 experiment_config["ResumeTraining.out_dir"] = OUT_DIR
 
 experiment_config["ResumeTraining.checkpoint_path"] = "/out_models/ultra_small_generator_from_scratch/"
-experiment_config["ResumeTraining.checkpoint_num"] = 1000
+experiment_config["ResumeTraining.checkpoint_num"] = 500
 
 params_grid = {
     "idx": [0],
