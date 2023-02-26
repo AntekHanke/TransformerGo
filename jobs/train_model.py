@@ -81,7 +81,6 @@ class TrainModel(Job):
             eval_dataset=self.eval_data_provider,
             preprocess_logits_for_metrics=self.preprocess_logits_for_metrics,
             compute_metrics=self.compute_metrics,
-            ignore_data_skip=True,
         )
 
         for callback_logger in pytorch_callback_loggers:
@@ -128,7 +127,7 @@ class TrainModelFromScratch(TrainModel):
     def get_training_args(self):
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir, exist_ok=True)
-        self.training_args = self.training_args_cls(output_dir=self.out_dir)
+        self.training_args = self.training_args_cls(output_dir=self.out_dir, ignore_data_skip=True)
         with open(self.training_args.output_dir + "/training_args.pkl", "wb") as f:
             pickle.dump(self.training_args, f)
 
