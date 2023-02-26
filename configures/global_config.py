@@ -1,5 +1,8 @@
-# from configures.detect_local_machine import get_local_machine
-#
+import time
+
+import numpy as np
+rng = np.random.default_rng(int(time.time()))
+
 from utils.detect_local_machine import get_local_machine, is_local_machine
 
 if is_local_machine():
@@ -33,3 +36,5 @@ RANDOM_TOKENIZATION_ORDER = False # True or False
 N_MOVES_HISTORY_FOR_MODEL_INPUT = 10
 
 LCZERO_CLUSTER = "prometheus" # "prometheus" or "athena"
+
+NUMBER_OF_PRINT_SEPARATORS: int = 150

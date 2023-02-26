@@ -11,4 +11,4 @@ TRAIN_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/
 RESUME_GENERATOR = "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_generator_resume.py"
 
 
-local_run(RESUME_GENERATOR, True, LOCAL_PATH_BINDING)
+local_run(RESUME_GENERATOR, False, LOCAL_PATH_BINDING)
