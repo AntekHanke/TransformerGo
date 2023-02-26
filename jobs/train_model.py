@@ -80,7 +80,8 @@ class TrainModel(Job):
             train_dataset=self.train_data_provider,
             eval_dataset=self.eval_data_provider,
             preprocess_logits_for_metrics=self.preprocess_logits_for_metrics,
-            compute_metrics=self.compute_metrics
+            compute_metrics=self.compute_metrics,
+            ignore_data_skip=True,
         )
 
         for callback_logger in pytorch_callback_loggers:
