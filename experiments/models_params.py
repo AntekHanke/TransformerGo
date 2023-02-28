@@ -57,7 +57,7 @@ small_model = {
 }
 
 medium_model = {
-    "BartConfig.vocab_size": 512,
+    "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 128,
     "BartConfig.encoder_layers": 8,
     "BartConfig.decoder_layers": 8,
@@ -75,5 +75,5 @@ medium_model = {
     "TrainingArguments.logging_steps": 100,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 500,
-    "TrainingArguments.learning_rate": 1e-4,
+    "TrainingArguments.learning_rate": 2e-4,
 }
