@@ -1,6 +1,6 @@
-import time
 import math
 import random
+import time
 from collections import namedtuple
 from typing import Union
 
@@ -46,7 +46,7 @@ def mock_expansion_function(node: "TreeNode"):
     node.children = children
 
 
-TreeNodeData = namedtuple('TreeNode', 'id level state parent is_terminal probability')
+TreeNodeData = namedtuple("TreeNode", "id level state parent is_terminal probability")
 
 
 class TreeNode(TreeNodeData):
@@ -64,7 +64,7 @@ class TreeNode(TreeNodeData):
             state=state,
             parent=parent,
             is_terminal=state.to_board().is_checkmate(),
-            probability=probability
+            probability=probability,
         )
         TreeNode.node_counter += 1
         self.is_expanded = self.is_terminal
@@ -79,13 +79,13 @@ class TreeNode(TreeNodeData):
 
 class Tree:
     def __init__(
-            self,
-            initial_state,
-            time_limit: float = None,
-            max_mcts_passes: int = None,
-            exploration_constant: float = 1 / math.sqrt(2),
-            score=score_function,
-            expand=expansion_function,
+        self,
+        initial_state,
+        time_limit: float = None,
+        max_mcts_passes: int = None,
+        exploration_constant: float = 1 / math.sqrt(2),
+        score=score_function,
+        expand=expansion_function,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(initial_state, None)
@@ -96,7 +96,7 @@ class Tree:
         self.expand = expand
 
         assert (
-                time_limit is not None or max_mcts_passes is not None
+            time_limit is not None or max_mcts_passes is not None
         ), "Can't have both time_limit and max_mcts_passes set to None"
         self.time_limit = time_limit
         self.max_mcts_passes = max_mcts_passes

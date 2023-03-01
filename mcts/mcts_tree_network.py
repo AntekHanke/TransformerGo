@@ -1,4 +1,5 @@
 from pyvis.network import Network
+
 from mcts.mcts import Tree
 
 
