@@ -78,11 +78,11 @@ class GoTokenizer:
     @classmethod
     def encode_move(cls, go_move: (int, int, bool)) -> List[int]:
         x, y, is_black = go_move
-        return [x*19+y + 400*(1-is_black)]
+        return [x*19+y + 400*(1-is_black) + 15]
 
     @classmethod
     def decode_move(cls, move_token: List[int]) -> (int, int, bool):
-        token = move_token[0]
+        token = move_token[0]-15
         if token>=400:
             is_black = False
             token  -= 400
