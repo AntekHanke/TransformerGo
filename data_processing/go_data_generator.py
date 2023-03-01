@@ -214,6 +214,7 @@ class GoGamesDataGenerator(GoDataProvider):
         :return: OneGameData contains inforamtion about chess game.
         """
 
+
         sgf_dir = os.path.normpath(os.path.join(self.anchor, self.path_to_sgf_file))
         current_game = sente.sgf.load(sgf_dir, disable_warnings=True)
 
@@ -291,13 +292,16 @@ class GoGamesDataGenerator(GoDataProvider):
             train_eval = get_split(n_iterations, self.train_eval_split)
             if not self.only_eval or train_eval == "eval":
                 current_dataset = self.select_dataset(train_eval)
-                game: Optional[GoOneGameData] = self.next_game_to_raw_data()
-                if game is None:
-                    break
-                else:
-                    self.game_to_datapoints(game, current_dataset)
-                    self.n_games += 1
-                    self.log_progress(n_iterations)
+                try:
+                    game: Optional[GoOneGameData] = self.next_game_to_raw_data()
+                    if game is None:
+                        break
+                    else:
+                        self.game_to_datapoints(game, current_dataset)
+                        self.n_games += 1
+                        self.log_progress(n_iterations)
+                except:
+                    print("Error in game: ", self.path_to_sgf_file)
 
             if (
                 (self.save_path_to_eval_set and self.save_path_to_train_set) is not None
@@ -606,8 +610,8 @@ if __name__ == '__main__':
     # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='sgf_directories.txt',save_data_every_n_games=1,p_sample=1,max_games=2,train_eval_split=1,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
     # generator.create_data()
 
-    # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=9950,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
-    # generator.create_data()
+    generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=991,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
+    generator.create_data()
 
     # np.set_printoptions(threshold=10000)
     # aaa = pd.read_pickle("trainsgf_directories.txt_train_part_0.pkl")
