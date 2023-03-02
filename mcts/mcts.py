@@ -58,14 +58,10 @@ class TreeNode(TreeNodeData):
         value=0.0,
         probability=1.0,
     ):
-        if parent is None:
-            level = 0
-        else:
-            level = parent.level + 1
         self = super(TreeNode, cls).__new__(
             cls,
             n_id=TreeNode.node_counter,
-            level=level,
+            level=0 if parent is None else parent.level + 1,
             state=state,
             parent=parent,
             is_terminal=state.to_board().is_checkmate(),
