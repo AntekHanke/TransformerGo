@@ -46,6 +46,15 @@ def configure_classes(classes, module=None) -> None:
         configure_class(cls, module)
 
 
+def configure_object(obj, module=None) -> None:
+    gin.external_configurable(obj, module=module)
+
+
+def configure_objects(objects, module=None) -> None:
+    for obj in objects:
+        configure_object(obj, module)
+
+
 configure_classes(
     [
         DebugJob,
@@ -87,5 +96,5 @@ configure_classes(
     "data",
 )
 
-configure_classes([expand_function, mock_expand_function], "expand_functions")
-configure_classes([score_function], "score_functions")
+configure_objects([expand_function, mock_expand_function], "expand_functions")
+configure_objects([score_function], "score_functions")
