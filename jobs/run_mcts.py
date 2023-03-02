@@ -7,7 +7,7 @@ from jobs.core import Job
 from mcts.mcts import expand_function, score_function
 from metric_logging import log_param
 
-TreeData = namedtuple("TreeData", "tree_as_list subgoal")
+TreeData = namedtuple("TreeData", "tree_as_list best_tree_state")
 
 
 class RunMCTSJob(Job):
@@ -51,9 +51,9 @@ class RunMCTSJob(Job):
             score=self.score,
             expand=self.expand,
         )
-        subgoal = tree.mcts()
+        best_tree_state = tree.mcts()
         mcts_tree_network(tree, os.path.join(self.out_dir, self.file_name + ".html"))
-        output = TreeData(tree_as_list=tree.to_list(), subgoal=subgoal)
+        output = TreeData(tree_as_list=tree.to_list(), best_tree_state=best_tree_state)
 
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir, exist_ok=True)
