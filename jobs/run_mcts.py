@@ -12,7 +12,7 @@ TreeData = namedtuple("TreeData", "tree_as_list subgoal")
 class RunMCTSJob(Job):
     def __init__(
         self,
-        initial_state,
+        initial_state: str,
         time_limit: float = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
