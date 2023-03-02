@@ -33,6 +33,7 @@ from jobs.debug_job import DebugJob
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
+from jobs.run_mcts import RunMCTSJob
 
 
 def configure_class(cls, module=None) -> None:
@@ -55,6 +56,7 @@ configure_classes(
         LeelaParallelDatasetGenerator,
         LeelaPrepareAndSaveData,
         RetokenizationJob,
+        RunMCTSJob
     ],
     "jobs",
 )
