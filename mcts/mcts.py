@@ -26,7 +26,7 @@ def expand_function(node: "TreeNode", chess_state_expander=None, **expander_kwar
         details = subgoals[subgoal]
         value = details["value"]
         probability = details["path_probabilities"]["total_path_probability"].sum()
-        child = TreeNode(state_immutable_board=subgoal, parent=node, value=value, probability=probability)
+        child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
         node.children.append(child)
 
 
@@ -41,7 +41,7 @@ def mock_expand_function(node: "TreeNode"):
         board.push(subgoal)
         immutable_board = ImmutableBoard.from_board(board)
         board.pop()
-        child = TreeNode(state_immutable_board=immutable_board, parent=node, value=random.uniform(-1, 1), probability=1 / 3)
+        child = TreeNode(state=immutable_board, parent=node, value=random.uniform(-1, 1), probability=1 / 3)
         children.append(child)
     node.children = children
 
@@ -54,7 +54,7 @@ class TreeNode(TreeNodeData):
 
     def __new__(
         cls,
-        state_immutable_board: ImmutableBoard,
+        state: ImmutableBoard,
         parent: "TreeNode",
         value=0.0,
         probability=1.0,
@@ -67,9 +67,9 @@ class TreeNode(TreeNodeData):
             cls,
             n_id=TreeNode.node_counter,
             level=level,
-            state=state_immutable_board,
+            state=state,
             parent=parent,
-            is_terminal=state_immutable_board.to_board().is_checkmate(),
+            is_terminal=state.to_board().is_checkmate(),
             probability=probability,
         )
         TreeNode.node_counter += 1
@@ -86,15 +86,15 @@ class TreeNode(TreeNodeData):
 class Tree:
     def __init__(
         self,
-        initial_state_fen: str,
+        initial_state: ImmutableBoard,
         time_limit: int = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score=score_function,
         expand=expand_function,
     ):
-        assert initial_state_fen is not None, "Initial state is None"
-        self.root = TreeNode(state_immutable_board=ImmutableBoard.from_fen_str(initial_state_fen), parent=None)
+        assert initial_state is not None, "Initial state is None"
+        self.root = TreeNode(state=initial_state, parent=None)
         self.player = self.root.get_player()
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant

@@ -2,6 +2,7 @@ import math
 import os
 from collections import namedtuple
 
+from data_structures.data_structures import ImmutableBoard
 from jobs.core import Job
 from mcts.mcts import expand_function, score_function
 from metric_logging import log_param
@@ -12,7 +13,7 @@ TreeData = namedtuple("TreeData", "tree_as_list subgoal")
 class RunMCTSJob(Job):
     def __init__(
         self,
-        initial_state: str,
+        initial_state_fen: str,
         time_limit: float = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
@@ -21,7 +22,7 @@ class RunMCTSJob(Job):
         out_dir: str = None,
         file_name: str = None,
     ):
-        self.initial_state = initial_state
+        self.initial_state = ImmutableBoard.from_fen_str(initial_state_fen)
         self.time_limit = time_limit
         self.max_mcts_passes = max_mcts_passes
         self.exploration_constant = exploration_constant
@@ -43,7 +44,7 @@ class RunMCTSJob(Job):
         from mcts.mcts_tree_network import mcts_tree_network
 
         tree = Tree(
-            initial_state_fen=self.initial_state,
+            initial_state=self.initial_state,
             time_limit=self.time_limit,
             max_mcts_passes=self.max_mcts_passes,
             exploration_constant=self.exploration_constant,
