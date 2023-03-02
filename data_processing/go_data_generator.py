@@ -171,7 +171,7 @@ class GoGamesDataGenerator(GoDataProvider):
         self.sgf_file = self.sgf_files_directories[0]
         if self.sgf_files_directories is not None:
             self.path_to_sgf_file = sgf_file
-            self.name_of_sgf_file: str = 'parsed_data'
+            self.name_of_sgf_file: str = os.path.basename(sgf_files)[:-4]
             #self.sgf_database = open(self.path_to_sgf_file, errors="ignore")
 
         if go_filter is None:
@@ -610,8 +610,10 @@ if __name__ == '__main__':
     # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='sgf_directories.txt',save_data_every_n_games=1,p_sample=1,max_games=2,train_eval_split=1,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
     # generator.create_data()
 
-    generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=991,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
+    generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=101,p_sample=1,max_games=103,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
     generator.create_data()
+
+    #print(os.path.basename('C:\\Users\\Antek\\PycharmProjects\\subgoal_search_chess\\data_processing\\val.txt')[:-4])
 
     # np.set_printoptions(threshold=10000)
     # aaa = pd.read_pickle("trainsgf_directories.txt_train_part_0.pkl")
