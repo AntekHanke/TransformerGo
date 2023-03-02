@@ -7,5 +7,7 @@ if is_local_machine():
         DEFAULT_LC_ZERO_WEIGHTS_PATH = "/home/tomasz/Research/subgoal_chess_data/lczero/medium"
     elif get_local_machine() == "gracjan":
         DEFAULT_LC_ZERO_WEIGHTS_PATH = "/home/gracjan/medium"
+    elif get_local_machine() == "malgorzata":
+        DEFAULT_LC_ZERO_WEIGHTS_PATH = "/home/gosia/dane/subgoal_chess_data/lczero/medium/medium"
 else:
     DEFAULT_LC_ZERO_WEIGHTS_PATH = "/lcezero_weights/medium"

@@ -2,7 +2,7 @@ import math
 import random
 import time
 from collections import namedtuple
-from typing import Union
+from typing import Union, NamedTuple
 
 import chess
 
@@ -19,18 +19,18 @@ def score_function(node: "TreeNode", player: chess.Color, exploration_constant: 
     )
 
 
-def expansion_function(node: "TreeNode", chess_state_expander=None, **expander_kwargs):
+def expand_function(node: "TreeNode", chess_state_expander=None, **expander_kwargs):
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
     subgoals = chess_state_expander.expand_state(node.state, **expander_kwargs)
     for subgoal in subgoals:
         details = subgoals[subgoal]
         value = details["value"]
         probability = details["path_probabilities"]["total_path_probability"].sum()
-        child = TreeNode(subgoal, node, value, probability)
+        child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
         node.children.append(child)
 
 
-def mock_expansion_function(node: "TreeNode"):
+def mock_expand_function(node: "TreeNode"):
     board = node.state.to_board()
     if len(list(board.legal_moves)) > 3:
         subgoals = random.sample(list(board.legal_moves), 3)
@@ -41,25 +41,31 @@ def mock_expansion_function(node: "TreeNode"):
         board.push(subgoal)
         immutable_board = ImmutableBoard.from_board(board)
         board.pop()
-        child = TreeNode(immutable_board, node, random.uniform(-1, 1), 1 / 3)
+        child = TreeNode(state=immutable_board, parent=node, value=random.uniform(-1, 1), probability=1 / 3)
         children.append(child)
     node.children = children
 
 
-TreeNodeData = namedtuple("TreeNode", "id level state parent is_terminal probability")
+TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
 
 
 class TreeNode(TreeNodeData):
     node_counter = 0
 
-    def __new__(cls, state: ImmutableBoard, parent: "TreeNode", value=0.0, probability=1.0):
+    def __new__(
+        cls,
+        state: ImmutableBoard,
+        parent: "TreeNode",
+        value=0.0,
+        probability=1.0,
+    ):
         if parent is None:
             level = 0
         else:
             level = parent.level + 1
         self = super(TreeNode, cls).__new__(
             cls,
-            id=TreeNode.node_counter,
+            n_id=TreeNode.node_counter,
             level=level,
             state=state,
             parent=parent,
@@ -80,15 +86,15 @@ class TreeNode(TreeNodeData):
 class Tree:
     def __init__(
         self,
-        initial_state,
+        initial_state: str,
         time_limit: int = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score=score_function,
-        expand=expansion_function,
+        expand=expand_function,
     ):
         assert initial_state is not None, "Initial state is None"
-        self.root = TreeNode(initial_state, None)
+        self.root = TreeNode(state=ImmutableBoard.from_fen_str(initial_state), parent=None)
         self.player = self.root.get_player()
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
@@ -156,3 +162,22 @@ class Tree:
             elif node_score == best_score:
                 best_nodes.append(child)
         return random.choice(best_nodes)
+
+    def to_list(self):
+        tree_list = []
+        for node in self.node_list:
+            if node.parent is None:
+                parent_id = None
+            else:
+                parent_id = node.parent.n_id
+            node_tuple = NamedTuple(
+                n_id=node.n_id,
+                parent=parent_id,
+                probability=node.probability,
+                total_value=node.total_value,
+                num_visits=node.num_visits,
+                is_terminal=node.is_terminal,
+                is_expanded=node.is_expanded,
+            )
+            tree_list.append(node_tuple)
+        return tree_list
