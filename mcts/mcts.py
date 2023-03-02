@@ -2,7 +2,7 @@ import math
 import random
 import time
 from collections import namedtuple
-from typing import Union, NamedTuple
+from typing import Union
 
 import chess
 
@@ -47,7 +47,7 @@ def mock_expand_function(node: "TreeNode"):
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
-
+NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability total_value num_visits is_terminal is_expanded")
 
 class TreeNode(TreeNodeData):
     node_counter = 0
@@ -170,9 +170,9 @@ class Tree:
                 parent_id = None
             else:
                 parent_id = node.parent.n_id
-            node_tuple = NamedTuple(
+            node_tuple = NodeTuple(
                 n_id=node.n_id,
-                parent=parent_id,
+                parent_id=parent_id,
                 probability=node.probability,
                 total_value=node.total_value,
                 num_visits=node.num_visits,

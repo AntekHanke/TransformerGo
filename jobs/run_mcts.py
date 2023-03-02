@@ -1,9 +1,12 @@
 import math
 import os
+from collections import namedtuple
 
 from jobs.core import Job
 from mcts.mcts import expand_function, score_function
 from metric_logging import log_param
+
+TreeData = namedtuple("TreeData", "tree_as_list subgoal")
 
 
 class RunMCTSJob(Job):
@@ -29,7 +32,7 @@ class RunMCTSJob(Job):
 
         log_param("Initial state", str(self.initial_state))
         log_param("Time limit", self.time_limit)
-        log_param("Save tree path", os.path.join(self.out_dir,self.file_name))
+        log_param("Save tree path", os.path.join(self.out_dir, self.file_name))
         log_param("Max number of mcts passes", self.max_mcts_passes)
         log_param("Exploration constant", self.exploration_constant)
 
@@ -47,10 +50,11 @@ class RunMCTSJob(Job):
             score=self.score,
             expand=self.expand,
         )
-        tree.mcts()
-        mcts_tree_network(tree, os.path.join(self.out_dir, self.file_name+".html"))
+        subgoal = tree.mcts()
+        mcts_tree_network(tree, os.path.join(self.out_dir, self.file_name + ".html"))
+        output = TreeData(tree_as_list=tree.to_list(), subgoal=subgoal)
 
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir, exist_ok=True)
-        with open(os.path.join(self.out_dir, self.file_name+".pkl"), "wb+") as f:
-            pickle.dump(tree.to_list(), f)
+        with open(os.path.join(self.out_dir, self.file_name + ".pkl"), "wb+") as f:
+            pickle.dump(output, f)

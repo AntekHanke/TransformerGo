@@ -15,7 +15,7 @@ FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 experiment_config = {
     "run.job_class": "@jobs.RunMCTSJob",
     "RunMCTSJob.initial_state": FEN,
-    "RunMCTSJob.time_limit": 60,
+    "RunMCTSJob.time_limit": None,
     "RunMCTSJob.max_mcts_passes": 2000,
     "RunMCTSJob.score": "@score_functions.score_function",
     "RunMCTSJob.expand": "@expand_functions.mock_expand_function",
