@@ -40,7 +40,7 @@ class RunMCTSJob(Job):
         from mcts.mcts_tree_network import mcts_tree_network
 
         tree = Tree(
-            initial_state=self.initial_state,
+            initial_state_fen=self.initial_state,
             time_limit=self.time_limit,
             max_mcts_passes=self.max_mcts_passes,
             exploration_constant=self.exploration_constant,
