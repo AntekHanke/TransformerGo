@@ -81,7 +81,7 @@ class Tree:
     def __init__(
         self,
         initial_state,
-        time_limit: float = None,
+        time_limit: int = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score=score_function,
