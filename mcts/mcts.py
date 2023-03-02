@@ -9,14 +9,11 @@ import chess
 from data_structures.data_structures import ImmutableBoard
 
 
-def score_function(node: "TreeNode", player: chess.Color, exploration_constant: float) -> float:
-    if player == node.get_player():
-        players_move = 1
-    else:
-        players_move = -1
-    return players_move * node.total_value / node.num_visits * node.probability + exploration_constant * math.sqrt(
-        2 * math.log(node.parent.num_visits) / node.num_visits
-    )
+def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
+    players_score_factor = 1 if root_player == node.get_player() else -1
+    exploit_score = players_score_factor * node.total_value / node.num_visits * node.probability
+    explore_score = exploration_constant * math.sqrt(2 * math.log(node.parent.num_visits) / node.num_visits)
+    return exploit_score + exploration_constant * explore_score
 
 
 def expand_function(node: "TreeNode", chess_state_expander=None, **expander_kwargs):
@@ -48,6 +45,7 @@ def mock_expand_function(node: "TreeNode"):
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
 NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability total_value num_visits is_terminal is_expanded")
+
 
 class TreeNode(TreeNodeData):
     node_counter = 0
@@ -95,7 +93,7 @@ class Tree:
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
-        self.player = self.root.get_player()
+        self.root_player = self.root.get_player()
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
         self.score = score
@@ -155,7 +153,7 @@ class Tree:
         best_score = float("-inf")
         best_nodes = []
         for child in node.children:
-            node_score = self.score(child, self.player, exploration_constant)
+            node_score = self.score(node=child, root_player=self.root_player, exploration_constant=exploration_constant)
             if node_score > best_score:
                 best_score = node_score
                 best_nodes = [child]
