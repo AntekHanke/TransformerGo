@@ -7,6 +7,7 @@ from typing import Union
 import chess
 
 from data_structures.data_structures import ImmutableBoard
+from mcts.node_expansion import ChessStateExpander
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -16,7 +17,7 @@ def score_function(node: "TreeNode", root_player: chess.Color, exploration_const
     return exploit_score + exploration_constant * explore_score
 
 
-def expand_function(node: "TreeNode", chess_state_expander=None, **expander_kwargs):
+def expand_function(node: "TreeNode", chess_state_expander: ChessStateExpander = None, **expander_kwargs):
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
     subgoals = chess_state_expander.expand_state(node.state, **expander_kwargs)
     for subgoal in subgoals:
