@@ -28,11 +28,7 @@ def get_move_list(s: str) -> str:
 
 def move_list_from_str(s: str) -> List[chess.Move]:
     move_list: List[str] = s.split(" ")
-    move_list_as_chess_move: List[chess.Move] = []
-    for move in move_list:
-        if move != "":
-            move_list_as_chess_move.append(chess.Move.from_uci(move))
-    return move_list_as_chess_move
+    return [chess.Move.from_uci(move) for move in move_list if move != ""]
 
 
 def curent_state(move_list: str) -> chess.Board:
