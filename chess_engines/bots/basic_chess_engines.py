@@ -60,6 +60,7 @@ class PolicyChess(ChessEngine):
         do_sample: bool = True,
         name: str = "POLICY",
         use_lczero_policy: bool = False,
+        history_length: int = 0,
     ) -> None:
 
         self.name: str = name
@@ -68,8 +69,9 @@ class PolicyChess(ChessEngine):
         self.replace_legall_move_with_random = replace_legall_move_with_random
         self.do_sample = do_sample
         self.policy_checkpoint = policy_checkpoint
+        self.history_length = history_length
         if not use_lczero_policy:
-            self.chess_policy = BasicChessPolicy(self.policy_checkpoint)
+            self.chess_policy = BasicChessPolicy(self.policy_checkpoint, self.history_length)
         else:
             self.chess_policy = LCZeroPolicy()
 
@@ -96,7 +98,10 @@ class PolicyChess(ChessEngine):
 
         try:
             moves, probs = self.chess_policy.get_best_moves(
-                ImmutableBoard.from_board(current_state), number_of_moves, return_probs=True, do_sample=self.do_sample
+                immutable_board=ImmutableBoard.from_board(current_state),
+                num_return_sequences=number_of_moves,
+                return_probs=True,
+                do_sample=self.do_sample,
             )
             log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
         except Exception as e:

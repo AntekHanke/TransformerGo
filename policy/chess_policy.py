@@ -23,24 +23,23 @@ class BasicChessPolicy(ChessPolicy):
     """Basic pgn_policy based on generation from the model"""
 
     # TODO: checkpoint_path_or_model typing
-    def __init__(self, checkpoint_path_or_model) -> None:
+    def __init__(self, checkpoint_path_or_model, history_length=0) -> None:
         if isinstance(checkpoint_path_or_model, str):
             self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
         else:
             self.model = checkpoint_path_or_model
+        self.history_length = history_length
 
     def get_best_moves(
         self,
         immutable_board: ImmutableBoard,
+        history: List[chess.Move] = None,
         num_return_sequences: int = 8,
         num_beams: int = 16,
         return_probs: bool = False,
         do_sample: bool = False,
     ) -> List[chess.Move]:
-        encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [
-            ChessTokenizer.vocab_to_tokens["<SEP>"]
-        ]
-        input_tensor: torch.Tensor = torch.IntTensor([encoded_board]).to(self.model.device)
+        input_tensor: torch.Tensor = self.encode_board(immutable_board, history)
         outputs: List[List[int]] = self.model.generate(
             inputs=input_tensor,
             num_beams=num_beams,
@@ -78,11 +77,10 @@ class BasicChessPolicy(ChessPolicy):
         else:
             return converted_moves
 
-    def find_move_probability(self, immutable_board: ImmutableBoard, move_str: chess.Move) -> float:
-        encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [
-            ChessTokenizer.vocab_to_tokens["<SEP>"]
-        ]
-        input_tensor: torch.Tensor = torch.IntTensor([encoded_board]).to(self.model.device)
+    def find_move_probability(
+        self, immutable_board: ImmutableBoard, history: List[chess.Move], move_str: chess.Move
+    ) -> float:
+        input_tensor: torch.Tensor = self.encode_board(immutable_board, history)
         outputs = self.model.generate(
             inputs=input_tensor,
             output_scores=True,
@@ -94,6 +92,23 @@ class BasicChessPolicy(ChessPolicy):
         scores = outputs.scores[0]
         num = scores[0, 100].tolist()
         print(num)
+
+    def encode_board(self, immutable_board: ImmutableBoard, history: List[chess.Move]) -> torch.Tensor:
+        if self.history_length > 0:
+            encoded_history: List[int] = []
+            history = history[-self.history_length:]
+            for move in history:
+                encoded_history += ChessTokenizer.encode_move(move)
+            encoded_board: List[int] = (
+                ChessTokenizer.encode_immutable_board(immutable_board)
+                + encoded_history
+                + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
+            )
+        else:
+            encoded_board: List[int] = ChessTokenizer.encode_immutable_board(immutable_board) + [
+                ChessTokenizer.vocab_to_tokens["<SEP>"]
+            ]
+        return torch.IntTensor([encoded_board]).to(self.model.device)
 
 
 class LCZeroPolicy(ChessPolicy):
@@ -140,10 +155,9 @@ class LCZeroPolicy(ChessPolicy):
             board.push(move)
         return probs
 
-
     def sample_move(self, immutable_board: ImmutableBoard) -> chess.Move:
         prob_distribution = self.lczero_backend.get_policy_distribution(immutable_board)
         moves, probs = zip(*prob_distribution)
-        probs = np.array(probs)/np.sum(probs)
+        probs = np.array(probs) / np.sum(probs)
         move_idx = np.random.choice(list(range(len(moves))), p=probs)
         return chess.Move.from_uci(moves[move_idx])
