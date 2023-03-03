@@ -12,7 +12,7 @@ from mcts.node_expansion import ChessStateExpander
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
     players_score_factor = 1 if root_player == node.get_player() else -1
-    exploit_score = players_score_factor * node.total_value / node.num_visits * node.probability
+    exploit_score = players_score_factor * node.get_value() * node.probability
     explore_score = exploration_constant * math.sqrt(2 * math.log(node.parent.num_visits) / node.num_visits)
     return exploit_score + exploration_constant * explore_score
 
@@ -70,12 +70,15 @@ class TreeNode(TreeNodeData):
         TreeNode.node_counter += 1
         self.is_expanded = self.is_terminal
         self.num_visits = 1
-        self.total_value = value
+        self.all_values = []
         self.children = []
         return self
 
     def get_player(self) -> chess.Color:
         return self.state.to_board().turn
+
+    def get_value(self) -> float:
+        return sum(self.all_values) / self.num_visits
 
 
 class Tree:
@@ -119,11 +122,11 @@ class Tree:
                     self.execute_mcts_pass()
 
         best_child = self.get_best_child(self.root, 0)
-        return {"best_child": best_child.state, "expected_value": best_child.total_value / best_child.num_visits}
+        return {"best_child": best_child.state, "expected_value": best_child.get_value()}
 
     def execute_mcts_pass(self):
         node = self.tree_traversal(self.root)
-        value = node.total_value
+        value = node.get_value()
         self.backpropogate(node, value)
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
@@ -140,7 +143,7 @@ class Tree:
     def backpropogate(self, node: TreeNode, value: float):
         while node is not None:
             node.num_visits += 1
-            node.total_value += value
+            node.all_values.append(value)
             node = node.parent
 
     def get_best_child(self, node: TreeNode, exploration_constant: float) -> TreeNode:
@@ -166,7 +169,7 @@ class Tree:
                 n_id=node.n_id,
                 parent_id=parent_id,
                 probability=node.probability,
-                total_value=node.total_value,
+                value=node.get_value(),
                 num_visits=node.num_visits,
                 is_terminal=node.is_terminal,
                 is_expanded=node.is_expanded,
