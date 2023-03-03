@@ -48,12 +48,12 @@ class RunMCTSJob(Job):
             time_limit=self.time_limit,
             max_mcts_passes=self.max_mcts_passes,
             exploration_constant=self.exploration_constant,
-            score=self.score,
-            expand=self.expand,
+            score_function=self.score,
+            expand_function=self.expand,
         )
-        best_tree_state = tree.mcts()
+        mcts_output = tree.mcts()
         mcts_tree_network(tree, os.path.join(self.out_dir, self.file_name + ".html"))
-        output = TreeData(tree_as_list=tree.to_list(), best_tree_state=best_tree_state)
+        output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output["best_child"])
 
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir, exist_ok=True)

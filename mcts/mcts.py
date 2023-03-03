@@ -82,19 +82,19 @@ class Tree:
     def __init__(
         self,
         initial_state: ImmutableBoard,
-        time_limit: int = None,
+        time_limit: float = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
-        score=score_function,
-        expand=expand_function,
+        score_function=score_function,
+        expand_function=expand_function,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
         self.root_player = self.root.get_player()
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
-        self.score = score
-        self.expand = expand
+        self.score = score_function
+        self.expand = expand_function
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -102,9 +102,9 @@ class Tree:
         self.time_limit = time_limit
         self.max_mcts_passes = max_mcts_passes
 
-    def mcts(self, need_details=False) -> Union[ImmutableBoard, dict]:
+    def mcts(self) -> dict:
         if self.time_limit is not None:
-            time_limit = time.time() + self.time_limit / 1000
+            time_limit = time.time() + self.time_limit
             if self.max_mcts_passes is not None:
                 for i in range(self.max_mcts_passes):
                     self.execute_mcts_pass()
@@ -119,17 +119,14 @@ class Tree:
                     self.execute_mcts_pass()
 
         best_child = self.get_best_child(self.root, 0)
-        if need_details:
-            return {"subgoal": best_child.state, "expected_value": best_child.total_value / best_child.num_visits}
-        else:
-            return best_child.state
+        return {"best_child": best_child.state, "expected_value": best_child.total_value / best_child.num_visits}
 
     def execute_mcts_pass(self):
-        node = self.select_node(self.root)
+        node = self.tree_traversal(self.root)
         value = node.total_value
         self.backpropogate(node, value)
 
-    def select_node(self, node: TreeNode) -> TreeNode:
+    def tree_traversal(self, node: TreeNode) -> TreeNode:
         while not node.is_terminal:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
