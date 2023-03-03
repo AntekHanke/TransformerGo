@@ -26,6 +26,15 @@ def get_move_list(s: str) -> str:
     return move_list
 
 
+def move_list_from_str(s: str) -> List[chess.Move]:
+    move_list: List[str] = s.split(" ")
+    move_list_as_chess_move: List[chess.Move] = []
+    for move in move_list:
+        if move != "":
+            move_list_as_chess_move.append(chess.Move.from_uci(move))
+    return move_list_as_chess_move
+
+
 def curent_state(move_list: str) -> chess.Board:
     board: chess.Board = chess.Board()
     moves: List[str] = move_list.split(" ")
@@ -74,8 +83,9 @@ def main_uci_loop(engine: ChessEngine):
             move_list = get_move_list(s)
 
         elif commands[0] == UCI_GO_COMMAND:
-            baord: chess.Board = curent_state(move_list)
-            best_move = engine.propose_best_moves(baord, number_of_moves=8)
+            board: chess.Board = curent_state(move_list)
+            history: List[chess.Move] = move_list_from_str(move_list)
+            best_move = engine.propose_best_moves(current_state=board, number_of_moves=8, history=history)
             output("bestmove" + " " + best_move)
 
         elif commands[0] == UCI_QUIT_COMMAND:

@@ -31,7 +31,7 @@ class ChessEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move]) -> Optional[str]:
         raise NotImplementedError
 
 
@@ -39,7 +39,7 @@ class RandomChessEngine(ChessEngine):
     def __init__(self):
         self.name = "RANDOM"
 
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int = 0) -> Optional[str]:
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int = 0, history: List[chess.Move] = None) -> Optional[str]:
         board = copy.deepcopy(current_state)
         moves: List[chess.Move] = list(board.legal_moves)
         best_move: str = np.random.choice(moves).uci()
@@ -89,7 +89,7 @@ class PolicyChess(ChessEngine):
             log_engine_specific_info(f"PATH TO CHECKPOINT OF POLICY: {self.policy_checkpoint}", self.log_dir)
             log_engine_specific_info(f"PATH TO FOLDER WITH ALL DATA OF ENGINE: {self.log_dir}", self.log_dir)
 
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None) -> Optional[str]:
         if self.debug_mode:
             log_engine_specific_info("\n", self.log_dir)
             log_engine_specific_info(f"CURRENT STATE:{current_state.fen()}", self.log_dir)
@@ -99,6 +99,7 @@ class PolicyChess(ChessEngine):
         try:
             moves, probs = self.chess_policy.get_best_moves(
                 immutable_board=ImmutableBoard.from_board(current_state),
+                history=history,
                 num_return_sequences=number_of_moves,
                 return_probs=True,
                 do_sample=self.do_sample,
@@ -219,7 +220,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         return filtred_subgoals, filterd_values
 
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int) -> Optional[str]:
+    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None) -> Optional[str]:
         self.n_moves += 1
         immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
         batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
