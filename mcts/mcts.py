@@ -160,10 +160,9 @@ class Tree:
     def to_list(self):
         tree_list = []
         for node in self.node_list:
-            if node.immutable_data.parent is None:
-                parent_id = None
-            else:
-                parent_id = node.immutable_data.parent.immutable_data.n_id
+            parent_id = (
+                node.immutable_data.parent.immutable_data.n_id if node.immutable_data.parent is not None else None
+            )
             node_tuple = NodeTuple(
                 n_id=node.immutable_data.n_id,
                 parent_id=parent_id,
