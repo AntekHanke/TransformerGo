@@ -56,8 +56,8 @@ class TreeNode:
         self,
         state: ImmutableBoard,
         parent: "TreeNode",
-        value=0.0,
-        probability=1.0,
+        value: float = 0.0,
+        probability: float = 1.0,
     ):
         self.immutable_data = TreeNodeData(
             n_id=TreeNode.node_counter,
