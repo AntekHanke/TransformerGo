@@ -13,7 +13,9 @@ from mcts.node_expansion import ChessStateExpander
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
     players_score_factor = 1 if root_player == node.get_player() else -1
     exploit_score = players_score_factor * node.get_value() * node.immutable_data.probability
-    explore_score = exploration_constant * math.sqrt(2 * math.log(node.immutable_data.parent.num_visits) / node.num_visits)
+    explore_score = exploration_constant * math.sqrt(
+        2 * math.log(node.immutable_data.parent.num_visits) / node.num_visits
+    )
     return exploit_score + exploration_constant * explore_score
 
 
@@ -30,10 +32,9 @@ def expand_function(node: "TreeNode", chess_state_expander: ChessStateExpander =
 
 def mock_expand_function(node: "TreeNode"):
     board = node.immutable_data.state.to_board()
-    if len(list(board.legal_moves)) > 3:
-        subgoals = random.sample(list(board.legal_moves), 3)
-    else:
-        subgoals = list(board.legal_moves)
+    subgoals = (
+        random.sample(list(board.legal_moves), 3) if len(list(board.legal_moves)) > 3 else list(board.legal_moves)
+    )
     children = []
     for subgoal in subgoals:
         board.push(subgoal)
