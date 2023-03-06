@@ -95,10 +95,8 @@ class BasicChessPolicy(ChessPolicy):
 
     def encode_board(self, immutable_board: ImmutableBoard, history: List[chess.Move]) -> torch.Tensor:
         if self.history_length > 0:
-            encoded_history: List[int] = []
             history = history[-self.history_length:]
-            for move in history:
-                encoded_history += ChessTokenizer.encode_move(move)
+            encoded_history: List[int] = [ChessTokenizer.encode_move(move)[0] for move in history]
             encoded_board: List[int] = (
                 ChessTokenizer.encode_immutable_board(immutable_board)
                 + encoded_history
