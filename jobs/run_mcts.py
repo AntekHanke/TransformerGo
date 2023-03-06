@@ -1,5 +1,6 @@
 import math
 import os
+import pickle
 from collections import namedtuple
 from typing import Callable
 
@@ -7,8 +8,9 @@ import chess
 
 from data_structures.data_structures import ImmutableBoard
 from jobs.core import Job
+from mcts.mcts import Tree
 from mcts.mcts import expand_function, score_function, TreeNode
-from mcts.node_expansion import ChessStateExpander
+from mcts.mcts_tree_network import mcts_tree_network
 from metric_logging import log_param
 
 TreeData = namedtuple("TreeData", "tree_as_list best_tree_state")
@@ -42,11 +44,6 @@ class RunMCTSJob(Job):
         log_param("Exploration constant", self.exploration_constant)
 
     def execute(self):
-        import os
-        import pickle
-        from mcts.mcts import Tree
-        from mcts.mcts_tree_network import mcts_tree_network
-
         tree = Tree(
             initial_state=self.initial_state,
             time_limit=self.time_limit,
