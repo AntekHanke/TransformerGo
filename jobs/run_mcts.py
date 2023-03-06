@@ -25,7 +25,7 @@ class RunMCTSJob(Job):
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
-        expand_function: Callable[[TreeNode, ...], None] = expand_function,
+        expand_function: Callable[..., None] = expand_function,
         out_dir: str = None,
         file_name: str = None,
     ):
@@ -33,8 +33,8 @@ class RunMCTSJob(Job):
         self.time_limit = time_limit
         self.max_mcts_passes = max_mcts_passes
         self.exploration_constant = exploration_constant
-        self.score = score_function
-        self.expand = expand_function
+        self.score_function = score_function
+        self.expand_function = expand_function
         self.out_dir = out_dir
         self.file_name = file_name
 
@@ -50,8 +50,8 @@ class RunMCTSJob(Job):
             time_limit=self.time_limit,
             max_mcts_passes=self.max_mcts_passes,
             exploration_constant=self.exploration_constant,
-            score_function=self.score,
-            expand_function=self.expand,
+            score_function=self.score_function,
+            expand_function=self.expand_function,
         )
         mcts_output = tree.mcts()
         mcts_tree_network(tree, self.out_dir, f"{self.file_name}.html")

@@ -2,7 +2,7 @@ import math
 import random
 import time
 from collections import namedtuple
-from typing import Union, Callable
+from typing import Callable, Type
 
 import chess
 
@@ -19,13 +19,24 @@ def score_function(node: "TreeNode", root_player: chess.Color, exploration_const
     return exploit_score + exploration_constant * explore_score
 
 
-def expand_function(node: "TreeNode", chess_state_expander: ChessStateExpander = None, **expander_kwargs):
+def expand_function(
+    node: "TreeNode",
+    cllp_num_beams: int,
+    cllp_num_return_sequences: int,
+    chess_state_expander: Type[ChessStateExpander] = None,
+):
+    # TODO: Code below works, but I'm not sure I understand gin config correctly and thus if it's necessary
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
-    subgoals = chess_state_expander.expand_state(node.immutable_data.state, **expander_kwargs)
+    chess_state_expander = chess_state_expander()
+    subgoals = chess_state_expander.expand_state(
+        input_immutable_board=node.immutable_data.state,
+        cllp_num_beams=cllp_num_beams,
+        cllp_num_return_sequences=cllp_num_return_sequences,
+    )
     for subgoal in subgoals:
         details = subgoals[subgoal]
         value = details["value"]
-        probability = details["path_probabilities"]["total_path_probability"].sum()
+        probability = sum([path_statistics["total_path_probability"] for path_statistics in details["path_probabilities"]])
         child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
         node.children.append(child)
 
@@ -88,15 +99,15 @@ class Tree:
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
-        expand_function: Callable[[TreeNode, ...], None] = expand_function,
+        expand_function: Callable[..., None] = expand_function,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
         self.root_player = self.root.get_player()
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
-        self.score = score_function
-        self.expand = expand_function
+        self.score_function = score_function
+        self.expand_function = expand_function
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -133,7 +144,7 @@ class Tree:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
             else:
-                self.expand(node)
+                self.expand_function(node)
                 self.node_list += node.children
                 node.is_expanded = True
                 return self.get_best_child(node, self.exploration_constant)
@@ -149,7 +160,7 @@ class Tree:
         best_score = float("-inf")
         best_nodes = []
         for child in node.children:
-            node_score = self.score(node=child, root_player=self.root_player, exploration_constant=exploration_constant)
+            node_score = self.score_function(node=child, root_player=self.root_player, exploration_constant=exploration_constant)
             if node_score > best_score:
                 best_score = node_score
                 best_nodes = [child]
