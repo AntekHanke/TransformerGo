@@ -2,7 +2,7 @@ import math
 import random
 import time
 from collections import namedtuple
-from typing import Union
+from typing import Union, Callable
 
 import chess
 
@@ -86,8 +86,8 @@ class Tree:
         time_limit: float = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
-        score_function=score_function,
-        expand_function=expand_function,
+        score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
+        expand_function: Callable[[TreeNode, ...], None] = expand_function,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)

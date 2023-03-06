@@ -1,10 +1,14 @@
 import math
 import os
 from collections import namedtuple
+from typing import Callable
+
+import chess
 
 from data_structures.data_structures import ImmutableBoard
 from jobs.core import Job
-from mcts.mcts import expand_function, score_function
+from mcts.mcts import expand_function, score_function, TreeNode
+from mcts.node_expansion import ChessStateExpander
 from metric_logging import log_param
 
 TreeData = namedtuple("TreeData", "tree_as_list best_tree_state")
@@ -17,8 +21,8 @@ class RunMCTSJob(Job):
         time_limit: float = None,
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
-        score=score_function,
-        expand=expand_function,
+        score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
+        expand_function: Callable[[TreeNode, ...], None] = expand_function,
         out_dir: str = None,
         file_name: str = None,
     ):
@@ -26,8 +30,8 @@ class RunMCTSJob(Job):
         self.time_limit = time_limit
         self.max_mcts_passes = max_mcts_passes
         self.exploration_constant = exploration_constant
-        self.score = score
-        self.expand = expand
+        self.score = score_function
+        self.expand = expand_function
         self.out_dir = out_dir
         self.file_name = file_name
 
