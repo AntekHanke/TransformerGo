@@ -124,7 +124,7 @@ class PandasIterableSubgoalAllDistancesDataProvider(PandasIterableDataProvider):
     ) -> None:
         super().__init__(data_path, files_batch_size, p_sample, cycle, name)
         if range_of_k is None:
-            range_of_k: List[int] = [1]
+            range_of_k = [1]
         self.range_of_k = range_of_k
         assert (
             min(self.range_of_k) >= 1 and max(self.range_of_k) <= 9
