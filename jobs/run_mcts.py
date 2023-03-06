@@ -2,6 +2,7 @@ import math
 import os
 import pickle
 from collections import namedtuple
+from pathlib import Path
 from typing import Callable
 
 import chess
@@ -56,7 +57,6 @@ class RunMCTSJob(Job):
         mcts_tree_network(tree, os.path.join(self.out_dir, self.file_name + ".html"))
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
 
-        if not os.path.exists(self.out_dir):
-            os.makedirs(self.out_dir, exist_ok=True)
+        Path(self.out_dir).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(self.out_dir, self.file_name + ".pkl"), "wb+") as f:
             pickle.dump(output, f)
