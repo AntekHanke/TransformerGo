@@ -16,6 +16,7 @@ from data_processing.data_processing_functions import (
     policy_with_history_process_df,
     subgoal_to_policy_process_df,
     cllp_process_df,
+    subgoal_all_k_process_df,
 )
 from metric_logging import log_param, log_value, log_object
 
@@ -46,7 +47,9 @@ class PandasIterableDataProvider(IterableDataset):
         else:
             if self.data_path.endswith("/"):
                 self.data_path = self.data_path[:-1]
-            self.files_names = list(glob.glob(f"{self.data_path}/**/*.pkl", recursive=True))
+            self.files_names = list(
+                glob.glob(f"{self.data_path}/**/*.pkl", recursive=True)
+            )
 
         log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
         random.Random(time.time()).shuffle(self.files_names)
@@ -84,15 +87,19 @@ class PandasIterableDataProvider(IterableDataset):
                 continue
 
             self.successfully_loaded_files += 1
-            log_value(f"load_df_all_files_{self.name}", self.successfully_loaded_files, self.successfully_loaded_files)
+            log_value(
+                f"load_df_all_files_{self.name}",
+                self.successfully_loaded_files,
+                self.successfully_loaded_files,
+            )
 
             if self.p_sample:
                 load_df = load_df.sample(frac=self.p_sample)
 
             data.extend(self.process_df(load_df))
-            if (self.successfully_loaded_files + 1) % self.files_batch_size == 0 or (file_num + 1) == len(
-                self.files_names
-            ):
+            if (self.successfully_loaded_files + 1) % self.files_batch_size == 0 or (
+                file_num + 1
+            ) == len(self.files_names):
                 random.Random(time.time()).shuffle(data)
                 for x in data:
                     yield x
@@ -103,6 +110,31 @@ class PandasIterableSubgoalDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
         return subgoal_process_df(df)
+
+
+class PandasIterableSubgoalAllDistancesDataProvider(PandasIterableDataProvider):
+    def __init__(
+        self,
+        data_path: str,
+        files_batch_size: int = 10,
+        p_sample: Optional[float] = None,
+        cycle: bool = True,
+        name: str = "default",
+        range_of_k: Optional[List[int]] = None,
+    ) -> None:
+        super().__init__(data_path, files_batch_size, p_sample, cycle, name)
+        if range_of_k is None:
+            range_of_k: List[int] = [1]
+        self.range_of_k = range_of_k
+        assert (
+            min(self.range_of_k) >= 1 and max(self.range_of_k) <= 9
+        ), "Min k should be >= 1 and Max k should be <= 9"
+
+    def process_df(self, df: pd.DataFrame) -> List[Dict[str, List[int]]]:
+        return subgoal_all_k_process_df(df, self.range_of_k)
+
+    def __getitem__(self, item):
+        pass
 
 
 class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
@@ -143,7 +175,9 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
         data = {}
         for (id, (_, row)) in enumerate(df[["target_immutable_board", "Q"]].iterrows()):
             data[id] = {
-                "input_ids": ChessTokenizer.encode_immutable_board(row["target_immutable_board"]),
+                "input_ids": ChessTokenizer.encode_immutable_board(
+                    row["target_immutable_board"]
+                ),
                 "labels": row["Q"],
             }
         return data
@@ -156,3 +190,10 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
 
     def get_eval_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_eval)
+
+
+c = PandasIterableSubgoalAllDistancesDataProvider(
+    data_path="/home/gracjan/PycharmProjects/data_to_test_subgoal_search_chess/lichess_elite_2022-11.pgn_train_part_9.pkl",
+    range_of_k=[1, 2],
+)
+d = 1
