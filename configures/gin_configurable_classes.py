@@ -27,6 +27,7 @@ from data_processing.pandas_static_dataset_provider import (
     PandasStaticPolicyWithHistoryDataProvider,
     PandasStaticSubgoalToPolicyDataProvider,
     PandasStaticCLLPDataProvider,
+    PandasStaticSubgoalAllDistancesDataProvider,
 )
 from jobs.chess_retokenization import RetokenizationJob
 from jobs.create_pgn_dataset import CreatePGNDataset
@@ -75,6 +76,7 @@ configure_classes(
         PandasIterableCLLPDataProvider,
         PandasStaticDataProvider,
         PandasStaticSubgoalDataProvider,
+        PandasStaticSubgoalAllDistancesDataProvider,
         PandasStaticPolicyDataProvider,
         PandasStaticPolicyWithHistoryDataProvider,
         PandasStaticSubgoalToPolicyDataProvider,
