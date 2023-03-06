@@ -7,7 +7,7 @@ from transformers import BartForConditionalGeneration
 
 from configures.global_config import MAX_NEW_TOKENS_FOR_POLICY
 from data_processing.chess_tokenizer import ChessTokenizer
-from data_structures.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard, HistoryLength
 from lczero.lczero_general_backend.lczero_classes import get_lczero_backend
 from utils.chess960_conversion import chess960_to_standard
 
@@ -23,7 +23,7 @@ class BasicChessPolicy(ChessPolicy):
     """Basic pgn_policy based on generation from the model"""
 
     # TODO: checkpoint_path_or_model typing
-    def __init__(self, checkpoint_path_or_model, history_length=0) -> None:
+    def __init__(self, checkpoint_path_or_model, history_length: HistoryLength = HistoryLength.no_history) -> None:
         if isinstance(checkpoint_path_or_model, str):
             self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
         else:

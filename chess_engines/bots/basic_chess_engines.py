@@ -10,11 +10,11 @@ import chess.engine
 import numpy as np
 
 from chess_engines.third_party.stockfish import StockfishEngine
-from utils.data_utils import immutable_boards_to_img
-from data_structures.data_structures import ImmutableBoard
+from data_structures.data_structures import ImmutableBoard, HistoryLength
 from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
+from utils.data_utils import immutable_boards_to_img
 
 
 def log_engine_specific_info(s: str, path_to_log_dir: str, prefix: str = ">>> ") -> None:
@@ -31,7 +31,9 @@ class ChessEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move]) -> Optional[str]:
+    def propose_best_moves(
+        self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move]
+    ) -> Optional[str]:
         raise NotImplementedError
 
 
@@ -39,7 +41,9 @@ class RandomChessEngine(ChessEngine):
     def __init__(self):
         self.name = "RANDOM"
 
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int = 0, history: List[chess.Move] = None) -> Optional[str]:
+    def propose_best_moves(
+        self, current_state: chess.Board, number_of_moves: int = 0, history: List[chess.Move] = None
+    ) -> Optional[str]:
         board = copy.deepcopy(current_state)
         moves: List[chess.Move] = list(board.legal_moves)
         best_move: str = np.random.choice(moves).uci()
@@ -60,7 +64,7 @@ class PolicyChess(ChessEngine):
         do_sample: bool = True,
         name: str = "POLICY",
         use_lczero_policy: bool = False,
-        history_length: int = 0,
+        history_length: HistoryLength = HistoryLength.no_history,
     ) -> None:
 
         self.name: str = name
@@ -89,7 +93,9 @@ class PolicyChess(ChessEngine):
             log_engine_specific_info(f"PATH TO CHECKPOINT OF POLICY: {self.policy_checkpoint}", self.log_dir)
             log_engine_specific_info(f"PATH TO FOLDER WITH ALL DATA OF ENGINE: {self.log_dir}", self.log_dir)
 
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None) -> Optional[str]:
+    def propose_best_moves(
+        self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None
+    ) -> Optional[str]:
         if self.debug_mode:
             log_engine_specific_info("\n", self.log_dir)
             log_engine_specific_info(f"CURRENT STATE:{current_state.fen()}", self.log_dir)
@@ -220,7 +226,9 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         return filtred_subgoals, filterd_values
 
-    def propose_best_moves(self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None) -> Optional[str]:
+    def propose_best_moves(
+        self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None
+    ) -> Optional[str]:
         self.n_moves += 1
         immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
         batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
