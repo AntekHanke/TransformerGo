@@ -18,16 +18,16 @@ UCI_QUIT_COMMAND: str = "quit"
 UCI_NEW_GAME: str = "ucinewgame"
 
 
-def get_move_list(s: str) -> str:
+def get_move_list(command_with_move_list: str) -> str:
     move_list: str = ""
-    pos: int = s.find(UCI_MOVES_COMMAND)
+    pos: int = command_with_move_list.find(UCI_MOVES_COMMAND)
     if pos >= 0:
-        move_list: str = s[(pos + len(UCI_MOVES_COMMAND)) :]
+        move_list: str = command_with_move_list[(pos + len(UCI_MOVES_COMMAND)):]
     return move_list
 
 
-def move_list_from_str(s: str) -> List[chess.Move]:
-    move_list: List[str] = s.split(" ")
+def move_list_from_str(moves_list_str: str) -> List[chess.Move]:
+    move_list: List[str] = moves_list_str.split(" ")
     return [chess.Move.from_uci(move) for move in move_list if move != ""]
 
 
