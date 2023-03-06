@@ -18,6 +18,7 @@ from data_processing.pandas_iterable_data_provider import (
     PandasBertForSequenceDataProvider,
     PandasIterableSubgoalToPolicyDataProvider,
     PandasIterableCLLPDataProvider,
+    PandasIterableSubgoalAllDistancesDataProvider,
 )
 from data_processing.pandas_static_dataset_provider import (
     PandasStaticDataProvider,
@@ -67,6 +68,7 @@ configure_classes(
         ChessCLLPGamesDataGenerator,
         SubgoalMCGamesDataGenerator,
         PandasIterableSubgoalDataProvider,
+        PandasIterableSubgoalAllDistancesDataProvider,
         PandasIterablePolicyDataProvider,
         PandasIterablePolicyWithHistoryDataProvider,
         PandasIterableSubgoalToPolicyDataProvider,
