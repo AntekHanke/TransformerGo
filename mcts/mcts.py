@@ -8,6 +8,7 @@ import chess
 
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
+from metric_logging import log_value_without_step
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -79,6 +80,7 @@ class TreeNode:
             probability=probability,
         )
         TreeNode.node_counter += 1
+        log_value_without_step("Number of nodes created", TreeNode.node_counter)
         self.is_expanded = self.immutable_data.is_terminal
         self.num_visits = 1
         self.all_values = [value]

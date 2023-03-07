@@ -8,7 +8,7 @@ sys.path.append(experiment_dir_path)
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-OUT_DIR = f"/out_models/small_policy_from_scratch/{date.today()}_{random.randint(0,100000)}"
+OUT_DIR = f"/out_models/trees/{date.today()}_{random.randint(0,100000)}"
 FILE_NAME = "tree1"
 FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 

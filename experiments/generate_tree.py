@@ -8,19 +8,19 @@ sys.path.append(experiment_dir_path)
 from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-OUT_DIR = f"/out_models/small_policy_from_scratch/{date.today()}_{random.randint(0,100000)}"
-FILE_NAME = "tree2"
+OUT_DIR = f"/out_models/trees/{date.today()}_{random.randint(0,100000)}"
+FILE_NAME = "tree"
 FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 experiment_config = {
     "run.job_class": "@jobs.RunMCTSJob",
 
     "RunMCTSJob.initial_state_fen": FEN,
-    "RunMCTSJob.time_limit": None,
+    "RunMCTSJob.time_limit": 900,
     "RunMCTSJob.max_mcts_passes": 2000,
     "RunMCTSJob.score_function": "@score_functions.score_function",
     "RunMCTSJob.expand_function": "@expand_functions.expand_function",
-    "RunMCTSJob.out_dir": "/out",
+    "RunMCTSJob.out_dir": OUT_DIR,
     "RunMCTSJob.file_name": FILE_NAME,
 
     "expand_function.chess_state_expander": "@chess_state_expander.ChessStateExpander",
@@ -32,8 +32,8 @@ experiment_config = {
     "ChessStateExpander.subgoal_generator": "@neural_networks.BasicChessSubgoalGenerator",
     "ChessStateExpander.cllp": "@neural_networks.CLLP",
 
-    "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/home/gosia/dane/subgoal_chess_data/local_generator_models/generator_k_3/checkpoint-221500",
-    "CLLP.checkpoint_path_or_model": "/home/gosia/dane/subgoal_chess_data/cllp/medium",
+    "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_mg/generators/generator_k_3/checkpoint-221500",
+    "CLLP.checkpoint_path_or_model": "/data_mg/cllp/medium",
 }
 
 params_grid = {
