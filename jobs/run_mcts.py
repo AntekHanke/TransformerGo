@@ -45,6 +45,8 @@ class RunMCTSJob(Job):
         log_param("Exploration constant", self.exploration_constant)
 
     def execute(self):
+        Path(self.out_dir).mkdir(parents=True, exist_ok=True)
+
         tree = Tree(
             initial_state=self.initial_state,
             time_limit=self.time_limit,
@@ -56,7 +58,5 @@ class RunMCTSJob(Job):
         mcts_output = tree.mcts()
         mcts_tree_network(tree, self.out_dir, f"{self.file_name}.html")
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
-
-        Path(self.out_dir).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(self.out_dir, self.file_name + ".pkl"), "wb+") as f:
             pickle.dump(output, f)
