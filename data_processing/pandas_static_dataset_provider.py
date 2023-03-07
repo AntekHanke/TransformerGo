@@ -25,6 +25,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
         p_sample: Optional[float] = None,
         eval_num_samples: Optional[int] = None,
         name: str = "default",
+        range_of_k: Optional[List[int]] = None,
     ) -> None:
 
         self.data_path = data_path
@@ -37,6 +38,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
         self.files_names: List[str] = []
         self.all_data: List[Dict[str, List[int]]] = []
         self.curent_data_for_eval: List[Dict[str, List[int]]] = []
+        self.range_of_k = range_of_k
 
         self.prepare_files_list()
         self.generate_data()
@@ -55,7 +57,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
 
         log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
         random.shuffle(self.files_names)
-        log_object(f"files_names_after_shuffle", self.files_names)
+        log_object(f"{self.name}_files_names_after_shuffle", self.files_names)
 
         assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
@@ -106,23 +108,6 @@ class PandasStaticSubgoalDataProvider(PandasStaticDataProvider):
 
 
 class PandasStaticSubgoalAllDistancesDataProvider(PandasStaticDataProvider):
-    def __init__(
-        self,
-        data_path: str,
-        files_batch_size: int = None,
-        p_sample: Optional[float] = None,
-        eval_num_samples: Optional[int] = None,
-        name: str = "default",
-        range_of_k: Optional[List[int]] = None,
-    ) -> None:
-        super().__init__(data_path, files_batch_size, p_sample, eval_num_samples, name)
-        if range_of_k is None:
-            range_of_k = [1]
-        self.range_of_k = range_of_k
-        assert (
-            min(self.range_of_k) >= 1 and max(self.range_of_k) <= 9
-        ), "Min k should be >= 1 and Max k should be <= 9"
-
     def process_df(self, df: pd.DataFrame) -> List[Dict[str, List[int]]]:
         return subgoal_all_k_process_df(df, self.range_of_k)
 
