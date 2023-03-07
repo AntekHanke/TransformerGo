@@ -15,7 +15,9 @@ def subgoal_all_k_process_df(df: pd.DataFrame, range_of_k: List[int]) -> List[Di
     df_all_k: pd.DataFrame = pd.DataFrame(columns=["input_ids", "labels"])
     for k in range_of_k:
         if f"input_ids_{k}" in df.columns:
-            df[f"input_ids_{k}"] = df[f"input_ids_{k}"].apply(lambda x: [k] + x)
+            df[f"input_ids_{k}"]: pd.Series = df[f"input_ids_{k}"].apply(
+                lambda x: [k] + x
+            )
             df_all_k = pd.concat(
                 [
                     df_all_k,
