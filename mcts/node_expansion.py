@@ -1,6 +1,10 @@
 import numpy as np
 
 from data_structures.data_structures import ImmutableBoard
+from policy.chess_policy import ChessPolicy
+from policy.cllp import CLLP
+from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
+from value.chess_value import ChessValue
 
 
 def verify_path(input_immutable_board, subgoal, path):
@@ -18,7 +22,13 @@ def verify_path(input_immutable_board, subgoal, path):
 
 
 class ChessStateExpander:
-    def __init__(self, chess_policy, chess_value, subgoal_generator, cllp):
+    def __init__(
+        self,
+        chess_policy: ChessPolicy,
+        chess_value: ChessValue,
+        subgoal_generator: BasicChessSubgoalGenerator,
+        cllp: CLLP,
+    ):
         self.policy = chess_policy
         self.value = chess_value
         self.subgoal_generator = subgoal_generator
@@ -26,24 +36,24 @@ class ChessStateExpander:
 
     def expand_state(
         self,
-        input_immutable_board,
-        cllp_num_beams,
-        cllp_num_return_sequences,
+        input_immutable_board: ImmutableBoard = None,
+        cllp_num_beams: int = None,
+        cllp_num_return_sequences: int = None,
+        generator_num_beams: int = None,
+        generator_num_subgoals: int = None,
         return_raw_subgoals=False,
         **subgoal_generation_kwargs,
     ):
         subgoals = self.subgoal_generator.generate_subgoals(
-            input_immutable_board, **subgoal_generation_kwargs
+            input_immutable_board, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
         )
 
         if return_raw_subgoals:
             return {subgoals[i]: None for i in range(len(subgoals))}
 
-
         paths = self.cllp.get_paths_batch(
             [(input_immutable_board, subgoal) for subgoal in subgoals], cllp_num_beams, cllp_num_return_sequences
         )
-
 
         subgoals_info = {}
         for subgoal, paths_to_subgoal in zip(subgoals, paths):
