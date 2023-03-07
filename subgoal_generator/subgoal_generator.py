@@ -36,7 +36,11 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
 
         time_start = time.time()
         outputs = self.model.generate(
-            input_tensor, max_new_tokens=TOKENIZED_BOARD_LEN + 1, **subgoal_generation_kwargs
+            input_tensor,
+            max_new_tokens=TOKENIZED_BOARD_LEN + 1,
+            num_beams=generator_num_beams,
+            num_return_sequences=generator_num_subgoals,
+            **subgoal_generation_kwargs
         ).tolist()
         time_end = time.time()
         subgoals = [ChessTokenizer.decode_board(sequence) for sequence in outputs]

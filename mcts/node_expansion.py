@@ -62,33 +62,20 @@ class ChessStateExpander:
                 subgoals_info[subgoal] = subgoal_info
 
         sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
-
         stats = dict(**generation_stats, **cllp_stats)
-
+        stats["analysis_time"] = time.time() - analysis_time_start
         return sorted_subgoals, stats
 
     @staticmethod
-    def sort_subgoals(subgoals, sort_subgoals_by: str = None):
-        if sort_subgoals_by == "highest_min_probability":
-            return sorted(subgoals, key=lambda subgoal: subgoal["highest_min_probability"], reverse=True)
-        elif sort_subgoals_by == "highest_total_probability":
-            return sorted(subgoals, key=lambda subgoal: subgoal["highest_total_probability"], reverse=True)
-        elif sort_subgoals_by == "average_path_probability":
-            return sorted(subgoals, key=lambda subgoal: subgoal["average_path_probability"], reverse=True)
-        elif sort_subgoals_by == "value * average_path_probability":
+    def sort_subgoals(subgoals_info, sort_subgoals_by: str = None):
+        if sort_subgoals_by in ["highest_min_probability", "highest_max_probability", "highest_total_probability"]:
             return sorted(
-                subgoals, key=lambda subgoal: subgoal["value"] * subgoal["average_path_probability"], reverse=True
-            )
-        elif sort_subgoals_by == "value * highest_min_probability":
-            return sorted(
-                subgoals, key=lambda subgoal: subgoal["value"] * subgoal["highest_min_probability"], reverse=True
-            )
-        elif sort_subgoals_by == "value * highest_total_probability":
-            return sorted(
-                subgoals, key=lambda subgoal: subgoal["value"] * subgoal["highest_total_probability"], reverse=True
+                subgoals_info.keys(),
+                key=lambda subgoal: subgoals_info[subgoal][sort_subgoals_by],
+                reverse=True,
             )
         else:
-            raise ValueError(f"sort_subgoals_by {sort_subgoals_by} not supported")
+            raise ValueError(f"Unknown sort_subgoals_by: {sort_subgoals_by}")
 
     def analyze_subgoal(self, input_immutable_board, subgoal, paths_to_subgoal):
         correct_paths = [path for path in paths_to_subgoal if verify_path(input_immutable_board, subgoal, path)]
