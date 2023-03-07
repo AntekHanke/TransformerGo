@@ -29,6 +29,7 @@ class PandasIterableDataProvider(IterableDataset):
         p_sample: Optional[float] = None,
         cycle: bool = True,
         name: str = "default",
+        range_of_k: Optional[List[int]] = None,
     ) -> None:
 
         self.data_path = data_path
@@ -36,6 +37,7 @@ class PandasIterableDataProvider(IterableDataset):
         self.p_sample = p_sample
         self.cycle = cycle
         self.name = name
+        self.range_of_k = range_of_k
 
         self.successfully_loaded_files = 0
         self.files_names: List[str] = []
@@ -50,10 +52,9 @@ class PandasIterableDataProvider(IterableDataset):
             self.files_names = list(
                 glob.glob(f"{self.data_path}/**/*.pkl", recursive=True)
             )
-
         log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
         random.Random(time.time()).shuffle(self.files_names)
-        log_object(f"files_names_after_shuffle", self.files_names)
+        log_object(f"{self.name}_files_names_after_shuffle", self.files_names)
 
         assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
@@ -113,23 +114,6 @@ class PandasIterableSubgoalDataProvider(PandasIterableDataProvider):
 
 
 class PandasIterableSubgoalAllDistancesDataProvider(PandasIterableDataProvider):
-    def __init__(
-        self,
-        data_path: str,
-        files_batch_size: int = 10,
-        p_sample: Optional[float] = None,
-        cycle: bool = True,
-        name: str = "default",
-        range_of_k: Optional[List[int]] = None,
-    ) -> None:
-        super().__init__(data_path, files_batch_size, p_sample, cycle, name)
-        if range_of_k is None:
-            range_of_k = [1]
-        self.range_of_k = range_of_k
-        assert (
-            min(self.range_of_k) >= 1 and max(self.range_of_k) <= 9
-        ), "Min k should be >= 1 and Max k should be <= 9"
-
     def process_df(self, df: pd.DataFrame) -> List[Dict[str, List[int]]]:
         return subgoal_all_k_process_df(df, self.range_of_k)
 
@@ -190,10 +174,3 @@ class PandasBertForSequenceDataProvider(ChessDataProvider):
 
     def get_eval_set_generator(self) -> ChessDataset:
         return ChessDataset(self.data_eval)
-
-
-c = PandasIterableSubgoalAllDistancesDataProvider(
-    data_path="/home/gracjan/PycharmProjects/data_to_test_subgoal_search_chess/lichess_elite_2022-11.pgn_train_part_9.pkl",
-    range_of_k=[1, 2],
-)
-d = 1
