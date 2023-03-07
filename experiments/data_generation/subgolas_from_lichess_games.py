@@ -7,7 +7,7 @@ base_config = {
     # class's parametres (ChessSubgoalGamesDataGenerator)
     "ChessSubgoalGamesDataGenerator.pgn_file": "/database_chess_lichess",
     "ChessSubgoalGamesDataGenerator.p_sample": 1.0,
-    "ChessSubgoalGamesDataGenerator.max_games": 10 ** 9,
+    "ChessSubgoalGamesDataGenerator.max_games": 10**9,
     "ChessSubgoalGamesDataGenerator.train_eval_split": 0.99,
     "ChessSubgoalGamesDataGenerator.do_sample_finish": False,
     "ChessSubgoalGamesDataGenerator.save_path_to_train_set": "/subgoals_dataset_lichess",

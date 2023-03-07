@@ -124,10 +124,11 @@ def configure_neptune(specification):
 
     return NeptuneLogger(run)
 
+
 def resume_neptune(experiment_label):
     """Resumes the Neptune experiment, then returns the Neptune logger."""
     run = neptune.init_run(
         with_id=experiment_label,
-        project = "pmtest/subgoal-chess", #TODO: load this from mrunner, not hardcode
+        project="pmtest/subgoal-chess",  # TODO: load this from mrunner, not hardcode
     )
     return NeptuneLogger(run)

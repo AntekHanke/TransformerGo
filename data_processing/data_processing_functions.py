@@ -15,9 +15,7 @@ def subgoal_all_k_process_df(df: pd.DataFrame, range_of_k: List[int]) -> List[Di
     df_all_k: pd.DataFrame = pd.DataFrame(columns=["input_ids", "labels"])
     for k in range_of_k:
         if f"input_ids_{k}" in df.columns:
-            df[f"input_ids_{k}"]: pd.Series = df[f"input_ids_{k}"].apply(
-                lambda x: [k] + x
-            )
+            df[f"input_ids_{k}"]: pd.Series = df[f"input_ids_{k}"].apply(lambda x: [k] + x)
             df_all_k = pd.concat(
                 [
                     df_all_k,
@@ -40,22 +38,16 @@ def policy_process_df(df: pd.DataFrame):
 
 
 def policy_with_history_process_df(df: pd.DataFrame):
-    df = df[
-        ["input_ids", "all_moves_from_start", "moves_between_input_and_target"]
-    ].copy(deep=True)
+    df = df[["input_ids", "all_moves_from_start", "moves_between_input_and_target"]].copy(deep=True)
     df = df[df["moves_between_input_and_target"].apply(len) > 0].copy(deep=True)
     df.loc[:, "input_ids"] = df["input_ids"] + df["all_moves_from_start"].apply(
         lambda x: x[-N_MOVES_HISTORY_FOR_MODEL_INPUT:]
     )
     df.loc[:, "labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
     df.loc[:, "input_ids"] = df["input_ids"].apply(
-        lambda x: x
-        + (80 + N_MOVES_HISTORY_FOR_MODEL_INPUT - len(x))
-        * [ChessTokenizer.vocab_to_tokens["<PAD>"]]
+        lambda x: x + (80 + N_MOVES_HISTORY_FOR_MODEL_INPUT - len(x)) * [ChessTokenizer.vocab_to_tokens["<PAD>"]]
     )
-    df.drop(
-        columns=["all_moves_from_start", "moves_between_input_and_target"], inplace=True
-    )
+    df.drop(columns=["all_moves_from_start", "moves_between_input_and_target"], inplace=True)
     return df.to_dict(orient="records")
 
 
@@ -65,16 +57,11 @@ def subgoal_to_policy_process_df(df: pd.DataFrame):
 
     def process_single_datapoint(datapoint):
         return {
-            "input_ids": datapoint["input_ids"]
-            + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+            "input_ids": datapoint["input_ids"] + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
             "labels": ChessTokenizer.encode(datapoint["moves"][0]),
         }
 
-    data = [
-        process_single_datapoint(datapoint)
-        for datapoint in data_list
-        if len(datapoint["moves"]) > 0
-    ]
+    data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
     return data
 
 
@@ -96,9 +83,5 @@ def cllp_process_df(df: pd.DataFrame):
             "labels": moves_encoded,
         }
 
-    data = [
-        process_single_datapoint(datapoint)
-        for datapoint in data_list
-        if len(datapoint["moves"]) > 0
-    ]
+    data = [process_single_datapoint(datapoint) for datapoint in data_list if len(datapoint["moves"]) > 0]
     return data

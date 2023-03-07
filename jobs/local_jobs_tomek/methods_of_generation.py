@@ -35,16 +35,18 @@ def print_summary(input_immutable_board, generation_kwargs, k, raw_subgoals):
     policy_subgoal = ImmutableBoard.from_board(board)
 
     subgoals_info = expander.expand_state(
-        input_immutable_board=b, cllp_num_beams=32, cllp_num_return_sequences=2, return_raw_subgoals=raw_subgoals,  **generation_kwargs
+        input_immutable_board=b,
+        cllp_num_beams=32,
+        cllp_num_return_sequences=2,
+        return_raw_subgoals=raw_subgoals,
+        **generation_kwargs,
     )
-
 
     subgoals = list(subgoals_info.keys())
 
     fig = immutable_boards_to_img(
         [b] + [policy_subgoal] + subgoals,
-        ["input", f"policy {[x.uci() for x in policy_moves]}"]
-        + [f"s{i}" for i in range(len(subgoals))],
+        ["input", f"policy {[x.uci() for x in policy_moves]}"] + [f"s{i}" for i in range(len(subgoals))],
     )
     fig.show()
 

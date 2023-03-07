@@ -1,7 +1,7 @@
 import os
 import sys
 
-experiment_dir_path = os.path.dirname(os.path.abspath('__file__'))
+experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
 import random
@@ -15,10 +15,8 @@ MACHINE = "athena_4_gpu"
 
 base_config = {
     "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_data",
-
     "GlobalParamsHandler.out_dir": f"/leela_models/cllp/medium_model/{date.today()}/{random.randint(0, 100000)}",
     # "GlobalParamsHandler.path_format": ['learning_rate'],
-
     "TrainingArguments.per_device_train_batch_size": batch_size[MACHINE],
     "TrainingArguments.per_device_eval_batch_size": batch_size[MACHINE],
 }

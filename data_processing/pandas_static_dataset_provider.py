@@ -51,9 +51,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
         else:
             if self.data_path.endswith("/"):
                 self.data_path = self.data_path[:-1]
-            self.files_names = list(
-                glob.glob(f"{self.data_path}/**/*.pkl", recursive=True)
-            )
+            self.files_names = list(glob.glob(f"{self.data_path}/**/*.pkl", recursive=True))
 
         log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
         random.shuffle(self.files_names)

@@ -23,7 +23,7 @@ class EvaluateCLLP(Job):
         n_log_samples: int = 10,
         eval_batch_size: int = 1,
         num_beams: int = 16,
-        num_return_sequences: int = 2
+        num_return_sequences: int = 2,
     ):
 
         self.k = k

@@ -7,8 +7,7 @@ base_config = {
     "use_neptune": True,
 }
 
-params_grid = {
-}
+params_grid = {}
 
 experiments_list = create_experiments_helper(
     experiment_name="testlczero",

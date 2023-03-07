@@ -72,23 +72,19 @@ class TrainModel(Job):
             self.train_data_provider, PandasIterableDataProvider
         ), f"train_data_provider must be PandasIterableDataProvider, got {train_data_provider}"
 
-        if isinstance(
-            self.train_data_provider, PandasIterableSubgoalAllDistancesDataProvider
-        ):
+        if isinstance(self.train_data_provider, PandasIterableSubgoalAllDistancesDataProvider):
             assert (
                 self.train_data_provider.range_of_k is not None
             ), "must specify range_of_k for PandasIterableSubgoalAllDistancesDataProvider"
             assert (
-                max(self.train_data_provider.range_of_k) <= 9
-                and min(self.train_data_provider.range_of_k) >= 1
+                max(self.train_data_provider.range_of_k) <= 9 and min(self.train_data_provider.range_of_k) >= 1
             ), "range_of_k must be in [1, 9]"
 
         self.eval_data_provider = eval_data_provider(
             data_path=self.path_to_eval_data,
             files_batch_size=files_batch_size,
             p_sample=prob_take_sample,
-            eval_num_samples=eval_n_batches
-            * training_args_cls.per_device_eval_batch_size,
+            eval_num_samples=eval_n_batches * training_args_cls.per_device_eval_batch_size,
             name="eval",
             range_of_k=range_of_k,
         )
@@ -96,15 +92,12 @@ class TrainModel(Job):
             self.eval_data_provider, PandasStaticDataProvider
         ), f"eval_data_provider must be PandasStaticDataProvider, got {eval_data_provider}"
 
-        if isinstance(
-            self.train_data_provider, PandasStaticSubgoalAllDistancesDataProvider
-        ):
+        if isinstance(self.train_data_provider, PandasStaticSubgoalAllDistancesDataProvider):
             assert (
                 self.train_data_provider.range_of_k is not None
             ), "must specify range_of_k for PandasIterableSubgoalAllDistancesDataProvider"
             assert (
-                max(self.train_data_provider.range_of_k) <= 9
-                and min(self.train_data_provider.range_of_k) >= 1
+                max(self.train_data_provider.range_of_k) <= 9 and min(self.train_data_provider.range_of_k) >= 1
             ), "range_of_k must be in [1, 9]"
 
         self.model = self.get_model()
@@ -138,11 +131,7 @@ class TrainModel(Job):
         predictions, _ = predictions
         return {
             "accuracy": (predictions == labels).astype(np.float32).mean().item(),
-            "perfect_sequence": (predictions == labels)
-            .all(axis=1)
-            .astype(np.float32)
-            .mean()
-            .item(),
+            "perfect_sequence": (predictions == labels).all(axis=1).astype(np.float32).mean().item(),
         }
 
     @staticmethod
@@ -169,17 +158,13 @@ class TrainModelFromScratch(TrainModel):
     def get_training_args(self):
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir, exist_ok=True)
-        self.training_args = self.training_args_cls(
-            output_dir=self.out_dir, ignore_data_skip=True
-        )
+        self.training_args = self.training_args_cls(output_dir=self.out_dir, ignore_data_skip=True)
         with open(self.training_args.output_dir + "/training_args.pkl", "wb") as f:
             pickle.dump(self.training_args, f)
 
         neptune_experiment_label = get_experiment_label()
         if neptune_experiment_label is not None:
-            with open(
-                self.training_args.output_dir + "/neptune_experiment_label.txt", "w"
-            ) as f:
+            with open(self.training_args.output_dir + "/neptune_experiment_label.txt", "w") as f:
                 f.write(neptune_experiment_label)
         return self.training_args
 
@@ -208,12 +193,7 @@ class ResumeTraining(TrainModel):
             return pickle.load(f)
 
     def get_model(self):
-        return BartForConditionalGeneration.from_pretrained(
-            self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}"
-        )
+        return BartForConditionalGeneration.from_pretrained(self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")
 
     def train_model(self):
-        self.trainer.train(
-            resume_from_checkpoint=self.checkpoint_path
-            + f"/checkpoint-{self.checkpoint_num}"
-        )
+        self.trainer.train(resume_from_checkpoint=self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")

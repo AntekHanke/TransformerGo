@@ -34,9 +34,7 @@ class ChessTokenizer:
     column_letters = ["a", "b", "c", "d", "e", "f", "g", "h"]
     letter_to_column = {letter: i for i, letter in enumerate(column_letters)}
     integers = [str(i) for i in range(0, 256)]
-    algebraic_fields = [
-        f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)
-    ]
+    algebraic_fields = [f"{i}{j}" for i in ["a", "b", "c", "d", "e", "f", "g", "h"] for j in range(1, 9)]
     algebraic_moves = []
     for start in algebraic_fields:
         for end in algebraic_fields:
@@ -69,19 +67,10 @@ class ChessTokenizer:
     ]
     players = ["w", "b"]
     non_special_vocab = (
-        pieces
-        + integers
-        + algebraic_fields
-        + players
-        + castlings
-        + algebraic_moves
-        + algebraic_promotions
+        pieces + integers + algebraic_fields + players + castlings + algebraic_moves + algebraic_promotions
     )
     special_vocab_to_tokens = {"<BOS>": 0, "<PAD>": 1, "<EOS>": 2, "<SEP>": 3}
-    vocab_to_tokens = {
-        symbol: i + NON_SPECIAL_TOKENS_START
-        for i, symbol in enumerate(non_special_vocab)
-    }
+    vocab_to_tokens = {symbol: i + NON_SPECIAL_TOKENS_START for i, symbol in enumerate(non_special_vocab)}
     vocab_to_tokens.update(special_vocab_to_tokens)
     tokens_to_vocab = {v: k for k, v in vocab_to_tokens.items()}
 
@@ -91,9 +80,7 @@ class ChessTokenizer:
         elif TOKENIZER == "pieces":
             self = ChessTokenizerPiece.__new__(ChessTokenizerPiece)
         else:
-            raise Exception(
-                f"Tokenizer {TOKENIZER} not recognized. Should be either 'board' or 'pieces'."
-            )
+            raise Exception(f"Tokenizer {TOKENIZER} not recognized. Should be either 'board' or 'pieces'.")
         return self
 
     @classmethod
@@ -174,11 +161,7 @@ class ChessTokenizerBoard(ChessTokenizer):
     @classmethod
     def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
         board_string_with_dots = ""
-        board_tokens = [
-            token
-            for token in board_tokens
-            if token not in ChessTokenizer.special_vocab_to_tokens.values()
-        ]
+        board_tokens = [token for token in board_tokens if token not in ChessTokenizer.special_vocab_to_tokens.values()]
         board_tokens = board_tokens[: cls.TOKENIZED_BOARD_LENGTH]
         for i, token in enumerate(board_tokens):
             if i >= 71:
@@ -216,9 +199,7 @@ class ChessTokenizerPiece(ChessTokenizer):
             if c.isdigit() in list(range(1, 9)):
                 board_column += int(c)
             elif c in cls.pieces[1:-2]:
-                piece_positions[c].append(
-                    cls.column_letters[board_column] + str(board_row + 1)
-                )
+                piece_positions[c].append(cls.column_letters[board_column] + str(board_row + 1))
                 board_column += 1
             if board_column == 8:
                 board_row -= 1
@@ -243,9 +224,7 @@ class ChessTokenizerPiece(ChessTokenizer):
             f"The number of tokens encoding the board must be less or equal than {cls.TOKENIZED_BOARD_LENGTH}, "
             f"got len(board_tokens) = {len(board_tokens)}"
         )
-        board_tokens = padding(
-            board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH
-        )
+        board_tokens = padding(board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH)
 
         assert len(board_tokens) == cls.TOKENIZED_BOARD_LENGTH, (
             f"The number of tokens encoding the board must be {cls.TOKENIZED_BOARD_LENGTH}, "

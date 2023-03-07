@@ -140,10 +140,9 @@ class LCZeroPolicy(ChessPolicy):
             board.push(move)
         return probs
 
-
     def sample_move(self, immutable_board: ImmutableBoard) -> chess.Move:
         prob_distribution = self.lczero_backend.get_policy_distribution(immutable_board)
         moves, probs = zip(*prob_distribution)
-        probs = np.array(probs)/np.sum(probs)
+        probs = np.array(probs) / np.sum(probs)
         move_idx = np.random.choice(list(range(len(moves))), p=probs)
         return chess.Move.from_uci(moves[move_idx])
