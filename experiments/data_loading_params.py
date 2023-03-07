@@ -3,6 +3,10 @@ subgoal_data_loading_header = {
         "TrainModelFromScratch.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
     },
+    "from_scratch_with_all_subgoals": {
+        "TrainModelFromScratch.train_data_provider": "@data.PandasIterableSubgoalAllDistancesDataProvider",
+        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticSubgoalAllDistancesDataProvider",
+    },
     "resume": {
         "ResumeTraining.train_data_provider": "@data.PandasIterableSubgoalDataProvider",
         "ResumeTraining.eval_data_provider": "@data.PandasStaticSubgoalDataProvider",
@@ -42,6 +46,13 @@ ultra_small_data = {
         "TrainModelFromScratch.path_to_training_data": "/ultra_small_data/train_small.pkl",
         "TrainModelFromScratch.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
         "TrainModelFromScratch.files_batch_size": 5,
+    },
+    "from_scratch_with_all_subgoals": {
+        "TrainModelFromScratch.eval_n_batches": 4,
+        "TrainModelFromScratch.path_to_training_data": "/ultra_small_data/train",
+        "TrainModelFromScratch.path_to_eval_data": "/ultra_small_data/eval",
+        "TrainModelFromScratch.files_batch_size": 5,
+        "TrainModelFromScratch.range_of_k": [1, 2, 3],
     },
     "resume": {
         "ResumeTraining.eval_n_batches": 4,
