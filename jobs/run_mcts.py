@@ -54,7 +54,7 @@ class RunMCTSJob(Job):
             expand_function=self.expand,
         )
         mcts_output = tree.mcts()
-        mcts_tree_network(tree, os.path.join(self.out_dir, self.file_name + ".html"))
+        mcts_tree_network(tree, self.out_dir, f"{self.file_name}.html")
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
 
         Path(self.out_dir).mkdir(parents=True, exist_ok=True)
