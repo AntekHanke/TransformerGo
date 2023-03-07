@@ -1,10 +1,10 @@
 import time
-from typing import List
+from typing import List, Tuple, Dict
 
-import chess
 import torch
 from transformers import BartForConditionalGeneration
 
+from configures.global_config import TOKENIZED_BOARD_LEN
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
 
@@ -29,14 +29,14 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         generator_num_beams: int,
         generator_num_subgoals: int,
         **subgoal_generation_kwargs
-    ) -> List[ImmutableBoard]:
+    ) -> Tuple[List[ImmutableBoard], Dict]:
 
         encoded_board = ChessTokenizer.encode_immutable_board(input_board) + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
         input_tensor = torch.IntTensor([encoded_board]).to(self.model.device)
 
         time_start = time.time()
         outputs = self.model.generate(
-            input_tensor, max_new_tokens=ChessTokenizer.TOKENIZED_BOARD_LENGTH, **subgoal_generation_kwargs
+            input_tensor, max_new_tokens=TOKENIZED_BOARD_LEN + 1, **subgoal_generation_kwargs
         ).tolist()
         time_end = time.time()
         subgoals = [ChessTokenizer.decode_board(sequence) for sequence in outputs]

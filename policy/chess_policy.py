@@ -18,6 +18,14 @@ class ChessPolicy:
     def get_best_moves(self, immutable_board: ImmutableBoard, num_return_sequences: int) -> List[chess.Move]:
         raise NotImplementedError
 
+    def get_path_probability(
+        self, immutable_board: ImmutableBoard, path: List[chess.Move], log_prob: bool = True
+    ) -> float:
+        raise NotImplementedError
+
+    def get_path_probabilities(self, immutable_board: ImmutableBoard, path: List[chess.Move]) -> float:
+        raise NotImplementedError
+
 
 class BasicChessPolicy(ChessPolicy):
     """Basic pgn_policy based on generation from the model"""

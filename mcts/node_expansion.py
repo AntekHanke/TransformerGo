@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from data_structures.data_structures import ImmutableBoard
@@ -8,7 +10,6 @@ from value.chess_value import ChessValue
 
 
 def verify_path(input_immutable_board, subgoal, path):
-    # try:
     board = input_immutable_board.to_board()
     for move in path:
         if not board.is_legal(move):
@@ -17,8 +18,6 @@ def verify_path(input_immutable_board, subgoal, path):
         if ImmutableBoard.from_board(board) == subgoal:
             return True
     return False
-    # except:
-    #     return False
 
 
 class ChessStateExpander:
@@ -41,26 +40,55 @@ class ChessStateExpander:
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
         generator_num_subgoals: int = None,
-        return_raw_subgoals=False,
+        sort_subgoals_by: str = None,
         **subgoal_generation_kwargs,
     ):
-        subgoals = self.subgoal_generator.generate_subgoals(
+
+        subgoals, generation_stats = self.subgoal_generator.generate_subgoals(
             input_immutable_board, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
         )
 
-        if return_raw_subgoals:
-            return {subgoals[i]: None for i in range(len(subgoals))}
+        subgoals = [subgoal for subgoal in subgoals if subgoal != input_immutable_board]
 
-        paths = self.cllp.get_paths_batch(
+        paths, cllp_stats = self.cllp.get_paths_batch(
             [(input_immutable_board, subgoal) for subgoal in subgoals], cllp_num_beams, cllp_num_return_sequences
         )
 
+        analysis_time_start = time.time()
         subgoals_info = {}
         for subgoal, paths_to_subgoal in zip(subgoals, paths):
             subgoal_info = self.analyze_subgoal(input_immutable_board, subgoal, paths_to_subgoal)
             if subgoal_info is not None:
                 subgoals_info[subgoal] = subgoal_info
-        return subgoals_info
+
+        sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
+
+        stats = dict(**generation_stats, **cllp_stats)
+
+        return sorted_subgoals, stats
+
+    @staticmethod
+    def sort_subgoals(subgoals, sort_subgoals_by: str = None):
+        if sort_subgoals_by == "highest_min_probability":
+            return sorted(subgoals, key=lambda subgoal: subgoal["highest_min_probability"], reverse=True)
+        elif sort_subgoals_by == "highest_total_probability":
+            return sorted(subgoals, key=lambda subgoal: subgoal["highest_total_probability"], reverse=True)
+        elif sort_subgoals_by == "average_path_probability":
+            return sorted(subgoals, key=lambda subgoal: subgoal["average_path_probability"], reverse=True)
+        elif sort_subgoals_by == "value * average_path_probability":
+            return sorted(
+                subgoals, key=lambda subgoal: subgoal["value"] * subgoal["average_path_probability"], reverse=True
+            )
+        elif sort_subgoals_by == "value * highest_min_probability":
+            return sorted(
+                subgoals, key=lambda subgoal: subgoal["value"] * subgoal["highest_min_probability"], reverse=True
+            )
+        elif sort_subgoals_by == "value * highest_total_probability":
+            return sorted(
+                subgoals, key=lambda subgoal: subgoal["value"] * subgoal["highest_total_probability"], reverse=True
+            )
+        else:
+            raise ValueError(f"sort_subgoals_by {sort_subgoals_by} not supported")
 
     def analyze_subgoal(self, input_immutable_board, subgoal, paths_to_subgoal):
         correct_paths = [path for path in paths_to_subgoal if verify_path(input_immutable_board, subgoal, path)]
@@ -78,9 +106,11 @@ class ChessStateExpander:
 
         return {
             "value": self.value.evaluate_immutable_board(subgoal),
+            "num_paths": len(paths_to_subgoal),
             "paths": correct_paths,
             "path_raw_probabilities": paths_raw_probabilities,
             "path_probabilities": paths_stats,
+            "average_path_probability": np.mean([path_stats["total_path_probability"] for path_stats in paths_stats]),
             "path_with_highest_min_probability": paths_to_subgoal[
                 np.argmax([path_stats["min_path_probability"] for path_stats in paths_stats])
             ],
