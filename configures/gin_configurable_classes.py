@@ -2,7 +2,10 @@ import gin
 from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 
 from data_processing.archive.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
-from data_processing.archive.pgn.prepare_and_save_data import PandasPolicyPrepareAndSaveData, CLLPPrepareAndSaveData
+from data_processing.archive.pgn.prepare_and_save_data import (
+    PandasPolicyPrepareAndSaveData,
+    CLLPPrepareAndSaveData,
+)
 from data_processing.chess_data_generator import (
     NoFilter,
     ResultFilter,
@@ -32,7 +35,11 @@ from data_processing.pandas_static_dataset_provider import (
 from jobs.chess_retokenization import RetokenizationJob
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
-from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
+from jobs.job_leela_dataset import (
+    LeelaCCLPDataProcessing,
+    LeelaParallelDatasetGenerator,
+    LeelaPrepareAndSaveData,
+)
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
 
@@ -70,13 +77,13 @@ configure_classes(
         SubgoalMCGamesDataGenerator,
         PandasIterableSubgoalDataProvider,
         PandasIterableSubgoalAllDistancesDataProvider,
+        PandasStaticSubgoalAllDistancesDataProvider,
         PandasIterablePolicyDataProvider,
         PandasIterablePolicyWithHistoryDataProvider,
         PandasIterableSubgoalToPolicyDataProvider,
         PandasIterableCLLPDataProvider,
         PandasStaticDataProvider,
         PandasStaticSubgoalDataProvider,
-        PandasStaticSubgoalAllDistancesDataProvider,
         PandasStaticPolicyDataProvider,
         PandasStaticPolicyWithHistoryDataProvider,
         PandasStaticSubgoalToPolicyDataProvider,
