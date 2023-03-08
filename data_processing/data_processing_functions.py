@@ -12,19 +12,16 @@ def subgoal_process_df(df: pd.DataFrame):
 
 
 def subgoal_all_k_process_df(df: pd.DataFrame, range_of_k: List[int]) -> List[Dict]:
-    df_all_k: pd.DataFrame = pd.DataFrame(columns=["input_ids", "labels"])
+    list_od_subgolas_df: List[pd.DataFrame] = []
     for k in range_of_k:
         if f"input_ids_{k}" in df.columns:
             df[f"input_ids_{k}"]: pd.Series = df[f"input_ids_{k}"].apply(lambda x: [k] + x)
-            df_all_k = pd.concat(
-                [
-                    df_all_k,
-                    df[[f"input_ids_{k}", f"labels_{k}"]].rename(
-                        columns={f"input_ids_{k}": "input_ids", f"labels_{k}": "labels"}
-                    ),
-                ],
-                ignore_index=True,
+            list_od_subgolas_df.append(
+                df[[f"input_ids_{k}", f"labels_{k}"]].rename(
+                    columns={f"input_ids_{k}": "input_ids", f"labels_{k}": "labels"}
+                )
             )
+    df_all_k: pd.DataFrame = pd.concat(list_od_subgolas_df, ignore_index=True)
     df_all_k = df_all_k.sample(frac=1).reset_index(drop=True)
     return df_all_k.to_dict(orient="records")
 
