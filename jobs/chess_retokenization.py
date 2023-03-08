@@ -1,4 +1,9 @@
+import os
+import pickle
+
+from data_processing.chess_tokenizer import ChessTokenizerBoard, ChessTokenizerPiece, ChessTokenizerFEN
 from jobs.core import Job
+from metric_logging import log_object, log_value_without_step
 
 
 class RetokenizationJob(Job):
@@ -10,10 +15,6 @@ class RetokenizationJob(Job):
         self.target_tokenizer = target_tokenizer
 
     def execute(self):
-        from metric_logging import log_object, log_value_without_step
-        import os
-        import pickle
-        from data_processing.chess_tokenizer import ChessTokenizerBoard, ChessTokenizerPiece, ChessTokenizerFEN
 
         if self.target_tokenizer == "piece":
             target_tokenizer = ChessTokenizerPiece

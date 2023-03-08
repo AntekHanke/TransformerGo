@@ -42,6 +42,8 @@ from jobs.job_leela_dataset import (
 )
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
+from jobs.run_mcts import RunMCTSJob
+from mcts.mcts import score_function, expand_function, mock_expand_function
 
 
 def configure_class(cls, module=None) -> None:
@@ -51,6 +53,15 @@ def configure_class(cls, module=None) -> None:
 def configure_classes(classes, module=None) -> None:
     for cls in classes:
         configure_class(cls, module)
+
+
+def configure_object(obj, module=None) -> None:
+    gin.external_configurable(obj, module=module)
+
+
+def configure_objects(objects, module=None) -> None:
+    for obj in objects:
+        configure_object(obj, module)
 
 
 configure_classes(
@@ -64,6 +75,7 @@ configure_classes(
         LeelaParallelDatasetGenerator,
         LeelaPrepareAndSaveData,
         RetokenizationJob,
+        RunMCTSJob,
     ],
     "jobs",
 )
@@ -94,3 +106,6 @@ configure_classes(
     ],
     "data",
 )
+
+configure_objects([expand_function, mock_expand_function], "expand_functions")
+configure_objects([score_function], "score_functions")
