@@ -8,8 +8,8 @@ from experiments.data_loading_params import subgoal_data_loading_header, ultra_s
 from experiments.models_params import common_train_params, ultra_small_model
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-TRAIN_TYPE = "from_scratch_with_all_subgoals"
-OUT_DIR = "/out_models/ultra_small_generator_from_scratch_with_all_subgoals"
+TRAIN_TYPE = "from_scratch"
+OUT_DIR = "/out_models/ultra_small_generator_from_scratch"
 
 experiment_config = dict(
     **common_train_params[TRAIN_TYPE],
@@ -19,13 +19,12 @@ experiment_config = dict(
 )
 experiment_config["TrainModelFromScratch.out_dir"] = OUT_DIR
 
-
 params_grid = {
     "idx": [0],
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"ultra_small_generator_train_{TRAIN_TYPE}",
+    experiment_name=f"ultra_small_generator_train",
     project_name="pmtest/subgoal-chess",
     base_config=experiment_config,
     params_grid=params_grid,
