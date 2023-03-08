@@ -1,5 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
+from enum import Enum, IntEnum
 from typing import Tuple
 
 import chess
@@ -12,6 +13,11 @@ LeelaSubgoal = namedtuple(
 )
 
 SubgoalsFromModel = namedtuple("SubgoalFromModel", "input_immutable_board target_immutable_board")
+
+
+class HistoryLength(IntEnum):
+    no_history = 0
+    short_history = 10
 
 
 @dataclass
