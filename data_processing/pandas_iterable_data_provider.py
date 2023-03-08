@@ -115,9 +115,6 @@ class PandasIterableSubgoalAllDistancesDataProvider(PandasIterableDataProvider):
     def process_df(self, df: pd.DataFrame) -> List[Dict[str, List[int]]]:
         return subgoal_all_k_process_df(df, self.range_of_k)
 
-    def __getitem__(self, item):
-        pass
-
 
 class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
     @staticmethod
