@@ -17,6 +17,12 @@ common_train_params = {
         "ResumeTraining.training_args_cls": "@transformers.TrainingArguments",
         "use_neptune": True,
     },
+    "resume_with_all_subgoals": {
+        "run.job_class": "@jobs.ResumeTraining",
+        "ResumeTraining.model_config_cls": "@transformers.BartConfig",
+        "ResumeTraining.training_args_cls": "@transformers.TrainingArguments",
+        "use_neptune": True,
+    },
 }
 
 ultra_small_model = {
