@@ -11,8 +11,8 @@ from data_structures.data_structures import ImmutableBoard
 
 class ChessSubgoalGenerator:
     def generate_subgoals(
-        self, immutable_board: ImmutableBoard, n_subgoals: int, **subgoal_generation_kwargs
-    ) -> List[ImmutableBoard]:
+        self, immutable_board: ImmutableBoard, generator_num_subgoals: int, **subgoal_generation_kwargs
+    ) -> Tuple[List[ImmutableBoard], Dict]:
         raise NotImplementedError
 
 
