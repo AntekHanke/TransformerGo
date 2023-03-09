@@ -48,6 +48,7 @@ def print_summary(input_immutable_board, generation_kwargs, k, raw_subgoals):
         **generation_kwargs,
     )
 
+
     subgoals = list(subgoals_info.keys())
 
     fig = immutable_boards_to_img(

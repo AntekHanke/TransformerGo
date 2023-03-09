@@ -55,12 +55,14 @@ def log_value(name, step, value):
     for logger in _loggers:
         logger.log_value(name, step, value)
 
+
 def get_experiment_label():
     """Returns the experiment label."""
     for logger in _loggers:
         if hasattr(logger, "get_experiment_label"):
             return logger.get_experiment_label()
     return None
+
 
 def log_value_without_step(name, value):
     """Logs a scalar to the loggers."""

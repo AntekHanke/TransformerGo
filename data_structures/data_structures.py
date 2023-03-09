@@ -27,10 +27,12 @@ class ChessMetadata:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+
 ImmutableBoardData = namedtuple(
     "ImmutableBoard",
     "board active_player castles en_passant_target halfmove_clock fullmove_clock",
 )
+
 
 class ImmutableBoard(ImmutableBoardData):
     @classmethod

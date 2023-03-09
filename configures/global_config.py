@@ -38,6 +38,6 @@ RANDOM_TOKENIZATION_ORDER = False # True or False
 
 N_MOVES_HISTORY_FOR_MODEL_INPUT = 10
 
-LCZERO_CLUSTER = "prometheus" # "prometheus" or "athena"
+LCZERO_CLUSTER = "prometheus"  # "prometheus" or "athena"
 
 NUMBER_OF_PRINT_SEPARATORS: int = 150

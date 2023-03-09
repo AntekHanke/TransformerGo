@@ -5,7 +5,19 @@ common_train_params = {
         "TrainModelFromScratch.training_args_cls": "@transformers.TrainingArguments",
         "use_neptune": True,
     },
+    "from_scratch_with_all_subgoals": {
+        "run.job_class": "@jobs.TrainModelFromScratch",
+        "TrainModelFromScratch.model_config_cls": "@transformers.BartConfig",
+        "TrainModelFromScratch.training_args_cls": "@transformers.TrainingArguments",
+        "use_neptune": True,
+    },
     "resume": {
+        "run.job_class": "@jobs.ResumeTraining",
+        "ResumeTraining.model_config_cls": "@transformers.BartConfig",
+        "ResumeTraining.training_args_cls": "@transformers.TrainingArguments",
+        "use_neptune": True,
+    },
+    "resume_with_all_subgoals": {
         "run.job_class": "@jobs.ResumeTraining",
         "ResumeTraining.model_config_cls": "@transformers.BartConfig",
         "ResumeTraining.training_args_cls": "@transformers.TrainingArguments",
@@ -26,10 +38,11 @@ ultra_small_model = {
     "BartConfig.dropout": 0.1,
     "TrainingArguments.max_steps": 5000,
     "TrainingArguments.per_device_train_batch_size": 4,
-    "TrainingArguments.per_device_eval_batch_size": 8,
+    "TrainingArguments.per_device_eval_batch_size": 4,
     "TrainingArguments.warmup_steps": 10,
     "TrainingArguments.weight_decay": 0.01,
     "TrainingArguments.logging_steps": 1,
+    "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 2,
     "TrainingArguments.learning_rate": 3e-5,
 }

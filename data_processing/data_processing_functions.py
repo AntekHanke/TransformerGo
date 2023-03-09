@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 import pandas as pd
 
 from configures.global_config import MAX_MOVES_FOR_CLLP, N_MOVES_HISTORY_FOR_MODEL_INPUT
@@ -7,6 +9,21 @@ from data_processing.chess_tokenizer import ChessTokenizer
 def subgoal_process_df(df: pd.DataFrame):
     df = df[["input_ids", "labels"]]
     return df.to_dict(orient="records")
+
+
+def subgoal_all_k_process_df(df: pd.DataFrame, range_of_k: List[int]) -> List[Dict]:
+    list_od_subgolas_df: List[pd.DataFrame] = []
+    for k in range_of_k:
+        if f"input_ids_{k}" in df.columns:
+            df[f"input_ids_{k}"]: pd.Series = df[f"input_ids_{k}"].apply(lambda x: [k] + x)
+            list_od_subgolas_df.append(
+                df[[f"input_ids_{k}", f"labels_{k}"]].rename(
+                    columns={f"input_ids_{k}": "input_ids", f"labels_{k}": "labels"}
+                )
+            )
+    df_all_k: pd.DataFrame = pd.concat(list_od_subgolas_df, ignore_index=True)
+    df_all_k = df_all_k.sample(frac=1).reset_index(drop=True)
+    return df_all_k.to_dict(orient="records")
 
 
 def policy_process_df(df: pd.DataFrame):
@@ -20,9 +37,11 @@ def policy_process_df(df: pd.DataFrame):
 def policy_with_history_process_df(df: pd.DataFrame):
     df = df[["input_ids", "all_moves_from_start", "moves_between_input_and_target"]].copy(deep=True)
     df = df[df["moves_between_input_and_target"].apply(len) > 0].copy(deep=True)
-    df.loc[:, "input_ids"] = df["input_ids"] + df["all_moves_from_start"].apply(lambda x: x[-N_MOVES_HISTORY_FOR_MODEL_INPUT:])
-    df.loc[:, "labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
-    df.loc[:, "input_ids"] = df["input_ids"].apply(
+    df["input_ids"] = df["input_ids"] + df["all_moves_from_start"].apply(
+        lambda x: x[-N_MOVES_HISTORY_FOR_MODEL_INPUT:]
+    )
+    df["labels"] = df["moves_between_input_and_target"].apply(lambda x: [x[0]])
+    df["input_ids"] = df["input_ids"].apply(
         lambda x: x + (80 + N_MOVES_HISTORY_FOR_MODEL_INPUT - len(x)) * [ChessTokenizer.vocab_to_tokens["<PAD>"]]
     )
     df.drop(columns=["all_moves_from_start", "moves_between_input_and_target"], inplace=True)

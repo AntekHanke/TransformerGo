@@ -30,7 +30,7 @@ target_board_detokenized = ChessTokenizer.decode_board(target_board_tokenized)
 fig = immutable_boards_to_img([input_board_detokenized, target_board_detokenized], ["Input board", "Target board"])
 plt.show()
 
-#If we want to train policy we need input board and a move. We have a list of tokenized moves between
+# If we want to train policy we need input board and a move. We have a list of tokenized moves between
 # input and target board.
 
 move_for_policy = ChessTokenizer.decode_move([train_df.iloc[idx]["moves_between_input_and_target"][0]])

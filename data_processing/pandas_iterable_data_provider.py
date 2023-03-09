@@ -16,6 +16,7 @@ from data_processing.data_processing_functions import (
     policy_with_history_process_df,
     subgoal_to_policy_process_df,
     cllp_process_df,
+    subgoal_all_k_process_df,
 )
 from metric_logging import log_param, log_value, log_object
 
@@ -28,6 +29,7 @@ class PandasIterableDataProvider(IterableDataset):
         p_sample: Optional[float] = None,
         cycle: bool = True,
         name: str = "default",
+        range_of_k: Optional[List[int]] = None,
     ) -> None:
 
         self.data_path = data_path
@@ -35,6 +37,7 @@ class PandasIterableDataProvider(IterableDataset):
         self.p_sample = p_sample
         self.cycle = cycle
         self.name = name
+        self.range_of_k = range_of_k
 
         self.successfully_loaded_files = 0
         self.files_names: List[str] = []
@@ -47,10 +50,9 @@ class PandasIterableDataProvider(IterableDataset):
             if self.data_path.endswith("/"):
                 self.data_path = self.data_path[:-1]
             self.files_names = list(glob.glob(f"{self.data_path}/**/*.pkl", recursive=True))
-
         log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
         random.Random(time.time()).shuffle(self.files_names)
-        log_object(f"files_names_after_shuffle", self.files_names)
+        log_object(f"{self.name}_files_names_after_shuffle", self.files_names)
 
         assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
@@ -84,7 +86,11 @@ class PandasIterableDataProvider(IterableDataset):
                 continue
 
             self.successfully_loaded_files += 1
-            log_value(f"load_df_all_files_{self.name}", self.successfully_loaded_files, self.successfully_loaded_files)
+            log_value(
+                f"load_df_all_files_{self.name}",
+                self.successfully_loaded_files,
+                self.successfully_loaded_files,
+            )
 
             if self.p_sample:
                 load_df = load_df.sample(frac=self.p_sample)
@@ -103,6 +109,11 @@ class PandasIterableSubgoalDataProvider(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
         return subgoal_process_df(df)
+
+
+class PandasIterableSubgoalAllDistancesDataProvider(PandasIterableDataProvider):
+    def process_df(self, df: pd.DataFrame) -> List[Dict[str, List[int]]]:
+        return subgoal_all_k_process_df(df, self.range_of_k)
 
 
 class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
