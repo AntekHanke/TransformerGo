@@ -1,7 +1,6 @@
 import time
 
 import numpy as np
-
 rng = np.random.default_rng(int(time.time()))
 
 from utils.detect_local_machine import get_local_machine, is_local_machine
@@ -31,8 +30,11 @@ MAX_MOVES_FOR_CLLP = 6
 
 MAX_GAME_LENGTH = 500
 
-TOKENIZER = "board"  # "board" or "pieces"
-RANDOM_TOKENIZATION_ORDER = False  # True or False
+TOKENIZER = "board" # "board" or "pieces"
+
+TOKENIZED_BOARD_LEN = 76 if TOKENIZER == "board" else 64
+
+RANDOM_TOKENIZATION_ORDER = False # True or False
 
 N_MOVES_HISTORY_FOR_MODEL_INPUT = 10
 
