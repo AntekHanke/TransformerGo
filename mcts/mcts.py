@@ -26,7 +26,6 @@ def expand_function(
     cllp_num_return_sequences: int,
     chess_state_expander: Type[ChessStateExpander] = None,
 ):
-    # TODO: Code below works, but I'm not sure I understand gin config correctly and thus if it's necessary
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
     chess_state_expander = chess_state_expander()
     subgoals = chess_state_expander.expand_state(
