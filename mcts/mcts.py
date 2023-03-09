@@ -22,8 +22,11 @@ def score_function(node: "TreeNode", root_player: chess.Color, exploration_const
 
 def expand_function(
     node: "TreeNode",
-    cllp_num_beams: int,
-    cllp_num_return_sequences: int,
+    cllp_num_beams: int = None,
+    cllp_num_return_sequences: int = None,
+    generator_num_beams: int = None,
+    generator_num_subgoals: int = None,
+    sort_subgoals_by: str = None,
     chess_state_expander: Type[ChessStateExpander] = None,
 ):
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
@@ -32,6 +35,9 @@ def expand_function(
         input_immutable_board=node.immutable_data.state,
         cllp_num_beams=cllp_num_beams,
         cllp_num_return_sequences=cllp_num_return_sequences,
+        generator_num_beams=generator_num_beams,
+        generator_num_subgoals=generator_num_subgoals,
+        sort_subgoals_by=sort_subgoals_by
     )
     for subgoal in subgoals:
         details = subgoals[subgoal]
