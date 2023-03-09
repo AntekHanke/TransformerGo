@@ -56,7 +56,7 @@ class RunMCTSJob(Job):
             expand_function=self.expand_function,
         )
         mcts_output = tree.mcts()
-        mcts_tree_network(tree, self.out_dir, f"{self.file_name}.html")
+        mcts_tree_network(tree=tree, target_path=self.out_dir, target_name=self.file_name, with_images=True)
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
         with open(os.path.join(self.out_dir, self.file_name + ".pkl"), "wb+") as f:
             pickle.dump(output, f)
