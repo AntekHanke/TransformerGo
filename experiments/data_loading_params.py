@@ -69,7 +69,7 @@ ultra_small_data = {
         "ResumeTraining.path_to_training_data": "/ultra_small_data/train",
         "ResumeTraining.path_to_eval_data": "/ultra_small_data/eval",
         "ResumeTraining.files_batch_size": 5,
-        "ResumeTraining.range_of_k": [1, 2, 3],
+        "ResumeTraining.range_of_k": [1, 2, 3, 4, 5, 6],
     },
 }
 
@@ -104,5 +104,36 @@ standard_data_k3_pieces_tokenizer = {
         "ResumeTraining.path_to_training_data": STANDARD_DATA_K_3_TRAIN_PIECES,
         "ResumeTraining.path_to_eval_data": STANDARD_DATA_K_3_EVAL_PIECES,
         "ResumeTraining.files_batch_size": 1000,
+    },
+}
+
+STANDARD_WHOLE_DATA_TRAIN_BOARD = "/board/subgoals_all_k/train"
+STANDARD_WHOLE_DATA_EVAL_BOARD = "/board/subgoals_all_k/eval"
+standard_whole_data_board_tokenizer = {
+    "from_scratch": {
+        "TrainModelFromScratch.eval_n_batches": 50,
+        "TrainModelFromScratch.path_to_training_data": STANDARD_WHOLE_DATA_TRAIN_BOARD,
+        "TrainModelFromScratch.path_to_eval_data": STANDARD_WHOLE_DATA_EVAL_BOARD,
+        "TrainModelFromScratch.files_batch_size": 1000,
+    },
+    "resume": {
+        "ResumeTraining.eval_n_batches": 50,
+        "ResumeTraining.path_to_training_data": STANDARD_WHOLE_DATA_TRAIN_BOARD,
+        "ResumeTraining.path_to_eval_data": STANDARD_WHOLE_DATA_EVAL_BOARD,
+        "ResumeTraining.files_batch_size": 1000,
+    },
+    "from_scratch_with_all_subgoals": {
+        "TrainModelFromScratch.eval_n_batches": 50,
+        "TrainModelFromScratch.path_to_training_data": STANDARD_WHOLE_DATA_TRAIN_BOARD,
+        "TrainModelFromScratch.path_to_eval_data": STANDARD_WHOLE_DATA_EVAL_BOARD,
+        "TrainModelFromScratch.files_batch_size": 1000,
+        "TrainModelFromScratch.range_of_k": [1, 2, 3, 4, 5, 6],
+    },
+    "resume_with_all_subgoals": {
+        "ResumeTraining.eval_n_batches": 50,
+        "ResumeTraining.path_to_training_data": STANDARD_WHOLE_DATA_TRAIN_BOARD,
+        "ResumeTraining.path_to_eval_data": STANDARD_WHOLE_DATA_EVAL_BOARD,
+        "ResumeTraining.files_batch_size": 1000,
+        "ResumeTraining.range_of_k": [1, 2, 3, 4, 5, 6],
     },
 }
