@@ -27,22 +27,26 @@ def expand_function(
     generator_num_beams: int = None,
     generator_num_subgoals: int = None,
     sort_subgoals_by: str = None,
+    num_top_subgoals: int = None,
     chess_state_expander: Type[ChessStateExpander] = None,
 ):
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
     chess_state_expander = chess_state_expander()
-    subgoals = chess_state_expander.expand_state(
+    subgoals, _ = chess_state_expander.expand_state(
         input_immutable_board=node.immutable_data.state,
         cllp_num_beams=cllp_num_beams,
         cllp_num_return_sequences=cllp_num_return_sequences,
         generator_num_beams=generator_num_beams,
         generator_num_subgoals=generator_num_subgoals,
-        sort_subgoals_by=sort_subgoals_by
+        sort_subgoals_by=sort_subgoals_by,
     )
+    subgoals = subgoals[:num_top_subgoals] if len(subgoals) > num_top_subgoals else subgoals
     for subgoal in subgoals:
         details = subgoals[subgoal]
         value = details["value"]
-        probability = sum([path_statistics["total_path_probability"] for path_statistics in details["path_probabilities"]])
+        probability = sum(
+            [path_statistics["total_path_probability"] for path_statistics in details["path_probabilities"]]
+        )
         child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
         node.children.append(child)
 
@@ -167,7 +171,9 @@ class Tree:
         best_score = float("-inf")
         best_nodes = []
         for child in node.children:
-            node_score = self.score_function(node=child, root_player=self.root_player, exploration_constant=exploration_constant)
+            node_score = self.score_function(
+                node=child, root_player=self.root_player, exploration_constant=exploration_constant
+            )
             if node_score > best_score:
                 best_score = node_score
                 best_nodes = [child]
