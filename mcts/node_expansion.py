@@ -28,10 +28,10 @@ class ChessStateExpander:
         subgoal_generator: BasicChessSubgoalGenerator,
         cllp: CLLP,
     ):
-        self.policy = chess_policy
-        self.value = chess_value
-        self.subgoal_generator = subgoal_generator
-        self.cllp = cllp
+        self.policy = chess_policy()
+        self.value = chess_value()
+        self.subgoal_generator = subgoal_generator()
+        self.cllp = cllp()
 
     def expand_state(
         self,
