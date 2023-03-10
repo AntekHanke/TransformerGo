@@ -64,7 +64,7 @@ class ChessStateExpander:
         sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
         stats = dict(**generation_stats, **cllp_stats)
         stats["analysis_time"] = time.time() - analysis_time_start
-        return sorted_subgoals, stats
+        return sorted_subgoals, subgoals_info, stats
 
     @staticmethod
     def sort_subgoals(subgoals_info, sort_subgoals_by: str = None):

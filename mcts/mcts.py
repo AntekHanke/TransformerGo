@@ -32,7 +32,7 @@ def expand_function(
 ):
     assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
     chess_state_expander = chess_state_expander()
-    subgoals, _ = chess_state_expander.expand_state(
+    subgoals, subgoals_info, _ = chess_state_expander.expand_state(
         input_immutable_board=node.immutable_data.state,
         cllp_num_beams=cllp_num_beams,
         cllp_num_return_sequences=cllp_num_return_sequences,
@@ -42,7 +42,7 @@ def expand_function(
     )
     subgoals = subgoals[:num_top_subgoals] if len(subgoals) > num_top_subgoals else subgoals
     for subgoal in subgoals:
-        details = subgoals[subgoal]
+        details = subgoals_info[subgoal]
         value = details["value"]
         probability = sum(
             [path_statistics["total_path_probability"] for path_statistics in details["path_probabilities"]]
