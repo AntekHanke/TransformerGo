@@ -305,8 +305,6 @@ contexts:
       -B /net/ascratch/people/plggracjangoral/chess_data/leela_models:/leela_models
       -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
 
-
-
   athena_gpu_gg:
     backend_type: slurm
     cmd_type: sbatch
@@ -319,16 +317,12 @@ contexts:
     modules_to_load:
       - CUDA/11.6.0
     singularity_container: -H $PWD:/homeplaceholder
-      -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess_data:/chess_data
-      -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess_data/subgoals_dataset_lichess:/subgoals_dataset_lichess
-      -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess_data/leela_models:/leela_models
-      -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/pgn_large:/pgn_large
-      -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/cllp_bigger:/subgoal_chess_data/cllp_bigger
-      -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/cllp_eval:/subgoal_chess_data/cllp_eval
-      -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
+      -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess/out_models:/out_models
+      -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess/chess_data_subgoals_engines/board:/board
+      -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
     slurm_url: plggracjangoral@athena.cyfronet.pl
-    storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/
-    time: 2880
+    storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/training_generator
+    time: 100
 
   prom_cpu_gg:
     account: plgrlresearch

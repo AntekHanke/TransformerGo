@@ -1,8 +1,7 @@
-import random
 from typing import List, Tuple
 
-import chess
 import torch
+import time
 from transformers import BartForConditionalGeneration
 
 from data_processing.chess_tokenizer import ChessTokenizer
@@ -63,10 +62,13 @@ class CLLP:
     def get_paths_batch(
         self, queries_list: List[Tuple[ImmutableBoard, ImmutableBoard]], num_beams, num_return_sequences
     ):
-        inputs_tokenized = []
 
+        time_cllp = time.time()
+        inputs_tokenized = []
         for input_immutable_board, target_immutable_board in queries_list:
             inputs_tokenized.append(
                 self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
             )
-        return self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences)
+        return self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences), {
+            "cllp_time": time.time() - time_cllp
+        }

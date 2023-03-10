@@ -73,14 +73,13 @@ class TrainBertForSequenceModel(Job):
         log_param("Save model path", self.save_model_path)
 
     def _log_data_to_neptune(self, chess_database: ChessDataProvider) -> None:
-
         def _dict_to_pandas(data_dict: dict, max_data_to_log: int = 100) -> pd.DataFrame:
             dfs = []
             for id, value in enumerate(data_dict.values()):
                 if id >= max_data_to_log:
                     break
                 new_value = value.copy()
-                new_value['labels'], new_value['input_ids'] = [new_value['labels']], [new_value['input_ids']]
+                new_value["labels"], new_value["input_ids"] = [new_value["labels"]], [new_value["input_ids"]]
                 df = pd.DataFrame.from_dict(new_value, orient="columns")
                 dfs.append(df)
             return pd.concat(dfs)
@@ -91,15 +90,15 @@ class TrainBertForSequenceModel(Job):
         def _log_figures_for_dataset(chess_database: ChessDataProvider, dataset_name: str) -> None:
             attr = getattr(chess_database, dataset_name)
             df = _dict_to_pandas(attr)
-            df['detokenized_ids'] = df.apply(lambda row: _detokenize_df_row(row['input_ids'], row['labels']), axis=1)
-            for id, row in enumerate(df[['detokenized_ids', 'labels']].iterrows()):
-                fig = immutable_boards_to_img([row[1]['detokenized_ids']], [row[1]['labels']])
-                log_object(f'{dataset_name}_sample_img', fig)
-                log_object(f'{dataset_name}_sample', f"{id}\t{row[1]['detokenized_ids'].board}")
+            df["detokenized_ids"] = df.apply(lambda row: _detokenize_df_row(row["input_ids"], row["labels"]), axis=1)
+            for id, row in enumerate(df[["detokenized_ids", "labels"]].iterrows()):
+                fig = immutable_boards_to_img([row[1]["detokenized_ids"]], [row[1]["labels"]])
+                log_object(f"{dataset_name}_sample_img", fig)
+                log_object(f"{dataset_name}_sample", f"{id}\t{row[1]['detokenized_ids'].board}")
 
         # chess_database_for_logging
-        _log_figures_for_dataset(chess_database, 'data_train')
-        _log_figures_for_dataset(chess_database, 'data_eval')
+        _log_figures_for_dataset(chess_database, "data_train")
+        _log_figures_for_dataset(chess_database, "data_eval")
 
     def execute(self) -> None:
         self.trainer.train()

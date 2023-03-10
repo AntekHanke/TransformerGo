@@ -65,14 +65,16 @@ class NeptunePytorchCallback(TrainerCallback):
 class NeptuneLogger:
     """Logs to Neptune."""
 
-    def __init__(self, experiment):
+    def __init__(self, experiment, min_step=0):
         """Initialize NeptuneLogger with the Neptune experiment."""
         super().__init__()
+        self.min_step = min_step
         self._experiment = experiment
 
     def log_value(self, name: str, step: int, value: float) -> None:
         """Logs a scalar with steps to Neptune."""
-        self._experiment[name].log(value=value, step=step)
+        if step >= self.min_step:
+            self._experiment[name].log(value=value, step=step)
 
     def log_value_without_step(self, name: str, value: float) -> None:
         """Logs a scalar to Neptune."""
@@ -122,10 +124,11 @@ def configure_neptune(specification):
 
     return NeptuneLogger(run)
 
+
 def resume_neptune(experiment_label):
     """Resumes the Neptune experiment, then returns the Neptune logger."""
     run = neptune.init_run(
         with_id=experiment_label,
-        project = "pmtest/subgoal-chess", #TODO: load this from mrunner, not hardcode
+        project="pmtest/subgoal-chess",  # TODO: load this from mrunner, not hardcode
     )
     return NeptuneLogger(run)

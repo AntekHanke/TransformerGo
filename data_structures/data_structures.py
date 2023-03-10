@@ -1,5 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
+from enum import Enum, IntEnum
 from typing import Tuple
 
 import chess
@@ -14,6 +15,11 @@ LeelaSubgoal = namedtuple(
 SubgoalsFromModel = namedtuple("SubgoalFromModel", "input_immutable_board target_immutable_board")
 
 
+class HistoryLength(IntEnum):
+    no_history = 0
+    short_history = 10
+
+
 @dataclass
 class ChessMetadata:
     """Stores arbitrary metadata about a single game. Different games have different metadata fields."""
@@ -21,10 +27,12 @@ class ChessMetadata:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+
 ImmutableBoardData = namedtuple(
     "ImmutableBoard",
     "board active_player castles en_passant_target halfmove_clock fullmove_clock",
 )
+
 
 class ImmutableBoard(ImmutableBoardData):
     @classmethod

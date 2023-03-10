@@ -1,7 +1,7 @@
 import os
 import sys
 
-experiment_dir_path = os.path.dirname(os.path.abspath('__file__'))
+experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
 from datetime import date
@@ -14,14 +14,11 @@ MACHINE = "athena_8_gpu"
 
 base_config = {
     "TrainModel.path_to_training_data": "/subgoal_chess_data/cllp_bigger",
-
     "GlobalParamsHandler.out_dir": f"/leela_models/cllp/medium_large_model/{date.today()}",
     "GlobalParamsHandler.path_type": "raw_path",
-
     "BartConfig.decoder_ffn_dim": 4096,
     "BartConfig.encoder_ffn_dim": 4096,
     "BartConfig.d_model": 1024,
-
     "TrainingArguments.per_device_train_batch_size": batch_size[MACHINE],
     "TrainingArguments.per_device_eval_batch_size": batch_size[MACHINE],
     "TrainingArguments.learning_rate": 1e-4,

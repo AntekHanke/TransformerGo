@@ -11,7 +11,7 @@ from collections import namedtuple
 
 from matplotlib import pyplot as plt
 
-from configures.global_config import MAX_GAME_LENGTH
+from configures.global_config import MAX_GAME_LENGTH, NUMBER_OF_PRINT_SEPARATORS
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard, ChessMetadata, Transition, OneGameData
 from utils.data_utils import get_split, immutable_boards_to_img, RESULT_TO_WINNER
@@ -20,8 +20,6 @@ from metric_logging import log_value, log_object
 from utils.probability_subgoal_selector_tools import prob_table_for_diff_n
 from policy.chess_policy import LCZeroPolicy
 
-rng = np.random.default_rng(0)
-NUMBER_OF_PRINT_SEPARATORS: int = 150
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
 

@@ -12,6 +12,7 @@ from data_processing.data_processing_functions import (
     policy_with_history_process_df,
     subgoal_to_policy_process_df,
     cllp_process_df,
+    subgoal_all_k_process_df,
 )
 from metric_logging import log_object, log_value
 
@@ -24,6 +25,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
         p_sample: Optional[float] = None,
         eval_num_samples: Optional[int] = None,
         name: str = "default",
+        range_of_k: Optional[List[int]] = None,
     ) -> None:
 
         self.data_path = data_path
@@ -36,6 +38,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
         self.files_names: List[str] = []
         self.all_data: List[Dict[str, List[int]]] = []
         self.curent_data_for_eval: List[Dict[str, List[int]]] = []
+        self.range_of_k = range_of_k
 
         self.prepare_files_list()
         self.generate_data()
@@ -52,7 +55,7 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
 
         log_object(f"{self.name}_files_names_before_shuffle", self.files_names)
         random.shuffle(self.files_names)
-        log_object(f"files_names_after_shuffle", self.files_names)
+        log_object(f"{self.name}_files_names_after_shuffle", self.files_names)
 
         assert len(self.files_names) > 0, f"No data files found in {self.data_path}"
 
@@ -82,7 +85,11 @@ class PandasStaticDataProvider(torch.utils.data.Dataset):
                 continue
 
             self.successfully_loaded_files += 1
-            log_value(f"load_df_all_files_{self.name}", self.successfully_loaded_files, self.successfully_loaded_files)
+            log_value(
+                f"load_df_all_files_{self.name}",
+                self.successfully_loaded_files,
+                self.successfully_loaded_files,
+            )
             if self.p_sample:
                 load_df = load_df.sample(frac=self.p_sample)
             self.all_data.extend(self.process_df(load_df))
@@ -96,6 +103,11 @@ class PandasStaticSubgoalDataProvider(PandasStaticDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame):
         return subgoal_process_df(df)
+
+
+class PandasStaticSubgoalAllDistancesDataProvider(PandasStaticDataProvider):
+    def process_df(self, df: pd.DataFrame) -> List[Dict[str, List[int]]]:
+        return subgoal_all_k_process_df(df, self.range_of_k)
 
 
 class PandasStaticPolicyDataProvider(PandasStaticDataProvider):

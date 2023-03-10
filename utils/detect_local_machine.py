@@ -3,6 +3,8 @@ from enum import Enum, auto
 
 local_machines = {"TomaszOpc": "tomasz", "g": "gracjan", "dell-latitude-e7450": "malgorzata", "DESKTOP-0GPM0GS": "antek"}
 hostname = socket.gethostname()
+
+
 def get_local_machine():
     if hostname in local_machines:
         return local_machines[hostname]

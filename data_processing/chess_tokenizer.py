@@ -23,6 +23,7 @@ def is_promotion_possible(algebraic_move: str) -> bool:
 
 
 def padding(sequence: List, pad_value: int, final_len: int) -> List:
+    assert len(sequence) <= final_len, "Sequence is longer than final_len"
     return sequence + [pad_value] * (final_len - len(sequence))
 
 
@@ -198,7 +199,7 @@ class ChessTokenizerPiece(ChessTokenizer):
             if c.isdigit() in list(range(1, 9)):
                 board_column += int(c)
             elif c in cls.pieces[1:-2]:
-                piece_positions[c].append(cls.column_letters[board_column] + str(board_row+1))
+                piece_positions[c].append(cls.column_letters[board_column] + str(board_row + 1))
                 board_column += 1
             if board_column == 8:
                 board_row -= 1
@@ -267,3 +268,42 @@ class ChessTokenizerPiece(ChessTokenizer):
         board_string += " " + additional_data
 
         return ImmutableBoard(*board_string.split())
+
+
+class ChessTokenizerFEN(ChessTokenizer):
+    TOKENIZED_BOARD_LENGTH = 82
+
+    def __new__(cls):
+        self = object.__new__(cls)
+        return self
+
+    @classmethod
+    def encode_immutable_board(cls, immutable_board: ImmutableBoard) -> List[int]:
+        board_tokens = [cls.vocab_to_tokens[x] for x in immutable_board.board]
+        board_tokens.append(cls.special_vocab_to_tokens["<SEP>"])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.active_player])
+        board_tokens.append(cls.special_vocab_to_tokens["<SEP>"])
+
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.castles])
+        board_tokens.append(cls.special_vocab_to_tokens["<SEP>"])
+        board_tokens.append(cls.vocab_to_tokens[immutable_board.en_passant_target])
+        board_tokens.append(cls.special_vocab_to_tokens["<SEP>"])
+
+        halfmove_clock = min(int(immutable_board.halfmove_clock), 255)
+        board_tokens.append(cls.vocab_to_tokens[str(halfmove_clock)])
+        board_tokens.append(cls.special_vocab_to_tokens["<SEP>"])
+
+        fullmove_clock = min(int(immutable_board.fullmove_clock), 255)
+        board_tokens.append(cls.vocab_to_tokens[str(fullmove_clock)])
+        board_tokens.append(cls.special_vocab_to_tokens["<EOS>"])
+
+        padding(board_tokens, cls.vocab_to_tokens["<PAD>"], cls.TOKENIZED_BOARD_LENGTH)
+
+        return board_tokens
+
+    @classmethod
+    def decode_board(cls, board_tokens: List[int]) -> ImmutableBoard:
+        decoded_board = [cls.tokens_to_vocab[token] for token in board_tokens]
+        board_string = "".join(decoded_board)
+        board_string = board_string.replace("<SEP>", " ").replace("<EOS>", "")
+        return ImmutableBoard.from_fen_str(board_string)

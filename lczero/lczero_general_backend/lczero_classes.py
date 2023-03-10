@@ -43,14 +43,17 @@ def get_lczero_backend(weights_path=None):
             user = get_local_machine()
             if user == "tomasz":
                 from lczero.lczero_backend_local.lczero_backend_local_tomek.lczero_local import lc_zero_local_backend
+
                 lczero_backend = lc_zero_local_backend
             elif user == "gracjan":
                 from lczero.lczero_backend_local.lczero_backend_local_gg.lczero_local import lc_zero_local_backend
+
                 lczero_backend = lc_zero_local_backend
             elif user == "malgorzata":
                 from lczero.lczero_backend_local.lczero_backend_local_malgorzata.lczero_local import (
                     lc_zero_local_backend,
                 )
+
                 lczero_backend = lc_zero_local_backend
         else:
             if LCZERO_CLUSTER == "athena":
