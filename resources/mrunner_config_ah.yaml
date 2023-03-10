@@ -330,11 +330,11 @@ contexts:
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/
     time: 2880
 
-  prom_cpu_gg:
+  prom_cpu_antek:
     account: plgrlresearch
     backend_type: slurm
     cmd_type: sbatch
-    time: 3-00:00:00
+    time: 10
     cpu: 1
     mem: 30G
     modules_to_load:
@@ -346,22 +346,4 @@ contexts:
     storage_dir: /net/scratch/people/plgantekhanke/godata_generation
     singularity_container: -H $PWD:/homeplaceholder
                            -B /net/scratch/people/plgantekhanke/godata_generation:/godata_generation
-                           -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
-
-    eagle_data:
-      account: 619
-      backend_type: slurm
-      cmd_type: sbatch
-      partition: standard
-      time: 50
-      cpu: 1
-      ntasks: 1
-      mem: 10G
-      nodes: 1
-      slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
-      storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-      singularity_container: -H $PWD:/homeplaceholder
-        -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/leela_data
-        -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
-        -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
-        --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+                           -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
