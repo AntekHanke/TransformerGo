@@ -112,7 +112,8 @@ class PandasIterablePolicyDataProvider(PandasIterableDataProvider):
 class PandasIterablePolicyDataProviderGo(PandasIterableDataProvider):
     @staticmethod
     def process_df(df: pd.DataFrame) -> pd.DataFrame:
-        return policy_process_df(df)
+        #return subgoal_process_df(df)
+        return subgoal_process_df(df)
 
 class PandasIterablePolicyWithHistoryDataProvider(PandasIterableDataProvider):
     @staticmethod
