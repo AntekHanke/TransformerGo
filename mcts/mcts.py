@@ -67,7 +67,7 @@ def mock_expand_function(node: "TreeNode"):
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
-NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded")
+NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded state")
 
 
 class TreeNode:
@@ -195,6 +195,7 @@ class Tree:
                 num_visits=node.num_visits,
                 is_terminal=node.immutable_data.is_terminal,
                 is_expanded=node.is_expanded,
+                state=node.immutable_data.state
             )
             tree_list.append(node_tuple)
         return tree_list
