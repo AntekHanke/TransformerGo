@@ -15,8 +15,8 @@ def verify_path(input_immutable_board, subgoal, path):
         if not board.is_legal(move):
             return False
         board.push(move)
-        if ImmutableBoard.from_board(board) == subgoal:
-            return True
+    if ImmutableBoard.from_board(board) == subgoal:
+        return True
     return False
 
 
