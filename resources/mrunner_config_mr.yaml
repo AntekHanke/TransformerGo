@@ -17,7 +17,7 @@ contexts:
                             -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/:/data_mg
                             -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess:/data_gg
                             -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/out_models
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
     slurm_url: plgmrog@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/mrunner_scratch
     time: 2880
@@ -37,7 +37,7 @@ contexts:
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/data/:/sourcedata
                             -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/data/:/targetdata
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
     slurm_url: plgmrog@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/mrunner_scratch
     time: 2880
