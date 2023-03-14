@@ -9,7 +9,7 @@ from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 OUT_DIR = f"/out_models/trees/{date.today()}_{random.randint(0,100000)}"
-FILE_NAME = "tree1"
+OUT_FILE_NAME = "tree1"
 FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 experiment_config = {
@@ -20,7 +20,7 @@ experiment_config = {
     "RunMCTSJob.score_function": "@score_functions.score_function",
     "RunMCTSJob.expand_function": "@expand_functions.mock_expand_function",
     "RunMCTSJob.out_dir": "/out",
-    "RunMCTSJob.file_name": FILE_NAME
+    "RunMCTSJob.out_file_name": OUT_FILE_NAME
 }
 
 params_grid = {

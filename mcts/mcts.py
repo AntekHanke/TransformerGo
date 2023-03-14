@@ -28,11 +28,11 @@ def expand_function(
     generator_num_subgoals: int = None,
     sort_subgoals_by: str = None,
     num_top_subgoals: int = None,
-    chess_state_expander: Type[ChessStateExpander] = None,
+    chess_state_expander_class: Type[ChessStateExpander] = None,
 ):
-    assert chess_state_expander is not None, "ChessStateExpander hasn't been provided"
-    chess_state_expander = chess_state_expander()
-    subgoals, subgoals_info, _ = chess_state_expander.expand_state(
+    assert chess_state_expander_class is not None, "ChessStateExpander hasn't been provided"
+    chess_state_expander_class = chess_state_expander_class()
+    subgoals, subgoals_info, _ = chess_state_expander_class.expand_state(
         input_immutable_board=node.immutable_data.state,
         cllp_num_beams=cllp_num_beams,
         cllp_num_return_sequences=cllp_num_return_sequences,
@@ -40,7 +40,7 @@ def expand_function(
         generator_num_subgoals=generator_num_subgoals,
         sort_subgoals_by=sort_subgoals_by,
     )
-    subgoals = subgoals[:num_top_subgoals] if len(subgoals) > num_top_subgoals else subgoals
+    subgoals = subgoals[:num_top_subgoals]
     for subgoal in subgoals:
         details = subgoals_info[subgoal]
         value = details["value"]

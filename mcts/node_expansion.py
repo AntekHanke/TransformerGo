@@ -1,4 +1,5 @@
 import time
+from typing import Type
 
 import numpy as np
 
@@ -23,15 +24,15 @@ def verify_path(input_immutable_board, subgoal, path):
 class ChessStateExpander:
     def __init__(
         self,
-        chess_policy: ChessPolicy,
-        chess_value: ChessValue,
-        subgoal_generator: BasicChessSubgoalGenerator,
-        cllp: CLLP,
+        chess_policy_class: Type[ChessPolicy],
+        chess_value_class: Type[ChessValue],
+        subgoal_generator_class: Type[BasicChessSubgoalGenerator],
+        cllp_class: Type[CLLP],
     ):
-        self.policy = chess_policy()
-        self.value = chess_value()
-        self.subgoal_generator = subgoal_generator()
-        self.cllp = cllp()
+        self.policy = chess_policy_class()
+        self.value = chess_value_class()
+        self.subgoal_generator = subgoal_generator_class()
+        self.cllp = cllp_class()
 
     def expand_state(
         self,

@@ -9,7 +9,7 @@ from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 OUT_DIR = f"/out_models/trees/{date.today()}_{random.randint(0,100000)}"
-FILE_NAME = "tree"
+OUT_FILE_NAME = "tree"
 FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 experiment_config = {
@@ -21,9 +21,9 @@ experiment_config = {
     "RunMCTSJob.score_function": "@score_functions.score_function",
     "RunMCTSJob.expand_function": "@expand_functions.expand_function",
     "RunMCTSJob.out_dir": OUT_DIR,
-    "RunMCTSJob.file_name": FILE_NAME,
+    "RunMCTSJob.out_file_name": OUT_FILE_NAME,
 
-    "expand_function.chess_state_expander": "@chess_state_expander.ChessStateExpander",
+    "expand_function.chess_state_expander_class": "@chess_state_expander.ChessStateExpander",
     "expand_function.cllp_num_beams": 32,
     "expand_function.cllp_num_return_sequences": 8,
     "expand_function.generator_num_beams": 32,
@@ -31,10 +31,10 @@ experiment_config = {
     "expand_function.sort_subgoals_by": "highest_total_probability",
     "expand_function.num_top_subgoals": 8,
 
-    "ChessStateExpander.chess_policy": "@neural_networks.LCZeroPolicy",
-    "ChessStateExpander.chess_value": "@neural_networks.LCZeroValue",
-    "ChessStateExpander.subgoal_generator": "@neural_networks.BasicChessSubgoalGenerator",
-    "ChessStateExpander.cllp": "@neural_networks.CLLP",
+    "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
+    "ChessStateExpander.chess_value_class": "@neural_networks.LCZeroValue",
+    "ChessStateExpander.subgoal_generator_class": "@neural_networks.BasicChessSubgoalGenerator",
+    "ChessStateExpander.cllp_class": "@neural_networks.CLLP",
 
     "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_mg/generators/generator_k_3/checkpoint-221500",
     "CLLP.checkpoint_path_or_model": "/data_mg/cllp/medium",
