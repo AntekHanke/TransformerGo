@@ -36,6 +36,7 @@ from data_processing.pandas_static_dataset_provider import (
     PandasStaticSubgoalAllDistancesDataProvider,
 )
 from jobs.chess_retokenization import RetokenizationJob
+from jobs.compare_with_stockfish import CompareMCTSWithStockfish
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
 from jobs.game_between_engines import GameBetweenEngines
@@ -86,6 +87,7 @@ configure_classes(
         RetokenizationJob,
         RunMCTSJob,
         GameBetweenEngines,
+        CompareMCTSWithStockfish,
     ],
     "jobs",
 )

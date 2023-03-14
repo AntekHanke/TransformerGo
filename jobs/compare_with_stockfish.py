@@ -38,8 +38,9 @@ class CompareMCTSWithStockfish(Job):
 
     def execute(self):
         eval_data_df = pd.read_pickle(self.eval_data_dir)
-        eval_data_df["input_ids"].sample(n=self.num_boards_to_compare, random_state=self.sample_seed)
-        list_of_boards: List[ImmutableBoard] = []
+        list_of_boards: List[ImmutableBoard] = (
+            eval_data_df["immutable_board"].sample(n=self.num_boards_to_compare, random_state=self.sample_seed).tolist()
+        )
         root_stats_list: List[dict] = []
         stockfish = Stockfish(path=self.stockfish_path, parameters=self.stockfish_parameters)
 
