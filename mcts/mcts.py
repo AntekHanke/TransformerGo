@@ -185,6 +185,7 @@ class Tree:
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
         expand_function_or_class: Union[Type[ExpandFunction], ExpandFunction] = None,
         counter_initial_value: int = 0,
+        output_root_values_list: bool = False,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
@@ -198,6 +199,8 @@ class Tree:
         else:
             self.expand_function = expand_function_or_class()
         self.mcts_passes_counter = 0
+        self.output_root_values_list = output_root_values_list
+        if output_root_values_list: self.root_values_list = []
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -224,12 +227,14 @@ class Tree:
 
         best_child = self.get_best_child(self.root, 0)
         best_path = self.root.paths_to_children[best_child.immutable_data.state]
-        return {
+        output_dir = {
             "best_node": best_child,
             "best_path": best_path,
             "best_child": best_child.immutable_data.state,
             "expected_value": best_child.get_value(),
         }
+        if self.output_root_values_list: output_dir["root_values_list"] = self.root_values_list
+        return output_dir
 
     def execute_mcts_pass(self):
         self.mcts_passes_counter += 1
@@ -245,6 +250,7 @@ class Tree:
         )
         log_value_to_average("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
         accumulator_to_logger(self.counter_initial_value + self.mcts_passes_counter)
+        if self.output_root_values_list: self.root_values_list.append(self.root.get_value())
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
         while not node.immutable_data.is_terminal:
