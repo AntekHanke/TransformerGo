@@ -14,7 +14,7 @@ def mcts_tree_network(tree: Tree, target_path: str, target_name: str, with_image
     if with_images:
         Path("images").mkdir(parents=True, exist_ok=True)
 
-    network = Network(layout=True, directed=True)
+    network = Network(layout=True, directed=True, height="70vw")
 
     for node in tree.node_list:
         n_id = node.immutable_data.n_id

@@ -16,7 +16,7 @@ experiment_config = {
     "run.job_class": "@jobs.RunMCTSJob",
 
     "RunMCTSJob.initial_state_fen": FEN,
-    "RunMCTSJob.time_limit": 900,
+    "RunMCTSJob.time_limit": None,
     "RunMCTSJob.max_mcts_passes": 20,
     "RunMCTSJob.score_function": "@score_functions.score_function",
     "RunMCTSJob.expand_function": "@expand_functions.expand_function",

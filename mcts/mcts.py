@@ -32,6 +32,7 @@ def expand_function(
 ):
     assert chess_state_expander_class is not None, "ChessStateExpander hasn't been provided"
     chess_state_expander_class = chess_state_expander_class()
+    time_s = time.time()
     subgoals, subgoals_info, _ = chess_state_expander_class.expand_state(
         input_immutable_board=node.immutable_data.state,
         cllp_num_beams=cllp_num_beams,
@@ -40,6 +41,7 @@ def expand_function(
         generator_num_subgoals=generator_num_subgoals,
         sort_subgoals_by=sort_subgoals_by,
     )
+    print(f"Expand function took {time.time() - time_s} seconds")
     subgoals = subgoals[:num_top_subgoals]
     for subgoal in subgoals:
         details = subgoals_info[subgoal]
@@ -49,7 +51,7 @@ def expand_function(
         )
         child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
         node.children.append(child)
-
+    print(f"Paths probs took {time.time() - time_s} seconds")
 
 def mock_expand_function(node: "TreeNode"):
     board = node.immutable_data.state.to_board()
@@ -119,6 +121,7 @@ class Tree:
         self.exploration_constant = exploration_constant
         self.score_function = score_function
         self.expand_function = expand_function
+        self.mcts_passes_counter = 0
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -127,6 +130,7 @@ class Tree:
         self.max_mcts_passes = max_mcts_passes
 
     def mcts(self) -> dict:
+        self.mcts_passes_counter = 0
         if self.time_limit is not None:
             time_limit = time.time() + self.time_limit
             if self.max_mcts_passes is not None:
@@ -146,6 +150,8 @@ class Tree:
         return {"best_child": best_child.immutable_data.state, "expected_value": best_child.get_value()}
 
     def execute_mcts_pass(self):
+        self.mcts_passes_counter += 1
+        log_value_without_step("MCTS passes", self.mcts_passes_counter)
         node = self.tree_traversal(self.root)
         value = node.get_value()
         self.backpropogate(node, value)
