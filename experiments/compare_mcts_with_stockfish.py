@@ -1,18 +1,15 @@
 import math
 import os
-import random
 import sys
 
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
-from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
 EVAL_DATA_DIR = ""
-OUT_DIR = f"/out_models/mcts_vs_stockfish/{date.today()}_{random.randint(0,100000)}"
-FILE_NAME = "tree"
+OUT_DIR = f"/out_models/mcts_vs_stockfish"
 FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 experiment_config = {
@@ -20,14 +17,13 @@ experiment_config = {
 
     "CompareMCTSWithStockfish.time_limit": 900,
     "CompareMCTSWithStockfish.max_mcts_passes": 1000,
-    "CompareMCTSWithStockfish.exploration_constant":  1 / math.sqrt(2),
+    "CompareMCTSWithStockfish.exploration_constant": 1 / math.sqrt(2),
     "CompareMCTSWithStockfish.score_function": "@score_functions.score_function",
     "CompareMCTSWithStockfish.expand_function": "@expand_functions.expand_function",
     "CompareMCTSWithStockfish.stockfish_path": STOCKFISH_PATH,
     "CompareMCTSWithStockfish.stockfish_parameters": {},
     "CompareMCTSWithStockfish.eval_data_dir": EVAL_DATA_DIR,
     "CompareMCTSWithStockfish.out_dir": OUT_DIR,
-    "CompareMCTSWithStockfish.file_name": FILE_NAME,
     "CompareMCTSWithStockfish.sample_seed": 0,
     "CompareMCTSWithStockfish.num_boards_to_compare": 3,
 

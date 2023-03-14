@@ -1,3 +1,5 @@
+import os
+import time
 from typing import Callable, List
 
 import chess
@@ -65,4 +67,4 @@ class CompareMCTSWithStockfish(Job):
             )
 
         root_stats_df = pd.DataFrame.from_records(root_stats_list)
-        root_stats_df.to_pickle(self.out_dir)
+        root_stats_df.to_pickle(os.path.join(self.out_dir, f"comparison {time.ctime()}"))
