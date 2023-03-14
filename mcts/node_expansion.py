@@ -1,6 +1,8 @@
 import time
+from typing import Type, List
 
 import numpy as np
+from chess import Move
 
 from data_structures.data_structures import ImmutableBoard
 from policy.chess_policy import ChessPolicy
@@ -9,29 +11,31 @@ from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
 from value.chess_value import ChessValue
 
 
-def verify_path(input_immutable_board, subgoal, path):
+def verify_path(input_immutable_board: ImmutableBoard, subgoal: ImmutableBoard, path: List[Move]) -> List[Move]:
     board = input_immutable_board.to_board()
+    correct_path = []
     for move in path:
         if not board.is_legal(move):
-            return False
+            return None
         board.push(move)
+        correct_path.append(move)
         if ImmutableBoard.from_board(board) == subgoal:
-            return True
-    return False
+            return correct_path
+    return None
 
 
 class ChessStateExpander:
     def __init__(
         self,
-        chess_policy: ChessPolicy,
-        chess_value: ChessValue,
-        subgoal_generator: BasicChessSubgoalGenerator,
-        cllp: CLLP,
+        chess_policy_class: Type[ChessPolicy],
+        chess_value_class: Type[ChessValue],
+        subgoal_generator_class: Type[BasicChessSubgoalGenerator],
+        cllp_class: Type[CLLP],
     ):
-        self.policy = chess_policy
-        self.value = chess_value
-        self.subgoal_generator = subgoal_generator
-        self.cllp = cllp
+        self.policy = chess_policy_class()
+        self.value = chess_value_class()
+        self.subgoal_generator = subgoal_generator_class()
+        self.cllp = cllp_class()
 
     def expand_state(
         self,
@@ -64,7 +68,7 @@ class ChessStateExpander:
         sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
         stats = dict(**generation_stats, **cllp_stats)
         stats["analysis_time"] = time.time() - analysis_time_start
-        return sorted_subgoals, stats
+        return sorted_subgoals, subgoals_info, stats
 
     @staticmethod
     def sort_subgoals(subgoals_info, sort_subgoals_by: str = None):
@@ -78,7 +82,11 @@ class ChessStateExpander:
             raise ValueError(f"Unknown sort_subgoals_by: {sort_subgoals_by}")
 
     def analyze_subgoal(self, input_immutable_board, subgoal, paths_to_subgoal):
-        correct_paths = [path for path in paths_to_subgoal if verify_path(input_immutable_board, subgoal, path)]
+        correct_paths = [
+            correct_path
+            for path in paths_to_subgoal
+            if (correct_path := verify_path(input_immutable_board, subgoal, path)) is not None
+        ]
         if len(correct_paths) == 0:
             return None
 

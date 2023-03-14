@@ -44,6 +44,11 @@ from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
 from jobs.run_mcts import RunMCTSJob
 from mcts.mcts import score_function, expand_function, mock_expand_function
+from mcts.node_expansion import ChessStateExpander
+from policy.chess_policy import LCZeroPolicy
+from policy.cllp import CLLP
+from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
+from value.chess_value import LCZeroValue
 
 
 def configure_class(cls, module=None) -> None:
@@ -109,3 +114,5 @@ configure_classes(
 
 configure_objects([expand_function, mock_expand_function], "expand_functions")
 configure_objects([score_function], "score_functions")
+configure_class(ChessStateExpander, "chess_state_expander")
+configure_classes([LCZeroPolicy, LCZeroValue, CLLP, BasicChessSubgoalGenerator], "neural_networks")
