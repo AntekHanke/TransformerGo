@@ -43,7 +43,7 @@ from jobs.job_leela_dataset import (
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
 from jobs.run_mcts import RunMCTSJob
-from mcts.mcts import score_function, expand_function, mock_expand_function
+from mcts.mcts import score_function, mock_expand_function, StandardExpandFunction
 from mcts.node_expansion import ChessStateExpander
 from policy.chess_policy import LCZeroPolicy
 from policy.cllp import CLLP
@@ -112,7 +112,7 @@ configure_classes(
     "data",
 )
 
-configure_objects([expand_function, mock_expand_function], "expand_functions")
+configure_objects([StandardExpandFunction], "expand_functions")
 configure_objects([score_function], "score_functions")
 configure_class(ChessStateExpander, "chess_state_expander")
 configure_classes([LCZeroPolicy, LCZeroValue, CLLP, BasicChessSubgoalGenerator], "neural_networks")

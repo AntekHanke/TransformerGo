@@ -21,36 +21,43 @@ def score_function(node: "TreeNode", root_player: chess.Color, exploration_const
 
 
 class ExpandFunction:
-    def expand_function(self, node: "TreeNode", **kwargs) -> List["TreeNode"]:
+    def expand_function(self, node: "TreeNode", **kwargs):
         raise NotImplementedError
 
-class StandardExpandFunction(ExpandFunction):
-    def __init__(self, chess_state_expander: ChessStateExpander = None):
-        self.chess_state_expander = chess_state_expander
 
-    def expand_function(self,
-        node: "TreeNode",
+class StandardExpandFunction(ExpandFunction):
+    def __init__(
+        self,
+        chess_state_expander_class: Type[ChessStateExpander] = None,
         cllp_num_beams: int = None,
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
         generator_num_subgoals: int = None,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
-
     ):
+        self.chess_state_expander = chess_state_expander_class
+        self.cllp_num_beams = cllp_num_beams
+        self.cllp_num_return_sequences = cllp_num_return_sequences
+        self.generator_num_beams = generator_num_beams
+        self.generator_num_subgoals = generator_num_subgoals
+        self.sort_subgoals_by = sort_subgoals_by
+        self.num_top_subgoals = num_top_subgoals
+
+    def expand_function(self, node: "TreeNode", **kwargs):
         assert self.chess_state_expander is not None, "ChessStateExpander hasn't been provided"
         time_s = time.time()
         subgoals, subgoals_info = self.chess_state_expander.expand_state(
             input_immutable_board=node.immutable_data.state,
             siblings_states=node.get_siblings_states(),
-            cllp_num_beams=cllp_num_beams,
-            cllp_num_return_sequences=cllp_num_return_sequences,
-            generator_num_beams=generator_num_beams,
-            generator_num_subgoals=generator_num_subgoals,
-            sort_subgoals_by=sort_subgoals_by,
+            cllp_num_beams=self.cllp_num_beams,
+            cllp_num_return_sequences=self.cllp_num_return_sequences,
+            generator_num_beams=self.generator_num_beams,
+            generator_num_subgoals=self.generator_num_subgoals,
+            sort_subgoals_by=self.sort_subgoals_by,
         )
         print(f"Expand function took {time.time() - time_s} seconds")
-        subgoals = subgoals[:num_top_subgoals]
+        subgoals = subgoals[: self.num_top_subgoals]
         for subgoal in subgoals:
             details = subgoals_info[subgoal]
             value = details["value"]
@@ -126,7 +133,6 @@ class Tree:
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
-        expand_function: ExpandFunction = StandardExpandFunction(),
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
@@ -134,8 +140,8 @@ class Tree:
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.expand_function = expand_function
-        self.chess_state_expander = ChessStateExpander()
+        self.expand_function = StandardExpandFunction()
+        # self.chess_state_expander = ChessStateExpander()
         self.mcts_passes_counter = 0
 
         assert (
