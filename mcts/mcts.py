@@ -36,7 +36,7 @@ class StandardExpandFunction(ExpandFunction):
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
     ):
-        self.chess_state_expander = chess_state_expander_class
+        self.chess_state_expander = chess_state_expander_class()
         self.cllp_num_beams = cllp_num_beams
         self.cllp_num_return_sequences = cllp_num_return_sequences
         self.generator_num_beams = generator_num_beams
@@ -133,6 +133,7 @@ class Tree:
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
+        expand_function_class: Type[ExpandFunction] = None,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
@@ -140,8 +141,7 @@ class Tree:
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.expand_function = StandardExpandFunction()
-        # self.chess_state_expander = ChessStateExpander()
+        self.expand_function = expand_function_class()
         self.mcts_passes_counter = 0
 
         assert (
@@ -183,7 +183,7 @@ class Tree:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
             else:
-                self.expand_function(node=node, chess_state_expander=self.chess_state_expander)
+                self.expand_function.expand_function(node=node)
                 self.node_list += node.children
                 node.is_expanded = True
                 return self.get_best_child(node, self.exploration_constant)

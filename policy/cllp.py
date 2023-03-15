@@ -6,6 +6,7 @@ from transformers import BartForConditionalGeneration
 
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
+from metric_logging import log_value_to_accumulate, log_value_to_average
 
 
 class CLLP:
@@ -70,6 +71,6 @@ class CLLP:
             inputs_tokenized.append(
                 self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
             )
-        return self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences), {
-            "cllp_time": time.time() - time_cllp
-        }
+        log_value_to_accumulate("time_cllp_total", time.time() - time_cllp)
+        log_value_to_average("time_cllp_avg", time.time() - time_cllp)
+        return self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences)

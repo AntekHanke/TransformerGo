@@ -57,7 +57,6 @@ class ChessStateExpander:
                 siblings_states, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
             )
         else:
-            # assert False
             log_value_to_average("generator_used_%", 0)
             log_value_to_accumulate("generator_used", 0)
 
@@ -65,7 +64,7 @@ class ChessStateExpander:
 
         subgoals = [subgoal for subgoal in subgoals if subgoal != input_immutable_board]
 
-        paths, cllp_stats = self.cllp.get_paths_batch(
+        paths = self.cllp.get_paths_batch(
             [(input_immutable_board, subgoal) for subgoal in subgoals], cllp_num_beams, cllp_num_return_sequences
         )
 
@@ -106,7 +105,7 @@ class ChessStateExpander:
         paths_raw_probabilities = [
             self.policy.get_path_probabilities(input_immutable_board, path) for path in correct_paths
         ]
-        log_value_to_accumulate("paths_raw_probabilities", time.time() - time_start)
+        log_value_to_accumulate("paths_raw_probabilities_total", time.time() - time_start)
         log_value_to_average("paths_raw_probabilities_avg", time.time() - time_start)
 
         paths_stats = [
