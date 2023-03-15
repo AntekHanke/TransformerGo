@@ -1,14 +1,15 @@
 import os
 import time
+from pathlib import Path
 from typing import Callable, List
 
 import chess
 import pandas as pd
+from stockfish import Stockfish
 
 from data_structures.data_structures import ImmutableBoard
 from jobs.core import Job
 from mcts.mcts import TreeNode, Tree
-from stockfish import Stockfish
 
 
 class CompareMCTSWithStockfish(Job):
@@ -58,13 +59,15 @@ class CompareMCTSWithStockfish(Job):
                 output_root_values_list=True,
             )
             mcts_output_dict = tree.mcts()
+            player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
             root_stats_list.append(
                 {
                     "Board": board,
-                    "Stockfish value": stockfish.get_evaluation(),
-                    "MCTS values": mcts_output_dict["root_values_list"],
+                    "Stockfish value": stockfish.get_evaluation()["value"],
+                    "MCTS values": mcts_output_dict["root_values_list"] * player_score_factor,
                 }
             )
 
+        Path(self.out_dir).mkdir(parents=True, exist_ok=True)
         root_stats_df = pd.DataFrame.from_records(root_stats_list)
-        root_stats_df.to_pickle(os.path.join(self.out_dir, f"comparison {time.ctime()}"))
+        root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison {time.ctime()}.pkl"))
