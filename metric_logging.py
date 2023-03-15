@@ -37,9 +37,29 @@ class StdoutLogger:
         print(f"{name} = {value}")
 
 
-_loggers = [StdoutLogger]
-pytorch_callback_loggers = []
+class MetricsAccumulator:
+    def __init__(self):
+        self._metrics = {}
+        self._data_to_average = {}
+        self._data_to_accumulate = {}
 
+    def log_metric_to_average(self, name, value):
+        self._data_to_average.setdefault(name, []).append(value)
+        self._metrics[name] = np.mean(self._data_to_average[name])
+
+    def log_metric_to_accumulate(self, name, value):
+        self._data_to_average.setdefault(name, []).append(value)
+        self._metrics[name] = np.sum(self._data_to_average[name])
+
+    def return_scalars(self):
+        return self._metrics
+
+    def get_value(self, name):
+        return self._metrics[name]
+
+_loggers = [StdoutLogger]
+_accumulators = [MetricsAccumulator()]
+pytorch_callback_loggers = []
 
 def register_logger(logger):
     """Adds a logger to log to."""
@@ -55,6 +75,18 @@ def log_value(name, step, value):
     for logger in _loggers:
         logger.log_value(name, step, value)
 
+
+def log_value_to_accumulate(name, value):
+    for accumulator in _accumulators:
+        accumulator.log_metric_to_accumulate(name, value)
+def log_value_to_average(name, value):
+    for accumulator in _accumulators:
+        accumulator.log_metric_to_average(name, value)
+
+def log_accumulator_values(step):
+    for accumulator in _accumulators:
+        for name, value in accumulator.return_scalars().items():
+            log_value(name, step, value)
 
 def get_experiment_label():
     """Returns the experiment label."""
@@ -105,23 +137,3 @@ def compute_scalar_statistics(x, prefix=None, with_min_and_max=False):
 
     return stats
 
-
-class MetricsAccumulator:
-    def __init__(self):
-        self._metrics = {}
-        self._data_to_average = {}
-        self._data_to_accumulate = {}
-
-    def log_metric_to_average(self, name, value):
-        self._data_to_average.setdefault(name, []).append(value)
-        self._metrics[name] = np.mean(self._data_to_average[name])
-
-    def log_metric_to_accumulate(self, name, value):
-        self._data_to_average.setdefault(name, []).append(value)
-        self._metrics[name] = np.sum(self._data_to_average[name])
-
-    def return_scalars(self):
-        return self._metrics
-
-    def get_value(self, name):
-        return self._metrics[name]

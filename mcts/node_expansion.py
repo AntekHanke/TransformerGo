@@ -34,8 +34,8 @@ class ChessStateExpander:
     ):
         self.policy = chess_policy_class()
         self.value = chess_value_class()
-        self.subgoal_generator = subgoal_generator_class()
-        self.cllp = cllp_class()
+        self.subgoal_generator = subgoal_generator_class
+        self.cllp = cllp_class
 
     def expand_state(
         self,
@@ -49,7 +49,7 @@ class ChessStateExpander:
     ):
 
         subgoals, generation_stats = self.subgoal_generator.generate_subgoals(
-            input_immutable_board, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
+            [input_immutable_board], generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
         )
 
         subgoals = [subgoal for subgoal in subgoals if subgoal != input_immutable_board]
