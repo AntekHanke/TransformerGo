@@ -58,7 +58,7 @@ class RunMCTSJob(Job):
             expand_function_class=self.expand_function_class,
         )
         mcts_output = tree.mcts()
-        log_value("MCTS time", time.time() - time_start)
+        log_value("MCTS time", 0, time.time() - time_start)
         mcts_tree_network(tree=tree, target_path=self.out_dir, target_name=self.out_file_name, with_images=True)
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
         with open(os.path.join(self.out_dir, self.out_file_name + ".pkl"), "wb+") as f:

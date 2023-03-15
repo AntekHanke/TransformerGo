@@ -24,8 +24,8 @@ experiment_config = {
     "RunMCTSJob.out_file_name": OUT_FILE_NAME,
 
     "StandardExpandFunction.chess_state_expander_class": "@chess_state_expander.ChessStateExpander",
-    "StandardExpandFunction.cllp_num_beams": 16,
-    "StandardExpandFunction.cllp_num_return_sequences": 8,
+    "StandardExpandFunction.cllp_num_beams": 4,
+    "StandardExpandFunction.cllp_num_return_sequences": 2,
     "StandardExpandFunction.generator_num_beams": 16,
     "StandardExpandFunction.generator_num_subgoals": 8,
     "StandardExpandFunction.sort_subgoals_by": "highest_total_probability",
