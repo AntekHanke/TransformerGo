@@ -22,7 +22,7 @@ class CompareMCTSWithStockfish(Job):
         expand_function: Callable[..., None],
         stockfish_path: str,
         stockfish_parameters: dict,
-        eval_data_dir: str,
+        eval_data_file: str,
         out_dir: str,
         sample_seed: int,
         num_boards_to_compare: int,
@@ -34,20 +34,20 @@ class CompareMCTSWithStockfish(Job):
         self.expand_function = expand_function
         self.stockfish_path = stockfish_path
         self.stockfish_parameters = stockfish_parameters
-        self.eval_data_dir = eval_data_dir
+        self.eval_data_file = eval_data_file
         self.out_dir = out_dir
         self.sample_seed = sample_seed
         self.num_boards_to_compare = num_boards_to_compare
 
     def execute(self):
-        eval_data_df = pd.read_pickle(self.eval_data_dir)
-        list_of_boards: List[ImmutableBoard] = (
+        eval_data_df = pd.read_pickle(self.eval_data_file)
+        sampled_list_of_boards: List[ImmutableBoard] = (
             eval_data_df["immutable_board"].sample(n=self.num_boards_to_compare, random_state=self.sample_seed).tolist()
         )
-        root_stats_list: List[dict] = []
+        stats_list: List[dict] = []
         stockfish = Stockfish(path=self.stockfish_path, parameters=self.stockfish_parameters)
 
-        for board in list_of_boards:
+        for board in sampled_list_of_boards:
             stockfish.set_fen_position(board.fen())
             tree = Tree(
                 initial_state=board,
@@ -60,7 +60,7 @@ class CompareMCTSWithStockfish(Job):
             )
             mcts_output_dict = tree.mcts()
             player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
-            root_stats_list.append(
+            stats_list.append(
                 {
                     "Board": board,
                     "Stockfish value": stockfish.get_evaluation()["value"],
@@ -69,5 +69,5 @@ class CompareMCTSWithStockfish(Job):
             )
 
         Path(self.out_dir).mkdir(parents=True, exist_ok=True)
-        root_stats_df = pd.DataFrame.from_records(root_stats_list)
+        root_stats_df = pd.DataFrame.from_records(stats_list)
         root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison {time.ctime()}.pkl"))
