@@ -1,6 +1,7 @@
 import math
 import os
 import pickle
+import time
 from collections import namedtuple
 from pathlib import Path
 from typing import Callable, Type
@@ -12,7 +13,7 @@ from jobs.core import Job
 from mcts.mcts import Tree, ExpandFunction
 from mcts.mcts import score_function, TreeNode
 from mcts.mcts_tree_network import mcts_tree_network
-from metric_logging import log_param
+from metric_logging import log_param, log_value
 
 TreeData = namedtuple("TreeData", "tree_as_list best_tree_state")
 
@@ -47,6 +48,7 @@ class RunMCTSJob(Job):
     def execute(self):
         Path(self.out_dir).mkdir(parents=True, exist_ok=True)
 
+        time_start = time.time()
         tree = Tree(
             initial_state=self.initial_state,
             time_limit=self.time_limit,
@@ -56,6 +58,7 @@ class RunMCTSJob(Job):
             expand_function_class=self.expand_function_class,
         )
         mcts_output = tree.mcts()
+        log_value("MCTS time", time.time() - time_start)
         mcts_tree_network(tree=tree, target_path=self.out_dir, target_name=self.out_file_name, with_images=True)
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
         with open(os.path.join(self.out_dir, self.out_file_name + ".pkl"), "wb+") as f:

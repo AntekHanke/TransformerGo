@@ -67,13 +67,13 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         ).tolist()
         log_value_to_average("subgoal_generation_time_avg", time.time() - time_start)
         log_value_to_accumulate("subgoal_generation_time_total", time.time() - time_start)
-        subgoals = [
+        all_subgoals = [
             [ChessTokenizer.decode_board(sequence) for sequence in subgoal_out]
             for subgoal_out in chunks(outputs, generator_num_subgoals)
         ]
-        for input_board, subgoals in zip(input_boards, subgoals):
+        for input_board, subgoals in zip(input_boards, all_subgoals):
             self.memory[input_board] = subgoals
-        return subgoals
+        return all_subgoals
 
 
 class AdaChessSubgoalGenerator(ChessSubgoalGenerator):

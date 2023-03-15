@@ -38,6 +38,16 @@ class ChessStateExpander:
         self.subgoal_generator = subgoal_generator_class()
         self.cllp = cllp_class()
 
+    def one_subgoal_cllp_batch(self, input_immutable_board, subgoal, paths_to_subgoal):
+        paths = []
+        paths_raw_probabilities = []
+        for path in paths_to_subgoal:
+            path = verify_path(input_immutable_board, subgoal, path)
+            if path is not None:
+                paths.append(path)
+                paths_raw_probabilities.append(self.policy.get_path_probability(input_immutable_board, path))
+        return paths, paths_raw_probabilities
+
     def expand_state(
         self,
         input_immutable_board: ImmutableBoard = None,
@@ -51,26 +61,26 @@ class ChessStateExpander:
     ):
 
         if not self.subgoal_generator.is_in_memory(input_immutable_board):
-            log_value_to_average("generator_used_%", 1)
+            log_value_to_average("generator_used_%", 100)
             log_value_to_accumulate("generator_used", 1)
-            self.subgoal_generator.generate_subgoals(
+            all_subgoals = self.subgoal_generator.generate_subgoals(
                 siblings_states, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
             )
+            cllp_input_batch = []
+            for sibling, targets in zip(siblings_states, all_subgoals):
+                cllp_input_batch.extend([(sibling, target) for target in targets])
+            self.cllp.get_paths_batch(cllp_input_batch, cllp_num_beams, cllp_num_return_sequences)
         else:
             log_value_to_average("generator_used_%", 0)
             log_value_to_accumulate("generator_used", 0)
 
         subgoals = self.subgoal_generator.generate_use_memory(input_immutable_board)
-
         subgoals = [subgoal for subgoal in subgoals if subgoal != input_immutable_board]
-
-        paths = self.cllp.get_paths_batch(
-            [(input_immutable_board, subgoal) for subgoal in subgoals], cllp_num_beams, cllp_num_return_sequences
-        )
 
         analysis_time_start = time.time()
         subgoals_info = {}
-        for subgoal, paths_to_subgoal in zip(subgoals, paths):
+        for subgoal in subgoals:
+            paths_to_subgoal = self.cllp.get_paths_use_memory(input_immutable_board, subgoal)
             subgoal_info = self.analyze_subgoal(input_immutable_board, subgoal, paths_to_subgoal)
             if subgoal_info is not None:
                 subgoals_info[subgoal] = subgoal_info

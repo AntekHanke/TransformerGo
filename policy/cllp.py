@@ -18,6 +18,17 @@ class CLLP:
         else:
             self.model = checkpoint_path_or_model
 
+        self.memory = {}
+
+    def is_in_memory(self, input_board: ImmutableBoard) -> bool:
+        return input_board in self.memory
+
+    def get_paths_use_memory(self, input_board: ImmutableBoard, target_board: ImmutableBoard):
+        if (input_board, target_board) in self.memory:
+            return self.memory[(input_board, target_board)]
+        else:
+            raise ValueError("Board not in memory")
+
     @staticmethod
     def input_and_target_to_list_of_tokens(
         input_immutable_board: ImmutableBoard, target_immutable_board: ImmutableBoard
@@ -70,6 +81,9 @@ class CLLP:
             inputs_tokenized.append(
                 self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
             )
+        moves_batch = self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences)
+        for query, paths in zip(queries_list, moves_batch):
+            self.memory[query] = paths
         log_value_to_accumulate("time_cllp_total", time.time() - time_cllp)
         log_value_to_average("time_cllp_avg", time.time() - time_cllp)
-        return self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences)
+        return moves_batch

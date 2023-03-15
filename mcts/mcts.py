@@ -8,7 +8,7 @@ import chess
 
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
-from metric_logging import log_value_without_step, accumulator_to_logger
+from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -69,21 +69,6 @@ class StandardExpandFunction(ExpandFunction):
         print(f"Paths probs took {time.time() - time_s} seconds")
 
 
-def mock_expand_function(node: "TreeNode"):
-    board = node.immutable_data.state.to_board()
-    subgoals = (
-        random.sample(list(board.legal_moves), 3) if len(list(board.legal_moves)) > 3 else list(board.legal_moves)
-    )
-    children = []
-    for subgoal in subgoals:
-        board.push(subgoal)
-        immutable_board = ImmutableBoard.from_board(board)
-        board.pop()
-        child = TreeNode(state=immutable_board, parent=node, value=random.uniform(-1, 1), probability=1 / 3)
-        children.append(child)
-    node.children = children
-
-
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
 NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded state")
 
@@ -107,7 +92,7 @@ class TreeNode:
             probability=probability,
         )
         TreeNode.node_counter += 1
-        log_value_without_step("Number of nodes created", TreeNode.node_counter)
+        log_value_to_accumulate("tree_nodes", 1)
         self.is_expanded = self.immutable_data.is_terminal
         self.num_visits = 1
         self.all_values = [value]
