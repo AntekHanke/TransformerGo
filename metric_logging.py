@@ -83,7 +83,7 @@ def log_value_to_average(name, value):
     for accumulator in _accumulators:
         accumulator.log_metric_to_average(name, value)
 
-def log_accumulator_values(step):
+def accumulator_to_logger(step):
     for accumulator in _accumulators:
         for name, value in accumulator.return_scalars().items():
             log_value(name, step, value)

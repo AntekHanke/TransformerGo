@@ -17,6 +17,7 @@ class CLLP:
         else:
             self.model = checkpoint_path_or_model
 
+
     @staticmethod
     def input_and_target_to_list_of_tokens(
         input_immutable_board: ImmutableBoard, target_immutable_board: ImmutableBoard

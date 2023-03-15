@@ -1,5 +1,5 @@
 import time
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 
 import torch
 from transformers import BartForConditionalGeneration
@@ -16,12 +16,11 @@ def chunks(lst, n):
 
 
 class ChessSubgoalGenerator:
-    def __init__(self, checkpoint_path_or_model: str):
+    def __init__(self, checkpoint_path_or_model: Union[str, BartForConditionalGeneration]):
         if isinstance(checkpoint_path_or_model, str):
             self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
         else:
             self.model = checkpoint_path_or_model
-
         self.memory = {}
 
     def is_in_memory(self, input_board: ImmutableBoard) -> bool:
@@ -36,6 +35,12 @@ class ChessSubgoalGenerator:
     ) -> List[Tuple[List[ImmutableBoard], Dict]]:
         raise NotImplementedError
 
+    def generate_use_memory(self, input_board: ImmutableBoard):
+        if input_board in self.memory:
+            return self.memory[input_board]
+        else:
+            raise ValueError("Board not in memory")
+
 
 class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
     def generate_subgoals(
@@ -46,13 +51,6 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         **subgoal_generation_kwargs,
     ) -> List[List[ImmutableBoard]]:
 
-        if len(input_boards) == 1:
-            if input_boards[0] in self.memory:
-                log_value_to_average("generator_used_memory", 1)
-                log_value_to_accumulate("generator_used_memory", 1)
-                return self.memory[input_boards[0]], {"cached": True}
-
-        log_value_to_average("generator_used_memory", 0)
         encoded_boards = [
             ChessTokenizer.encode_immutable_board(input_board) + [ChessTokenizer.vocab_to_tokens["<SEP>"]]
             for input_board in input_boards
@@ -67,14 +65,16 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
             num_return_sequences=generator_num_subgoals,
             **subgoal_generation_kwargs,
         ).tolist()
-        log_value_to_average("subgoal_generation_time", time.time() - time_start)
-        log_value_to_accumulate("subgoal_generation_time", time.time() - time_start)
+        log_value_to_average("subgoal_generation_time_avg", time.time() - time_start)
+        log_value_to_accumulate("subgoal_generation_time_total", time.time() - time_start)
         subgoals = [
-            [ChessTokenizer.decode_board(sequence) for sequence in subgoal_out] for subgoal_out in chunks(outputs, generator_num_subgoals)
+            [ChessTokenizer.decode_board(sequence) for sequence in subgoal_out]
+            for subgoal_out in chunks(outputs, generator_num_subgoals)
         ]
         for input_board, subgoals in zip(input_boards, subgoals):
             self.memory[input_board] = subgoals
         return subgoals
+
 
 class AdaChessSubgoalGenerator(ChessSubgoalGenerator):
     def __init__(self, checkpoint_path_or_model, subgoal_distance: int = 1) -> None:

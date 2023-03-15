@@ -5,6 +5,7 @@ import numpy as np
 from chess import Move
 
 from data_structures.data_structures import ImmutableBoard
+from metric_logging import log_value_to_average, log_value_to_accumulate
 from policy.chess_policy import ChessPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
@@ -34,12 +35,13 @@ class ChessStateExpander:
     ):
         self.policy = chess_policy_class()
         self.value = chess_value_class()
-        self.subgoal_generator = subgoal_generator_class
-        self.cllp = cllp_class
+        self.subgoal_generator = subgoal_generator_class()
+        self.cllp = cllp_class()
 
     def expand_state(
         self,
         input_immutable_board: ImmutableBoard = None,
+        siblings_states: List[ImmutableBoard] = None,
         cllp_num_beams: int = None,
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
@@ -48,9 +50,18 @@ class ChessStateExpander:
         **subgoal_generation_kwargs,
     ):
 
-        subgoals, generation_stats = self.subgoal_generator.generate_subgoals(
-            [input_immutable_board], generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
-        )
+        if not self.subgoal_generator.is_in_memory(input_immutable_board):
+            log_value_to_average("generator_used_%", 1)
+            log_value_to_accumulate("generator_used", 1)
+            self.subgoal_generator.generate_subgoals(
+                siblings_states, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
+            )
+        else:
+            # assert False
+            log_value_to_average("generator_used_%", 0)
+            log_value_to_accumulate("generator_used", 0)
+
+        subgoals = self.subgoal_generator.generate_use_memory(input_immutable_board)
 
         subgoals = [subgoal for subgoal in subgoals if subgoal != input_immutable_board]
 
@@ -66,9 +77,10 @@ class ChessStateExpander:
                 subgoals_info[subgoal] = subgoal_info
 
         sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
-        stats = dict(**generation_stats, **cllp_stats)
-        stats["analysis_time"] = time.time() - analysis_time_start
-        return sorted_subgoals, subgoals_info, stats
+        log_value_to_accumulate("analysis_time", time.time() - analysis_time_start)
+        log_value_to_average("analysis_time_avg", time.time() - analysis_time_start)
+
+        return sorted_subgoals, subgoals_info
 
     @staticmethod
     def sort_subgoals(subgoals_info, sort_subgoals_by: str = None):
@@ -90,9 +102,12 @@ class ChessStateExpander:
         if len(correct_paths) == 0:
             return None
 
+        time_start = time.time()
         paths_raw_probabilities = [
             self.policy.get_path_probabilities(input_immutable_board, path) for path in correct_paths
         ]
+        log_value_to_accumulate("paths_raw_probabilities", time.time() - time_start)
+        log_value_to_average("paths_raw_probabilities_avg", time.time() - time_start)
 
         paths_stats = [
             self.analyze_path_probabilities(path_raw_probabilities)
