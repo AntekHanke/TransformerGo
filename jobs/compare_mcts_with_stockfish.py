@@ -40,14 +40,17 @@ class CompareMCTSWithStockfish(Job):
         self.num_boards_to_compare = num_boards_to_compare
 
     def execute(self):
+        Path(self.out_dir).mkdir(parents=True, exist_ok=True)
+
         eval_data_df = pd.read_pickle(self.eval_data_file)
         sampled_list_of_boards: List[ImmutableBoard] = (
             eval_data_df["immutable_board"].sample(n=self.num_boards_to_compare, random_state=self.sample_seed).tolist()
         )
         stats_list: List[dict] = []
-        stockfish = Stockfish(path=self.stockfish_path, parameters=self.stockfish_parameters)
 
-        for board in sampled_list_of_boards:
+        stockfish = Stockfish(path=self.stockfish_path, parameters=self.stockfish_parameters, depth=25)
+
+        for i, board in enumerate(sampled_list_of_boards):
             stockfish.set_fen_position(board.fen())
             tree = Tree(
                 initial_state=board,
@@ -67,7 +70,9 @@ class CompareMCTSWithStockfish(Job):
                     "MCTS values": mcts_output_dict["root_values_list"] * player_score_factor,
                 }
             )
+            if i % 10 == 0:
+                root_stats_df = pd.DataFrame.from_records(stats_list)
+                root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison {time.ctime()}.pkl"))
 
-        Path(self.out_dir).mkdir(parents=True, exist_ok=True)
         root_stats_df = pd.DataFrame.from_records(stats_list)
         root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison {time.ctime()}.pkl"))
