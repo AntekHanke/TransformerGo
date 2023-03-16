@@ -15,7 +15,7 @@ contexts:
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
                             -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/data_to
                             -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/:/data_mg
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
     slurm_url: plgtodrzygozdz@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/mrunner_scratch
     time: 2880

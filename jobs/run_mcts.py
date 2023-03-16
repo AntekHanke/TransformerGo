@@ -1,18 +1,19 @@
 import math
 import os
 import pickle
+import time
 from collections import namedtuple
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Type
 
 import chess
 
 from data_structures.data_structures import ImmutableBoard
 from jobs.core import Job
-from mcts.mcts import Tree
-from mcts.mcts import expand_function, score_function, TreeNode
+from mcts.mcts import Tree, ExpandFunction
+from mcts.mcts import score_function, TreeNode
 from mcts.mcts_tree_network import mcts_tree_network
-from metric_logging import log_param
+from metric_logging import log_param, log_value
 
 TreeData = namedtuple("TreeData", "tree_as_list best_tree_state")
 
@@ -25,7 +26,7 @@ class RunMCTSJob(Job):
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
-        expand_function: Callable[..., None] = expand_function,
+        expand_function_class: Type[ExpandFunction] = None,
         out_dir: str = None,
         out_file_name: str = None,
     ):
@@ -34,7 +35,7 @@ class RunMCTSJob(Job):
         self.max_mcts_passes = max_mcts_passes
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.expand_function = expand_function
+        self.expand_function_class = expand_function_class
         self.out_dir = out_dir
         self.out_file_name = out_file_name
 
@@ -47,15 +48,17 @@ class RunMCTSJob(Job):
     def execute(self):
         Path(self.out_dir).mkdir(parents=True, exist_ok=True)
 
+        time_start = time.time()
         tree = Tree(
             initial_state=self.initial_state,
             time_limit=self.time_limit,
             max_mcts_passes=self.max_mcts_passes,
             exploration_constant=self.exploration_constant,
             score_function=self.score_function,
-            expand_function=self.expand_function,
+            expand_function_class=self.expand_function_class,
         )
         mcts_output = tree.mcts()
+        log_value("MCTS time", 0, time.time() - time_start)
         mcts_tree_network(tree=tree, target_path=self.out_dir, target_name=self.out_file_name, with_images=True)
         output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
         with open(os.path.join(self.out_dir, self.out_file_name + ".pkl"), "wb+") as f:

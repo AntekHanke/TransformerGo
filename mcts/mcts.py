@@ -2,13 +2,13 @@ import math
 import random
 import time
 from collections import namedtuple
-from typing import Callable, Type
+from typing import Callable, Type, List
 
 import chess
 
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
-from metric_logging import log_value_without_step
+from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate, log_value
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -20,50 +20,53 @@ def score_function(node: "TreeNode", root_player: chess.Color, exploration_const
     return exploit_score + exploration_constant * explore_score
 
 
-def expand_function(
-    node: "TreeNode",
-    cllp_num_beams: int = None,
-    cllp_num_return_sequences: int = None,
-    generator_num_beams: int = None,
-    generator_num_subgoals: int = None,
-    sort_subgoals_by: str = None,
-    num_top_subgoals: int = None,
-    chess_state_expander_class: Type[ChessStateExpander] = None,
-):
-    assert chess_state_expander_class is not None, "ChessStateExpander hasn't been provided"
-    chess_state_expander_class = chess_state_expander_class()
-    subgoals, subgoals_info, _ = chess_state_expander_class.expand_state(
-        input_immutable_board=node.immutable_data.state,
-        cllp_num_beams=cllp_num_beams,
-        cllp_num_return_sequences=cllp_num_return_sequences,
-        generator_num_beams=generator_num_beams,
-        generator_num_subgoals=generator_num_subgoals,
-        sort_subgoals_by=sort_subgoals_by,
-    )
-    subgoals = subgoals[:num_top_subgoals]
-    for subgoal in subgoals:
-        details = subgoals_info[subgoal]
-        value = details["value"]
-        probability = sum(
-            [path_statistics["total_path_probability"] for path_statistics in details["path_probabilities"]]
+class ExpandFunction:
+    def expand_function(self, node: "TreeNode", **kwargs):
+        raise NotImplementedError
+
+
+class StandardExpandFunction(ExpandFunction):
+    def __init__(
+        self,
+        chess_state_expander_class: Type[ChessStateExpander] = None,
+        cllp_num_beams: int = None,
+        cllp_num_return_sequences: int = None,
+        generator_num_beams: int = None,
+        generator_num_subgoals: int = None,
+        sort_subgoals_by: str = None,
+        num_top_subgoals: int = None,
+    ):
+        self.chess_state_expander = chess_state_expander_class()
+        self.cllp_num_beams = cllp_num_beams
+        self.cllp_num_return_sequences = cllp_num_return_sequences
+        self.generator_num_beams = generator_num_beams
+        self.generator_num_subgoals = generator_num_subgoals
+        self.sort_subgoals_by = sort_subgoals_by
+        self.num_top_subgoals = num_top_subgoals
+
+    def expand_function(self, node: "TreeNode", **kwargs):
+        assert self.chess_state_expander is not None, "ChessStateExpander hasn't been provided"
+        time_s = time.time()
+        subgoals, subgoals_info = self.chess_state_expander.expand_state(
+            input_immutable_board=node.immutable_data.state,
+            siblings_states=node.get_siblings_states(),
+            cllp_num_beams=self.cllp_num_beams,
+            cllp_num_return_sequences=self.cllp_num_return_sequences,
+            generator_num_beams=self.generator_num_beams,
+            generator_num_subgoals=self.generator_num_subgoals,
+            sort_subgoals_by=self.sort_subgoals_by,
         )
-        child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
-        node.children.append(child)
-
-
-def mock_expand_function(node: "TreeNode"):
-    board = node.immutable_data.state.to_board()
-    subgoals = (
-        random.sample(list(board.legal_moves), 3) if len(list(board.legal_moves)) > 3 else list(board.legal_moves)
-    )
-    children = []
-    for subgoal in subgoals:
-        board.push(subgoal)
-        immutable_board = ImmutableBoard.from_board(board)
-        board.pop()
-        child = TreeNode(state=immutable_board, parent=node, value=random.uniform(-1, 1), probability=1 / 3)
-        children.append(child)
-    node.children = children
+        print(f"Expand function took {time.time() - time_s} seconds")
+        subgoals = subgoals[: self.num_top_subgoals]
+        for subgoal in subgoals:
+            details = subgoals_info[subgoal]
+            value = details["value"]
+            probability = sum(
+                [path_statistics["total_path_probability"] for path_statistics in details["path_probabilities"]]
+            )
+            child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
+            node.children.append(child)
+        print(f"Paths probs took {time.time() - time_s} seconds")
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
@@ -89,7 +92,7 @@ class TreeNode:
             probability=probability,
         )
         TreeNode.node_counter += 1
-        log_value_without_step("Number of nodes created", TreeNode.node_counter)
+        log_value_to_accumulate("tree_nodes", 1)
         self.is_expanded = self.immutable_data.is_terminal
         self.num_visits = 1
         self.all_values = [value]
@@ -101,6 +104,11 @@ class TreeNode:
     def get_value(self) -> float:
         return sum(self.all_values) / self.num_visits
 
+    def get_siblings_states(self) -> List[ImmutableBoard]:
+        if self.immutable_data.parent is None:
+            return [self.immutable_data.state]
+        return [node.immutable_data.state for node in self.immutable_data.parent.children]
+
 
 class Tree:
     def __init__(
@@ -110,7 +118,7 @@ class Tree:
         max_mcts_passes: int = None,
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
-        expand_function: Callable[..., None] = expand_function,
+        expand_function_class: Type[ExpandFunction] = None,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
@@ -118,7 +126,8 @@ class Tree:
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.expand_function = expand_function
+        self.expand_function = expand_function_class()
+        self.mcts_passes_counter = 0
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -127,6 +136,7 @@ class Tree:
         self.max_mcts_passes = max_mcts_passes
 
     def mcts(self) -> dict:
+        self.mcts_passes_counter = 0
         if self.time_limit is not None:
             time_limit = time.time() + self.time_limit
             if self.max_mcts_passes is not None:
@@ -146,16 +156,22 @@ class Tree:
         return {"best_child": best_child.immutable_data.state, "expected_value": best_child.get_value()}
 
     def execute_mcts_pass(self):
+        self.mcts_passes_counter += 1
+        nodes_before_pass = len(self.node_list)
+        log_value_without_step("MCTS passes", self.mcts_passes_counter)
         node = self.tree_traversal(self.root)
         value = node.get_value()
         self.backpropogate(node, value)
+        log_value("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
+        accumulator_to_logger(self.mcts_passes_counter)
+
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
         while not node.immutable_data.is_terminal:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
             else:
-                self.expand_function(node)
+                self.expand_function.expand_function(node=node)
                 self.node_list += node.children
                 node.is_expanded = True
                 return self.get_best_child(node, self.exploration_constant)
@@ -195,7 +211,7 @@ class Tree:
                 num_visits=node.num_visits,
                 is_terminal=node.immutable_data.is_terminal,
                 is_expanded=node.is_expanded,
-                state=node.immutable_data.state
+                state=node.immutable_data.state,
             )
             tree_list.append(node_tuple)
         return tree_list
