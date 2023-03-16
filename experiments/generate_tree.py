@@ -39,7 +39,9 @@ experiment_config = {
 
     "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_gg/out_models/medium_generator_from_scratch_with_all_subgoals/16_03_22/k_3/checkpoint-95000/",
     "CLLP.checkpoint_path_or_model": "/data_gg/out_models/medium_cllp_from_scratch_k_form_1_to_9/14_03_23/checkpoint-89500/",
-}
+
+    "use_neptune": True,
+    }
 
 params_grid = {
     "idx": [0],
