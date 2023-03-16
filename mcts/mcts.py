@@ -8,7 +8,7 @@ import chess
 
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
-from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate
+from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate, log_value
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -157,11 +157,14 @@ class Tree:
 
     def execute_mcts_pass(self):
         self.mcts_passes_counter += 1
+        nodes_before_pass = len(self.node_list)
         log_value_without_step("MCTS passes", self.mcts_passes_counter)
         node = self.tree_traversal(self.root)
         value = node.get_value()
         self.backpropogate(node, value)
+        log_value("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
         accumulator_to_logger(self.mcts_passes_counter)
+
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
         while not node.immutable_data.is_terminal:
