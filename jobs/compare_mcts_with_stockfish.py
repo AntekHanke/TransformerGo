@@ -1,7 +1,7 @@
 import os
 import time
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, List, Type
 
 import chess
 import pandas as pd
@@ -9,7 +9,7 @@ from stockfish import Stockfish
 
 from data_structures.data_structures import ImmutableBoard
 from jobs.core import Job
-from mcts.mcts import TreeNode, Tree
+from mcts.mcts import TreeNode, Tree, ExpandFunction
 
 
 class CompareMCTSWithStockfish(Job):
@@ -19,7 +19,7 @@ class CompareMCTSWithStockfish(Job):
         max_mcts_passes: int,
         exploration_constant: float,
         score_function: Callable[[TreeNode, chess.Color, float], float],
-        expand_function: Callable[..., None],
+        expand_function_class: Type[ExpandFunction],
         stockfish_path: str,
         stockfish_parameters: dict,
         eval_data_file: str,
@@ -31,7 +31,7 @@ class CompareMCTSWithStockfish(Job):
         self.max_mcts_passes = max_mcts_passes
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.expand_function = expand_function
+        self.expand_function_class = expand_function_class
         self.stockfish_path = stockfish_path
         self.stockfish_parameters = stockfish_parameters
         self.eval_data_file = eval_data_file
@@ -55,7 +55,7 @@ class CompareMCTSWithStockfish(Job):
                 max_mcts_passes=self.max_mcts_passes,
                 exploration_constant=self.exploration_constant,
                 score_function=self.score_function,
-                expand_function=self.expand_function,
+                expand_function_class=self.expand_function_class,
                 output_root_values_list=True,
             )
             mcts_output_dict = tree.mcts()

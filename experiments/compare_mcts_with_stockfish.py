@@ -8,32 +8,31 @@ sys.path.append(experiment_dir_path)
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
-EVAL_DATA_DIR = "/data_mg/data/only_immutable_board_eval_data/eval_immutable_boards_lichess.pkl"
+EVAL_DATA_FILE = "/data_mg/data/only_immutable_board_eval_data/eval_immutable_boards_lichess.pkl"
 OUT_DIR = "/out_models/mcts_vs_stockfish_statistics"
-FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 experiment_config = {
     "run.job_class": "@jobs.CompareMCTSWithStockfish",
 
-    "CompareMCTSWithStockfish.time_limit": 90,
-    "CompareMCTSWithStockfish.max_mcts_passes": 200,
+    "CompareMCTSWithStockfish.time_limit": None,
+    "CompareMCTSWithStockfish.max_mcts_passes": 100,
     "CompareMCTSWithStockfish.exploration_constant": 1 / math.sqrt(2),
     "CompareMCTSWithStockfish.score_function": "@score_functions.score_function",
-    "CompareMCTSWithStockfish.expand_function": "@expand_functions.expand_function",
+    "CompareMCTSWithStockfish.expand_function_class": "@expand_functions.StandardExpandFunction",
     "CompareMCTSWithStockfish.stockfish_path": STOCKFISH_PATH,
     "CompareMCTSWithStockfish.stockfish_parameters": {},
-    "CompareMCTSWithStockfish.eval_data_dir": EVAL_DATA_DIR,
+    "CompareMCTSWithStockfish.eval_data_file": EVAL_DATA_FILE,
     "CompareMCTSWithStockfish.out_dir": OUT_DIR,
     "CompareMCTSWithStockfish.sample_seed": 0,
     "CompareMCTSWithStockfish.num_boards_to_compare": 1,
 
-    "expand_function.chess_state_expander_class": "@chess_state_expander.ChessStateExpander",
-    "expand_function.cllp_num_beams": 32,
-    "expand_function.cllp_num_return_sequences": 8,
-    "expand_function.generator_num_beams": 16,
-    "expand_function.generator_num_subgoals": 8,
-    "expand_function.sort_subgoals_by": "highest_total_probability",
-    "expand_function.num_top_subgoals": 4,
+    "StandardExpandFunction.chess_state_expander_class": "@chess_state_expander.ChessStateExpander",
+    "StandardExpandFunction.cllp_num_beams": 4,
+    "StandardExpandFunction.cllp_num_return_sequences": 2,
+    "StandardExpandFunction.generator_num_beams": 16,
+    "StandardExpandFunction.generator_num_subgoals": 8,
+    "StandardExpandFunction.sort_subgoals_by": "highest_total_probability",
+    "StandardExpandFunction.num_top_subgoals": 4,
 
     "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
     "ChessStateExpander.chess_value_class": "@neural_networks.LCZeroValue",
