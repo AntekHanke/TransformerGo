@@ -17,6 +17,9 @@ experiment_config = {
     "GameBetweenEngines.generator_path": GEN_LONG_K_3,
     "GameBetweenEngines.cllp_path": CLLP_PATH,
     "GameBetweenEngines.out_dir": log_dir,
+    "GameBetweenEngines.sort_subgoals_by": "highest_min_probability",
+    "GameBetweenEngines.stockfish_depth": 20,
+    "GameBetweenEngines.stockfish_bot_depth": 2,
 
 }
 
@@ -25,7 +28,7 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"generate_tree",
+    experiment_name=f"local game",
     project_name="pmtest/subgoal-chess",
     base_config=experiment_config,
     params_grid=params_grid,

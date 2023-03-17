@@ -74,7 +74,8 @@ class StockfishEngine:
         for move, score in zip(board.legal_moves, move_scores_list):
             move_scores[move] = score
 
-        sorted_moves, scores = zip(*sorted(move_scores.items(), key=lambda x: x[1], reverse=True))
+        reverse_order = immutable_board.active_player == "w"
+        sorted_moves, scores = zip(*sorted(move_scores.items(), key=lambda x: x[1], reverse=reverse_order))
         if top_n_moves is None:
             return sorted_moves
         else:
