@@ -8,7 +8,7 @@ def chess960_to_standard(move, board):
     else:
         move_str = str(move)
         kings_position = move_str[:2]
-        if str(board.piece_at(chess.parse_square(kings_position))) == "K":
+        if str(board.piece_at(chess.parse_square(kings_position))) in ["K", "k"]:
             return chess.Move.from_uci(castlings[move_str])
         else:
             return move

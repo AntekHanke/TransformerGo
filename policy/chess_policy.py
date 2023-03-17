@@ -124,6 +124,7 @@ class LCZeroPolicy(ChessPolicy):
     def get_best_moves(
         self,
         immutable_board: ImmutableBoard,
+        history: List[chess.Move] = None,
         num_return_sequences: int = 8,
         num_beams: int = None,
         return_probs: bool = False,
@@ -135,10 +136,12 @@ class LCZeroPolicy(ChessPolicy):
         for move in p_distribution:
             moves.append(chess.Move.from_uci(move[0]))
             probs.append(move[1])
+        board = immutable_board.to_board()
+        converted_moves = [chess960_to_standard(move, board) for move in moves]
         if return_probs:
-            return moves, probs
+            return converted_moves, probs
         else:
-            return moves
+            return converted_moves
 
     def get_path_probability(
         self, immutable_board: ImmutableBoard, path: List[chess.Move], log_prob: bool = True

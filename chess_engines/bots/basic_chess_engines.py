@@ -14,6 +14,7 @@ from data_structures.data_structures import ImmutableBoard, HistoryLength
 from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
+from utils.chess960_conversion import chess960_to_standard
 from utils.data_utils import immutable_boards_to_img
 
 
@@ -73,13 +74,12 @@ class PolicyChess(ChessEngine):
         self.replace_legall_move_with_random = replace_legall_move_with_random
         self.do_sample = do_sample
         self.policy_checkpoint = policy_checkpoint
+        self.use_lczero_policy = use_lczero_policy
         self.history_length = history_length
-        if not use_lczero_policy:
-            self.chess_policy = BasicChessPolicy(self.policy_checkpoint, self.history_length)
-        else:
-            self.chess_policy = LCZeroPolicy()
+        self.chess_policy = None
 
     def new_game(self) -> None:
+
         today: datetime.date = date.today()
         now: datetime.date = datetime.now()
         self.log_dir = os.path.join(self.log_dir, str(today), f"{now.hour}_{now.minute}_{now.second}", f"{self.name}")
@@ -96,6 +96,13 @@ class PolicyChess(ChessEngine):
     def propose_best_moves(
         self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None
     ) -> Optional[str]:
+
+        if self.chess_policy is None:
+            if not self.use_lczero_policy:
+                self.chess_policy = BasicChessPolicy(self.policy_checkpoint, self.history_length)
+            else:
+                self.chess_policy = LCZeroPolicy()
+
         if self.debug_mode:
             log_engine_specific_info("\n", self.log_dir)
             log_engine_specific_info(f"CURRENT STATE:{current_state.fen()}", self.log_dir)
@@ -105,7 +112,7 @@ class PolicyChess(ChessEngine):
         try:
             moves, probs = self.chess_policy.get_best_moves(
                 immutable_board=ImmutableBoard.from_board(current_state),
-                history=history,
+                history=None,
                 num_return_sequences=number_of_moves,
                 return_probs=True,
                 do_sample=self.do_sample,
@@ -113,13 +120,18 @@ class PolicyChess(ChessEngine):
             log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
         except Exception as e:
             log_engine_specific_info(f"ERROR: {e}", self.log_dir)
-            # return None
+            return None
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER SELECTING BEST MOVES. BEST MOVES: {moves}", self.log_dir)
 
         legall_moves: List[chess.Move] = list(current_state.legal_moves)
-        for move in moves:
+        print(f"FEN = {current_state.fen()}")
+        converted_moves = [chess960_to_standard(move, current_state) for move in moves]
+        print(f"POLICY {moves}: conv_moves: {converted_moves} | legall moves: {legall_moves}")
+
+
+        for move in converted_moves:
             if move in legall_moves:
                 if self.debug_mode:
                     log_engine_specific_info(f"BEST MOVE CHOOSEN FROM LIST OF LEAGL MOVES: {move.uci()}", self.log_dir)
