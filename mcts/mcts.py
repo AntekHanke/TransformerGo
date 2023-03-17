@@ -9,6 +9,8 @@ import chess
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
 from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate, log_value
+from policy.chess_policy import ChessPolicy
+from value.chess_value import ChessValue
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -67,6 +69,37 @@ class StandardExpandFunction(ExpandFunction):
             child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
             node.children.append(child)
         print(f"Paths probs took {time.time() - time_s} seconds")
+
+
+class PolicyOnlyExpandFunction(ExpandFunction):
+    def __init__(
+        self,
+        chess_policy_class: Type[ChessPolicy],
+        chess_value_class: Type[ChessValue],
+        num_return_moves: int,
+        num_beams: int,
+    ):
+        self.policy = chess_policy_class()
+        self.value = chess_value_class()
+        self.num_return_moves = num_return_moves
+        self.num_beams = num_beams
+
+    def expand_function(self, node: "TreeNode", **kwargs):
+        time_s = time.time()
+        moves, probs = self.policy.get_best_moves(
+            immutable_board=node.immutable_data.state,
+            num_return_sequences=self.num_return_moves,
+            num_beams=self.num_beams,
+            return_probs=True,
+        )
+        print(f"Expand function took {time.time() - time_s} seconds")
+        for move, prob in zip(moves, probs):
+            new_board = node.immutable_data.state.to_board()
+            new_board.push(move)
+            new_immutable_board = ImmutableBoard.from_board(new_board)
+            value = self.value.evaluate_immutable_board(new_immutable_board)
+            child = TreeNode(state=new_immutable_board, parent=node, value=value, probability=prob)
+            node.children.append(child)
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
@@ -162,9 +195,8 @@ class Tree:
         node = self.tree_traversal(self.root)
         value = node.get_value()
         self.backpropogate(node, value)
-        log_value("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
+        log_value_without_step("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
         accumulator_to_logger(self.mcts_passes_counter)
-
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
         while not node.immutable_data.is_terminal:
