@@ -26,15 +26,15 @@ class GameBetweenEngines(Job):
         self.stockfish = StockfishEngine(stockfish_path=stockfish_path, depth_limit=stockfish_depth)
         self.engine_MCTS = MCTSChessEngine(
             time_limit=300,
-            max_mcts_passes=25,
+            max_mcts_passes=15,
             generator_path=generator_path,
             cllp_path=cllp_path,
             cllp_num_beams=1,
             cllp_num_return_sequences=1,
-            generator_num_beams=24,
-            generator_num_subgoals=12,
+            generator_num_beams=8,
+            generator_num_subgoals=4,
             sort_subgoals_by=sort_subgoals_by,
-            num_top_subgoals=6,
+            num_top_subgoals=4,
         )
         leela_log_dir = out_dir + "/leela"
         Path(leela_log_dir).mkdir(parents=True, exist_ok=True)
@@ -47,9 +47,9 @@ class GameBetweenEngines(Job):
             name="LeelaChessZero_POLICY",
             use_lczero_policy=True,
         )
-        self.stockfish_bot = StockfishBotEngine(stockfish_depth=stockfish_bot_depth, stockfish_path=stockfish_path)
+        self.stockfish_BOT = StockfishBotEngine(stockfish_depth=stockfish_bot_depth, stockfish_path=stockfish_path)
 
-        self.players = {"w": self.engine_LEELA, "b": self.stockfish_bot}
+        self.players = {"w": self.engine_MCTS, "b": self.stockfish_BOT}
         log_object("Players", f"White: {self.players['w'].name}, Black: {self.players['b'].name}")
 
     def execute(self):
@@ -62,7 +62,7 @@ class GameBetweenEngines(Job):
                 player = self.players["w"].name
             else:
                 engine = self.players["b"]
-                player = self.players["w"].name
+                player = self.players["b"].name
 
             move = engine.propose_best_moves(board, 1)
             print(f"Move {moves_counter} by {player}: {move}")
