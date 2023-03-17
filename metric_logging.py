@@ -75,6 +75,9 @@ def log_value(name, step, value):
     for logger in _loggers:
         logger.log_value(name, step, value)
 
+def turn_off_loggers():
+    global _loggers
+    _loggers = []
 
 def log_value_to_accumulate(name, value):
     for accumulator in _accumulators:

@@ -35,6 +35,7 @@ from data_processing.pandas_static_dataset_provider import (
 from jobs.chess_retokenization import RetokenizationJob
 from jobs.create_pgn_dataset import CreatePGNDataset
 from jobs.debug_job import DebugJob
+from jobs.game_between_engines import GameBetweenEngines
 from jobs.job_leela_dataset import (
     LeelaCCLPDataProcessing,
     LeelaParallelDatasetGenerator,
@@ -81,6 +82,7 @@ configure_classes(
         LeelaPrepareAndSaveData,
         RetokenizationJob,
         RunMCTSJob,
+        GameBetweenEngines
     ],
     "jobs",
 )
