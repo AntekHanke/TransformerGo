@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 from typing import Callable, List, Type
 
@@ -67,12 +66,13 @@ class CompareMCTSWithStockfish(Job):
                 {
                     "Board": board,
                     "Stockfish value": stockfish.get_evaluation()["value"],
-                    "MCTS values": mcts_output_dict["root_values_list"] * player_score_factor,
+                    "MCTS values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
                 }
             )
-            if i % 10 == 0:
+
+            if i % 10 == 9:
                 root_stats_df = pd.DataFrame.from_records(stats_list)
-                root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison {time.ctime()}.pkl"))
+                root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison_{(i+1)//10}.pkl"))
 
         root_stats_df = pd.DataFrame.from_records(stats_list)
-        root_stats_df.to_pickle(os.path.join(self.out_dir, f"Comparison {time.ctime()}.pkl"))
+        root_stats_df.to_pickle(os.path.join(self.out_dir, "Comparison_final.pkl"))

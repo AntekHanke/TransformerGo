@@ -1,6 +1,8 @@
 import math
 import os
+import random
 import sys
+from datetime import date
 
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
@@ -9,7 +11,7 @@ from mrunner.helpers.specification_helper import create_experiments_helper
 
 STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
 EVAL_DATA_FILE = "/data_mg/data/only_immutable_board_eval_data/eval_immutable_boards_engines.pkl"
-OUT_DIR = "/out_models/mcts_vs_stockfish_statistics"
+OUT_DIR = f"/out_models/mcts_vs_stockfish_statistics/{date.today()}_{random.randint(10000)}"
 
 experiment_config = {
     "run.job_class": "@jobs.CompareMCTSWithStockfish",

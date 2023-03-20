@@ -200,7 +200,8 @@ class Tree:
             self.expand_function = expand_function_or_class()
         self.mcts_passes_counter = 0
         self.output_root_values_list = output_root_values_list
-        if output_root_values_list: self.root_values_list = []
+        if output_root_values_list:
+            self.root_values_list = []
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -272,6 +273,7 @@ class Tree:
     def get_best_child(self, node: TreeNode, exploration_constant: float) -> TreeNode:
         best_score = float("-inf")
         best_nodes = []
+        assert node.children, "Node provided to get_best_child has no children"
         for child in node.children:
             node_score = self.score_function(
                 node=child, root_player=self.root_player, exploration_constant=exploration_constant
