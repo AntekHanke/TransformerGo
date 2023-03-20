@@ -190,7 +190,10 @@ class ResumeTraining(TrainModel):
 
     def get_training_args(self):
         with open(self.checkpoint_path + "/training_args.pkl", "rb") as f:
-            return pickle.load(f)
+            training_args = pickle.load(f)
+            training_args.ignore_data_skip = True
+            assert training_args.ignore_data_skip, "Training argument ignore_data_skip is set to False"
+            return training_args
 
     def get_model(self):
         return BartForConditionalGeneration.from_pretrained(self.checkpoint_path + f"/checkpoint-{self.checkpoint_num}")
