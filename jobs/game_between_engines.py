@@ -3,7 +3,7 @@ from pathlib import Path
 import chess
 
 from chess_engines.bots.basic_chess_engines import PolicyChess
-from chess_engines.bots.mcts_bot import MCTSChessEngine
+from chess_engines.bots.mcts_bot import MCTSChessEngine, VanillaMCTSChessEngine
 from chess_engines.bots.stockfish_bot import StockfishBotEngine
 from chess_engines.third_party.stockfish import StockfishEngine
 from data_structures.data_structures import ImmutableBoard
@@ -36,6 +36,17 @@ class GameBetweenEngines(Job):
             sort_subgoals_by=sort_subgoals_by,
             num_top_subgoals=4,
         )
+        self.engine_vanilla_MCTS = VanillaMCTSChessEngine(
+            time_limit=300,
+            max_mcts_passes=15,
+            cllp_path=cllp_path,
+            cllp_num_beams=1,
+            cllp_num_return_sequences=1,
+            generator_num_beams=8,
+            generator_num_subgoals=4,
+            sort_subgoals_by=sort_subgoals_by,
+            num_top_subgoals=4,
+        )
         leela_log_dir = out_dir + "/leela"
         Path(leela_log_dir).mkdir(parents=True, exist_ok=True)
         self.engine_LEELA = PolicyChess(
@@ -49,7 +60,7 @@ class GameBetweenEngines(Job):
         )
         self.stockfish_BOT = StockfishBotEngine(stockfish_depth=stockfish_bot_depth, stockfish_path=stockfish_path)
 
-        self.players = {"w": self.engine_MCTS, "b": self.stockfish_BOT}
+        self.players = {"w": self.engine_MCTS, "b": self.engine_vanilla_MCTS}
         log_object("Players", f"White: {self.players['w'].name}, Black: {self.players['b'].name}")
 
     def execute(self):
