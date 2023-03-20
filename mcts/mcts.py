@@ -16,8 +16,8 @@ from metric_logging import (
     log_value_to_average,
     log_param,
 )
-from policy.chess_policy import ChessPolicy
-from value.chess_value import ChessValue
+from policy.chess_policy import LCZeroPolicy
+from value.chess_value import LCZeroValue
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
@@ -91,17 +91,14 @@ class StandardExpandFunction(ExpandFunction):
             node.children.append(child)
             node.paths_to_children[subgoal] = details["path_with_highest_min_probability"]
 
-
-class PolicyOnlyExpandFunction(ExpandFunction):
+class LeelaExpandFunction(ExpandFunction):
     def __init__(
         self,
-        chess_policy_class: Type[ChessPolicy],
-        chess_value_class: Type[ChessValue],
         num_return_moves: int,
         num_beams: int,
     ):
-        self.policy = chess_policy_class()
-        self.value = chess_value_class()
+        self.policy = LCZeroPolicy()
+        self.value = LCZeroValue()
         self.num_return_moves = num_return_moves
         self.num_beams = num_beams
 
@@ -113,7 +110,6 @@ class PolicyOnlyExpandFunction(ExpandFunction):
             num_beams=self.num_beams,
             return_probs=True,
         )
-        print(f"Expand function took {time.time() - time_s} seconds")
         for move, prob in zip(moves, probs):
             new_board = node.immutable_data.state.to_board()
             new_board.push(move)
@@ -121,6 +117,7 @@ class PolicyOnlyExpandFunction(ExpandFunction):
             value = self.value.evaluate_immutable_board(new_immutable_board)
             child = TreeNode(state=new_immutable_board, parent=node, value=value, probability=prob)
             node.children.append(child)
+            node.paths_to_children[new_immutable_board] = [move]
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
