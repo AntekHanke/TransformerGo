@@ -29,7 +29,7 @@ class GameBetweenEngines(Job):
             max_mcts_passes=15,
             generator_path=generator_path,
             cllp_path=cllp_path,
-            cllp_num_beams=1,
+            cllp_num_beams=2,
             cllp_num_return_sequences=1,
             generator_num_beams=8,
             generator_num_subgoals=4,
