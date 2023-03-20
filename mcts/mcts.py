@@ -273,7 +273,7 @@ class Tree:
     def get_best_child(self, node: TreeNode, exploration_constant: float) -> TreeNode:
         best_score = float("-inf")
         best_nodes = []
-        assert node.children, "Node provided to get_best_child has no children"
+        assert node.children, "Node provided to get_best_child method has no children"
         for child in node.children:
             node_score = self.score_function(
                 node=child, root_player=self.root_player, exploration_constant=exploration_constant

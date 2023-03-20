@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Callable, List, Type
@@ -50,6 +51,9 @@ class CompareMCTSWithStockfish(Job):
         stockfish = Stockfish(path=self.stockfish_path, parameters=self.stockfish_parameters, depth=25)
 
         for i, board in enumerate(sampled_list_of_boards):
+            if board.to_board().is_checkmate():
+                logging.warning(f"Board number {i} is terminal")
+                continue
             stockfish.set_fen_position(board.fen())
             tree = Tree(
                 initial_state=board,
@@ -64,9 +68,9 @@ class CompareMCTSWithStockfish(Job):
             player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
             stats_list.append(
                 {
-                    "Board": board,
-                    "Stockfish value": stockfish.get_evaluation()["value"],
-                    "MCTS values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
+                    "board": board,
+                    "stockfish_value": stockfish.get_evaluation()["value"],
+                    "MCTS_values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
                 }
             )
 
