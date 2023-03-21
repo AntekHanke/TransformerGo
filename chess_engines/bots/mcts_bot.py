@@ -44,8 +44,7 @@ class MCTSChessEngine(ChessEngine):
 
         self.networks = None
 
-        for attr, value in self.__dict__.items():
-            log_param(f"MCTS_{attr}", str(value))
+        self.log_all_params()
 
 
     def propose_best_moves(
@@ -56,6 +55,7 @@ class MCTSChessEngine(ChessEngine):
         if self.networks is None:
             generator = BasicChessSubgoalGenerator(self.generator_path)
             cllp = CLLP(self.cllp_path)
+            # TODO (Gosia): Change policy and value. Likely also should move to init
             self.chess_states_expander = ChessStateExpander(LCZeroPolicy, LCZeroValue, generator, cllp)
             self.expand_function = StandardExpandFunction(
                 self.chess_states_expander,

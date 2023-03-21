@@ -11,6 +11,7 @@ import numpy as np
 
 from chess_engines.third_party.stockfish import StockfishEngine
 from data_structures.data_structures import ImmutableBoard, HistoryLength
+from metric_logging import log_param
 from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
@@ -37,6 +38,9 @@ class ChessEngine(ABC):
     ) -> Optional[str]:
         raise NotImplementedError
 
+    def log_all_params(self) -> None:
+        for attr, value in self.__dict__.items():
+            log_param(f"{self.__class__.__name__}_{attr}", str(value))
 
 class RandomChessEngine(ChessEngine):
     def __init__(self):
@@ -77,6 +81,8 @@ class PolicyChess(ChessEngine):
         self.use_lczero_policy = use_lczero_policy
         self.history_length = history_length
         self.chess_policy = None
+
+        self.log_all_params()
 
     def new_game(self) -> None:
 
