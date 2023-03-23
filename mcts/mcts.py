@@ -23,9 +23,7 @@ from value.chess_value import LCZeroValue
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
     players_score_factor = 1 if root_player == node.get_player() else -1
     exploit_score = players_score_factor * node.get_value() * node.immutable_data.probability
-    explore_score = exploration_constant * math.sqrt(
-        2 * math.log(node.immutable_data.parent.num_visits) / node.num_visits
-    )
+    explore_score = math.sqrt(2 * math.log(node.immutable_data.parent.num_visits) / node.num_visits)
     return exploit_score + exploration_constant * explore_score
 
 
@@ -67,9 +65,8 @@ class StandardExpandFunction(ExpandFunction):
         log_param("sort_subgoals_by", self.sort_subgoals_by)
         log_param("num_top_subgoals", self.num_top_subgoals)
 
-    def expand_function(self, node: "TreeNode", **kwargs):
+    def expand_function(self, node: "TreeNode", **kwargs) -> None:
         assert self.chess_state_expander is not None, "ChessStateExpander hasn't been provided"
-        time_s = time.time()
         subgoals, subgoals_info = self.chess_state_expander.expand_state(
             input_immutable_board=node.immutable_data.state,
             siblings_states=node.get_siblings_states(),
@@ -91,6 +88,7 @@ class StandardExpandFunction(ExpandFunction):
             node.children.append(child)
             node.paths_to_children[subgoal] = details["path_with_highest_min_probability"]
 
+
 class LeelaExpandFunction(ExpandFunction):
     def __init__(
         self,
@@ -102,8 +100,7 @@ class LeelaExpandFunction(ExpandFunction):
         self.num_return_moves = num_return_moves
         self.num_beams = num_beams
 
-    def expand_function(self, node: "TreeNode", **kwargs):
-        time_s = time.time()
+    def expand_function(self, node: "TreeNode", **kwargs) -> None:
         moves, probs = self.policy.get_best_moves(
             immutable_board=node.immutable_data.state,
             num_return_sequences=self.num_return_moves,
@@ -225,7 +222,11 @@ class Tree:
         node = self.tree_traversal(self.root)
         value = node.get_value()
         self.backpropogate(node, value)
-        log_value("Nodes in a single pass", self.counter_initial_value + self.mcts_passes_counter, len(self.node_list) - nodes_before_pass)
+        log_value(
+            "Nodes in a single pass",
+            self.counter_initial_value + self.mcts_passes_counter,
+            len(self.node_list) - nodes_before_pass,
+        )
         log_value_to_average("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
         accumulator_to_logger(self.counter_initial_value + self.mcts_passes_counter)
 
