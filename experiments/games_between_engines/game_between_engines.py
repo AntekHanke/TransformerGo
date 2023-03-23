@@ -1,26 +1,34 @@
 import os
 import sys
 
+from experiments.games_between_engines.engine_specifications import stockfish_engine_spec, subgoal_mcts_engine_spec
+
 experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
-from datetime import date
 from mrunner.helpers.specification_helper import create_experiments_helper
 
 GEN_LONG_K_3 = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/long_training/checkpoint-221500"
 CLLP_PATH = "/home/tomasz/Research/subgoal_chess_data/local_leela_models/cllp/medium"
+STOCKFISH_PATH = ""
 log_dir: str = "/home/tomasz/Research/subgoal_chess_data/bot_logs"
+
+engine_white_spec = stockfish_engine_spec
+engine_white_spec.engine_params["stockfish_path"] = STOCKFISH_PATH
+
+engine_black_spec = subgoal_mcts_engine_spec
+engine_black_spec.engine_params["generator_path"] = GEN_LONG_K_3
+engine_black_spec.engine_params["cllp_path"] = CLLP_PATH
+engine_black_spec.engine_params["sort_subgoals_by"] = "highest_min_probability"
 
 experiment_config = {
     "run.job_class": "@jobs.GameBetweenEngines",
 
-    "GameBetweenEngines.generator_path": GEN_LONG_K_3,
-    "GameBetweenEngines.cllp_path": CLLP_PATH,
+    "GameBetweenEngines.engine_white_spec": engine_white_spec,
+    "GameBetweenEngines.engine_black_spec": engine_black_spec,
+    "GameBetweenEngines.eval_stockfish_path": STOCKFISH_PATH,
+    "GameBetweenEngines.eval_stockfish_depth": 20,
     "GameBetweenEngines.out_dir": log_dir,
-    "GameBetweenEngines.sort_subgoals_by": "highest_min_probability",
-    "GameBetweenEngines.stockfish_depth": 20,
-    "GameBetweenEngines.stockfish_bot_depth": 2,
-
 }
 
 params_grid = {

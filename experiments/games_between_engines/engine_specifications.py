@@ -1,17 +1,20 @@
-from chess_engines.bots.basic_chess_engines import PolicyChess
-from chess_engines.bots.mcts_bot import MCTSChessEngine
+from typing import Type
+
+from chess_engines.bots.basic_chess_engines import PolicyChess, ChessEngine
+from chess_engines.bots.mcts_bot import SubgoalMCTSChessEngine
 from chess_engines.bots.stockfish_bot import StockfishBotEngine
 
-stockfish = [
-    StockfishBotEngine,
-    {
-        "stockfish_depth": 5,
-        "stockfish_path": None,
-    },
-]
 
-mcts_small = [
-    MCTSChessEngine,
+class EngineParameters:
+    def __init__(self, engine_class: Type[ChessEngine], engine_params: dict):
+        self.engine_class = engine_class
+        self.engine_params = engine_params
+
+
+stockfish_engine_spec = EngineParameters(StockfishBotEngine, {"stockfish_depth": 5, "stockfish_path": None})
+
+subgoal_mcts_engine_spec = EngineParameters(
+    SubgoalMCTSChessEngine,
     {
         "time_limit": 300,
         "max_mcts_passes": 15,
@@ -24,9 +27,9 @@ mcts_small = [
         "sort_subgoals_by": None,
         "num_top_subgoals": 4,
     },
-]
+)
 
-leela = [
+leela_engine_spec = EngineParameters(
     PolicyChess,
     {
         "policy_checkpoint": None,
@@ -37,4 +40,4 @@ leela = [
         "name": "LeelaChessZero_POLICY",
         "use_lczero_policy": True,
     },
-]
+)
