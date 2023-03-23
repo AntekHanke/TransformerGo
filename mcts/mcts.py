@@ -121,7 +121,7 @@ class TreeNode:
             level=0 if parent is None else parent.immutable_data.level + 1,
             state=state,
             parent=parent,
-            is_terminal=state.to_board().is_checkmate(),
+            is_terminal=state.to_board().is_game_over(),
             probability=probability,
         )
         TreeNode.node_counter += 1
