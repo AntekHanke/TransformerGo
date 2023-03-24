@@ -233,12 +233,15 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
         batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
 
-        subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(
-            ImmutableBoard.from_board(current_state), self.n_subgoals
+        subgoals = self.generator.generate_subgoals(
+            input_boards=[ImmutableBoard.from_board(current_state)],
+            generator_num_beams=16,
+            generator_num_subgoals=self.n_subgoals,
+            subgoal_distance_k=3
         )
-        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals)
+        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals[0])
 
-        subgoals, subgoal_values = self.subgoal_filter(subgoals, subgoal_values)
+        subgoals, subgoal_values = self.subgoal_filter(subgoals[0], subgoal_values)
 
         for subgoal in subgoals:
             batch_to_predict.append((immutable_current, subgoal))
@@ -253,7 +256,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         log_engine_specific_info(f"BATCH TO PREDICT: {batch_to_predict}", self.log_dir)
 
-        paths: List[List[chess.Move]] = self.cllp.get_batch_path(batch_to_predict)
+        paths: List[List[chess.Move]] = self.cllp.get_paths_batch(batch_to_predict)
         moves: List[chess.Move] = [path[0] for path in paths]
 
         if self.debug_mode:
