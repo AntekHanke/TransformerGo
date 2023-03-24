@@ -1,6 +1,9 @@
 import gin
 from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 
+from chess_engines.bots.basic_chess_engines import RandomChessEngine, PolicyChess, SubgoalWithCLLPStockfish
+from chess_engines.bots.mcts_bot import SubgoalMCTSChessEngine, VanillaMCTSChessEngine
+from chess_engines.bots.stockfish_bot import StockfishBotEngine
 from data_processing.archive.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.archive.pgn.prepare_and_save_data import (
     PandasPolicyPrepareAndSaveData,
@@ -82,7 +85,7 @@ configure_classes(
         LeelaPrepareAndSaveData,
         RetokenizationJob,
         RunMCTSJob,
-        GameBetweenEngines
+        GameBetweenEngines,
     ],
     "jobs",
 )
@@ -112,6 +115,18 @@ configure_classes(
         CLLPPrepareAndSaveData,
     ],
     "data",
+)
+
+configure_classes(
+    [
+        RandomChessEngine,
+        PolicyChess,
+        SubgoalWithCLLPStockfish,
+        SubgoalMCTSChessEngine,
+        VanillaMCTSChessEngine,
+        StockfishBotEngine,
+    ],
+    "chess_engines",
 )
 
 configure_objects([StandardExpandFunction, LeelaExpandFunction], "expand_functions")

@@ -17,15 +17,19 @@ from utils.data_utils import immutable_boards_to_img
 class GameBetweenEngines(Job):
     def __init__(
         self,
-        engine_white_spec: EngineParameters,
-        engine_black_spec: EngineParameters,
+        engine_white_class: Type[ChessEngine],
+        engine_black_class: Type[ChessEngine],
+        engine_white_params: dict,
+        engine_black_params: dict,
         eval_stockfish_path: str = None,
         eval_stockfish_depth: int = 20,
         out_dir: str = None,
+        debug_mode: bool = False,
     ):
         self.out_dir = out_dir
-        self.engine_white = engine_white_spec.engine_class(**engine_white_spec.engine_params)
-        self.engine_black = engine_black_spec.engine_class(**engine_black_spec.engine_params)
+        self.debug_mode = debug_mode
+        self.engine_white = engine_white_class(**engine_white_params)
+        self.engine_black = engine_black_class(**engine_black_params)
         self.eval_stockfish = StockfishEngine(stockfish_path=eval_stockfish_path, depth_limit=eval_stockfish_depth)
         self.players = {"w": self.engine_white, "b": self.engine_black}
         log_object("Players", f"White: {self.players['w'].name}, Black: {self.players['b'].name}")
