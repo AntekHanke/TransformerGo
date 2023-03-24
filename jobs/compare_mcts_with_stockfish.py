@@ -51,28 +51,32 @@ class CompareMCTSWithStockfish(Job):
         stockfish = Stockfish(path=self.stockfish_path, parameters=self.stockfish_parameters, depth=25)
 
         for i, board in enumerate(sampled_list_of_boards):
-            if board.to_board().is_checkmate():
+            if board.to_board().is_game_over():
                 logging.warning(f"Board number {i} is terminal")
                 continue
             stockfish.set_fen_position(board.fen())
-            tree = Tree(
-                initial_state=board,
-                time_limit=self.time_limit,
-                max_mcts_passes=self.max_mcts_passes,
-                exploration_constant=self.exploration_constant,
-                score_function=self.score_function,
-                expand_function_class=self.expand_function_class,
-                output_root_values_list=True,
-            )
-            mcts_output_dict = tree.mcts()
-            player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
-            stats_list.append(
-                {
-                    "board": board,
-                    "stockfish_value": stockfish.get_evaluation()["value"],
-                    "MCTS_values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
-                }
-            )
+            try:
+                tree = Tree(
+                    initial_state=board,
+                    time_limit=self.time_limit,
+                    max_mcts_passes=self.max_mcts_passes,
+                    exploration_constant=self.exploration_constant,
+                    score_function=self.score_function,
+                    expand_function_class=self.expand_function_class,
+                    output_root_values_list=True,
+                )
+                mcts_output_dict = tree.mcts()
+                player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
+                stats_list.append(
+                    {
+                        "board": board,
+                        "stockfish_value": stockfish.get_evaluation()["value"],
+                        "MCTS_values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
+                    }
+                )
+            except Exception as e:
+                print(e)
+                logging.log(f"Board number {i} caused mcts to fail")
 
             if i % 10 == 9:
                 root_stats_df = pd.DataFrame.from_records(stats_list)
