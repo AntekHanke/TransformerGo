@@ -29,8 +29,6 @@ experiment_config = {
     "GameBetweenEngines.engine_black_params": black_engine_params,
     "GameBetweenEngines.eval_stockfish_path": STOCKFISH_PATH,
     "GameBetweenEngines.eval_stockfish_depth": 20,
-    "GameBetweenEngines.out_dir": log_dir,
-    "GameBetweenEngines.debug_mode": False,
 
     "use_neptune": True
 }
