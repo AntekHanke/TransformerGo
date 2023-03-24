@@ -1,14 +1,10 @@
-from pathlib import Path
-from typing import Type, Tuple, List
+from typing import Type
 
 import chess
 
-from chess_engines.bots.basic_chess_engines import PolicyChess, ChessEngine
-from chess_engines.bots.mcts_bot import MCTSChessEngine, VanillaMCTSChessEngine
-from chess_engines.bots.stockfish_bot import StockfishBotEngine
+from chess_engines.bots.basic_chess_engines import ChessEngine
 from chess_engines.third_party.stockfish import StockfishEngine
 from data_structures.data_structures import ImmutableBoard
-from experiments.games_between_engines.engine_specifications import EngineParameters
 from jobs.core import Job
 from metric_logging import log_object, log_value
 from utils.data_utils import immutable_boards_to_img
@@ -23,11 +19,7 @@ class GameBetweenEngines(Job):
         engine_black_params: dict,
         eval_stockfish_path: str = None,
         eval_stockfish_depth: int = 20,
-        out_dir: str = None,
-        debug_mode: bool = False,
     ):
-        self.out_dir = out_dir
-        self.debug_mode = debug_mode
         self.engine_white = engine_white_class(**engine_white_params)
         self.engine_black = engine_black_class(**engine_black_params)
         self.eval_stockfish = StockfishEngine(stockfish_path=eval_stockfish_path, depth_limit=eval_stockfish_depth)
