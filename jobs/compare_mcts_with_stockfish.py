@@ -76,7 +76,7 @@ class CompareMCTSWithStockfish(Job):
                 )
             except Exception as e:
                 print(e)
-                logging.log(f"Board number {i} caused mcts to fail")
+                logging.warning(f"Board {board.fen()} caused mcts to fail")
 
             if i % 10 == 9:
                 root_stats_df = pd.DataFrame.from_records(stats_list)
