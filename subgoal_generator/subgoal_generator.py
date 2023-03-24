@@ -57,7 +57,7 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
         input_boards: List[ImmutableBoard],
         generator_num_beams: int,
         generator_num_subgoals: int,
-        subgoal_distance_k: int = 3,
+        subgoal_distance_k: int,
         **subgoal_generation_kwargs,
     ) -> List[List[ImmutableBoard]]:
         assert (
