@@ -8,7 +8,7 @@ import chess
 
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
-from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate, log_value
+from metric_logging import log_value_without_step, accumulator_to_logger, log_value_to_accumulate, log_value, log_param
 from policy.chess_policy import ChessPolicy
 from value.chess_value import ChessValue
 
@@ -35,6 +35,7 @@ class StandardExpandFunction(ExpandFunction):
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
         generator_num_subgoals: int = None,
+        subgoal_distance_k: int = 3,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
     ):
@@ -43,8 +44,18 @@ class StandardExpandFunction(ExpandFunction):
         self.cllp_num_return_sequences = cllp_num_return_sequences
         self.generator_num_beams = generator_num_beams
         self.generator_num_subgoals = generator_num_subgoals
+        self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
         self.num_top_subgoals = num_top_subgoals
+
+        log_param("Parameters for ", self.__class__.__name__)
+        log_param("cllp_num_beams", self.cllp_num_beams)
+        log_param("cllp_num_return_sequences", self.cllp_num_return_sequences)
+        log_param("generator_num_beams", self.generator_num_beams)
+        log_param("generator_num_subgoals", self.generator_num_subgoals)
+        log_param("subgoal_distance_k", self.subgoal_distance_k)
+        log_param("sort_subgoals_by", self.sort_subgoals_by)
+        log_param("num_top_subgoals", self.num_top_subgoals)
 
     def expand_function(self, node: "TreeNode", **kwargs):
         assert self.chess_state_expander is not None, "ChessStateExpander hasn't been provided"
@@ -56,6 +67,7 @@ class StandardExpandFunction(ExpandFunction):
             cllp_num_return_sequences=self.cllp_num_return_sequences,
             generator_num_beams=self.generator_num_beams,
             generator_num_subgoals=self.generator_num_subgoals,
+            subgoal_distance_k=self.subgoal_distance_k,
             sort_subgoals_by=self.sort_subgoals_by,
         )
         print(f"Expand function took {time.time() - time_s} seconds")
