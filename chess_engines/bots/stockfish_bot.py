@@ -18,6 +18,7 @@ class StockfishBotEngine(ChessEngine):
         self.stockfish_depth = stockfish_depth
         self.stockfish = StockfishEngine(stockfish_path=stockfish_path, depth_limit=stockfish_depth)
 
+        self.log_all_params()
 
     def propose_best_moves(
         self, current_state: chess.Board, number_of_moves: int = 1, history: List[chess.Move] = None

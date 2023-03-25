@@ -62,6 +62,7 @@ class ChessStateExpander:
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
         generator_num_subgoals: int = None,
+        subgoal_distance_k: int = 3,
         sort_subgoals_by: str = None,
         **subgoal_generation_kwargs,
     ):
@@ -70,7 +71,11 @@ class ChessStateExpander:
             log_value_to_average("generator_used_%", 100)
             log_value_to_accumulate("generator_used", 1)
             all_subgoals = self.subgoal_generator.generate_subgoals(
-                siblings_states, generator_num_beams, generator_num_subgoals, **subgoal_generation_kwargs
+                input_boards=siblings_states,
+                generator_num_beams=generator_num_beams,
+                generator_num_subgoals=generator_num_subgoals,
+                subgoal_distance_k=subgoal_distance_k,
+                **subgoal_generation_kwargs
             )
             cllp_input_batch = []
             for sibling, targets in zip(siblings_states, all_subgoals):

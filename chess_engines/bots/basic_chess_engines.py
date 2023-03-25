@@ -11,6 +11,7 @@ import numpy as np
 
 from chess_engines.third_party.stockfish import StockfishEngine
 from data_structures.data_structures import ImmutableBoard, HistoryLength
+from metric_logging import log_param
 from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
@@ -37,6 +38,9 @@ class ChessEngine(ABC):
     ) -> Optional[str]:
         raise NotImplementedError
 
+    def log_all_params(self) -> None:
+        for attr, value in self.__dict__.items():
+            log_param(f"{self.__class__.__name__}_{attr}", str(value))
 
 class RandomChessEngine(ChessEngine):
     def __init__(self):
@@ -77,6 +81,8 @@ class PolicyChess(ChessEngine):
         self.use_lczero_policy = use_lczero_policy
         self.history_length = history_length
         self.chess_policy = None
+
+        self.log_all_params()
 
     def new_game(self) -> None:
 
@@ -245,12 +251,15 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
         batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
 
-        subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(
-            ImmutableBoard.from_board(current_state), self.n_subgoals
+        subgoals = self.generator.generate_subgoals(
+            input_boards=[ImmutableBoard.from_board(current_state)],
+            generator_num_beams=16,
+            generator_num_subgoals=self.n_subgoals,
+            subgoal_distance_k=3
         )
-        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals)
+        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals[0])
 
-        subgoals, subgoal_values = self.subgoal_filter(subgoals, subgoal_values)
+        subgoals, subgoal_values = self.subgoal_filter(subgoals[0], subgoal_values)
 
         for subgoal in subgoals:
             batch_to_predict.append((immutable_current, subgoal))
@@ -265,7 +274,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         log_engine_specific_info(f"BATCH TO PREDICT: {batch_to_predict}", self.log_dir)
 
-        paths: List[List[chess.Move]] = self.cllp.get_batch_path(batch_to_predict)
+        paths: List[List[chess.Move]] = self.cllp.get_paths_batch(batch_to_predict)
         moves: List[chess.Move] = [path[0] for path in paths]
 
         if self.debug_mode:
