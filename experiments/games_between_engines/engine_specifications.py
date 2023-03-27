@@ -15,6 +15,7 @@ subgoal_mcts_engine_params = {
     "cllp_num_return_sequences": 1,
     "generator_num_beams": 8,
     "generator_num_subgoals": 4,
+    "subgoal_distance_k": 3,
     "sort_subgoals_by": None,
     "num_top_subgoals": 4,
 }

@@ -55,7 +55,7 @@ class RunMCTSJob(Job):
             max_mcts_passes=self.max_mcts_passes,
             exploration_constant=self.exploration_constant,
             score_function=self.score_function,
-            expand_function_class=self.expand_function_class,
+            expand_function_or_class=self.expand_function_class,
         )
         mcts_output = tree.mcts()
         log_value("MCTS time", 0, time.time() - time_start)
