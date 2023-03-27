@@ -7,8 +7,8 @@ sys.path.append(experiment_dir_path)
 from experiments.games_between_engines.engine_specifications import stockfish_engine_params, subgoal_mcts_engine_params
 from mrunner.helpers.specification_helper import create_experiments_helper
 
-GEN_LONG_K_3 = "/data_mg/generators/generator_k_3/checkpoint-221500/"
-CLLP_PATH = "/data_mg/cllp/medium/"
+GEN_LONG_K_3 = "/data_gg/out_models/medium_generator_from_scratch_with_all_subgoals/16_03_22/k_3/checkpoint-95000/"
+CLLP_PATH = "/data_gg/out_models/medium_cllp_from_scratch_k_form_1_to_9/14_03_23/checkpoint-89500/"
 STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
 log_dir: str = "/out_models/bot_logs"
 
