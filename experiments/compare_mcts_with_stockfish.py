@@ -28,7 +28,7 @@ experiment_config = {
     "CompareMCTSWithStockfish.sample_seed": 0,
     "CompareMCTSWithStockfish.num_boards_to_compare": 1000,
 
-    "StandardExpandFunction.chess_state_expander_class": "@chess_state_expander.ChessStateExpander",
+    "StandardExpandFunction.chess_state_expander_or_class": "@chess_state_expander.ChessStateExpander",
     "StandardExpandFunction.cllp_num_beams": 2,
     "StandardExpandFunction.cllp_num_return_sequences": 1,
     "StandardExpandFunction.generator_num_beams": 8,
@@ -38,7 +38,7 @@ experiment_config = {
 
     "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
     "ChessStateExpander.chess_value_class": "@neural_networks.LCZeroValue",
-    "ChessStateExpander.subgoal_generator_class": "@neural_networks.BasicChessSubgoalGenerator",
+    "ChessStateExpander.subgoal_generator_or_class": "@neural_networks.BasicChessSubgoalGenerator",
     "ChessStateExpander.cllp_class": "@neural_networks.CLLP",
 
     "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_gg/out_models/medium_generator_from_scratch_with_all_subgoals/16_03_22/k_3/checkpoint-95000/",
