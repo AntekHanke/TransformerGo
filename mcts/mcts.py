@@ -15,7 +15,8 @@ from metric_logging import (
     log_value_to_accumulate,
     log_value,
     log_value_to_average,
-    log_param, log_object,
+    log_param,
+    log_object,
 )
 from policy.chess_policy import LCZeroPolicy
 from value.chess_value import LCZeroValue
@@ -140,7 +141,9 @@ class LeelaExpandFunction(ExpandFunction):
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
-NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded not_expandable state")
+NodeTuple = namedtuple(
+    "NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded not_expandable state"
+)
 
 
 class TreeNode:
@@ -242,7 +245,8 @@ class Tree:
             "best_child": best_child.immutable_data.state,
             "expected_value": best_child.get_value(),
         }
-        if self.output_root_values_list: output_dir["root_values_list"] = self.root_values_list
+        if self.output_root_values_list:
+            output_dir["root_values_list"] = self.root_values_list
         return output_dir
 
     def execute_mcts_pass(self):
@@ -259,7 +263,8 @@ class Tree:
         )
         log_value_to_average("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
         accumulator_to_logger(self.counter_initial_value + self.mcts_passes_counter)
-        if self.output_root_values_list: self.root_values_list.append(self.root.get_value())
+        if self.output_root_values_list:
+            self.root_values_list.append(self.root.get_value())
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
         while not node.not_expandable:
