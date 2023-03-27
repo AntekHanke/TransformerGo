@@ -55,28 +55,24 @@ class CompareMCTSWithStockfish(Job):
                 logging.warning(f"Board number {i} is terminal")
                 continue
             stockfish.set_fen_position(board.fen())
-            try:
-                tree = Tree(
-                    initial_state=board,
-                    time_limit=self.time_limit,
-                    max_mcts_passes=self.max_mcts_passes,
-                    exploration_constant=self.exploration_constant,
-                    score_function=self.score_function,
-                    expand_function_class=self.expand_function_class,
-                    output_root_values_list=True,
-                )
-                mcts_output_dict = tree.mcts()
-                player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
-                stats_list.append(
-                    {
-                        "board": board,
-                        "stockfish_value": stockfish.get_evaluation()["value"],
-                        "MCTS_values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
-                    }
-                )
-            except Exception as e:
-                print(e)
-                logging.warning(f"Board {board.fen()} caused mcts to fail")
+            tree = Tree(
+                initial_state=board,
+                time_limit=self.time_limit,
+                max_mcts_passes=self.max_mcts_passes,
+                exploration_constant=self.exploration_constant,
+                score_function=self.score_function,
+                expand_function_class=self.expand_function_class,
+                output_root_values_list=True,
+            )
+            mcts_output_dict = tree.mcts()
+            player_score_factor = 1 if tree.root.get_player() == chess.WHITE else -1
+            stats_list.append(
+                {
+                    "board": board,
+                    "stockfish_value": stockfish.get_evaluation()["value"],
+                    "MCTS_values": [x * player_score_factor for x in mcts_output_dict["root_values_list"]],
+                }
+            )
 
             if i % 10 == 9:
                 root_stats_df = pd.DataFrame.from_records(stats_list)

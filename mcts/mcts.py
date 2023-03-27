@@ -1,3 +1,4 @@
+import logging
 import math
 import random
 import time
@@ -81,6 +82,8 @@ class StandardExpandFunction(ExpandFunction):
             sort_subgoals_by=self.sort_subgoals_by,
         )
         subgoals = subgoals[: self.num_top_subgoals]
+        if not subgoals:
+            logging.error(f"No subgoals generated for board {node.immutable_data.state}")
         for subgoal in subgoals:
             details = subgoals_info[subgoal]
             value = details["value"]
@@ -132,8 +135,8 @@ class LeelaExpandFunction(ExpandFunction):
             node.paths_to_children[new_immutable_board] = [move]
 
 
-TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
-NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded state")
+TreeNodeData = namedtuple("TreeNode", "n_id level state parent probability")
+NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits not_expandable is_expanded state")
 
 
 class TreeNode:
@@ -151,12 +154,12 @@ class TreeNode:
             level=0 if parent is None else parent.immutable_data.level + 1,
             state=state,
             parent=parent,
-            is_terminal=state.to_board().is_game_over(),
             probability=probability,
         )
         TreeNode.node_counter += 1
         log_value_to_accumulate("tree_nodes", 1)
-        self.is_expanded = self.immutable_data.is_terminal
+        self.not_expandable = state.to_board().is_game_over()
+        self.is_expanded = self.not_expandable
         self.num_visits = 1
         self.all_values = [value]
         self.children = []
@@ -254,13 +257,16 @@ class Tree:
         if self.output_root_values_list: self.root_values_list.append(self.root.get_value())
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
-        while not node.immutable_data.is_terminal:
+        while not node.not_expandable:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
             else:
                 self.expand_function.expand_function(node=node)
                 self.node_list += node.children
                 node.is_expanded = True
+                if not node.children:
+                    node.not_expandable = True
+                    return node
                 return self.get_best_child(node, self.exploration_constant)
         return node
 
@@ -297,7 +303,7 @@ class Tree:
                 probability=node.immutable_data.probability,
                 value=node.get_value(),
                 num_visits=node.num_visits,
-                is_terminal=node.immutable_data.is_terminal,
+                not_expandable=node.not_expandable,
                 is_expanded=node.is_expanded,
                 state=node.immutable_data.state,
             )
