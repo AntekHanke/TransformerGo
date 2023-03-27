@@ -15,7 +15,7 @@ from metric_logging import (
     log_value_to_accumulate,
     log_value,
     log_value_to_average,
-    log_param,
+    log_param, log_object,
 )
 from policy.chess_policy import LCZeroPolicy
 from value.chess_value import LCZeroValue
@@ -83,7 +83,11 @@ class StandardExpandFunction(ExpandFunction):
         )
         subgoals = subgoals[: self.num_top_subgoals]
         if not subgoals:
-            logging.error(f"No subgoals generated for board {node.immutable_data.state}")
+            log_object("Subgoal generation failed", node.immutable_data.state.fen())
+            log_value_to_accumulate("Number of node expansions failed", 1)
+            log_value_to_average("Proportion of node expansions failed", 1)
+        else:
+            log_value_to_average("Proportion of node expansions failed", 0)
         for subgoal in subgoals:
             details = subgoals_info[subgoal]
             value = details["value"]
@@ -135,8 +139,8 @@ class LeelaExpandFunction(ExpandFunction):
             node.paths_to_children[new_immutable_board] = [move]
 
 
-TreeNodeData = namedtuple("TreeNode", "n_id level state parent probability")
-NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits not_expandable is_expanded state")
+TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
+NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded not_expandable state")
 
 
 class TreeNode:
@@ -154,12 +158,13 @@ class TreeNode:
             level=0 if parent is None else parent.immutable_data.level + 1,
             state=state,
             parent=parent,
+            is_terminal=state.to_board().is_game_over(),
             probability=probability,
         )
         TreeNode.node_counter += 1
         log_value_to_accumulate("tree_nodes", 1)
-        self.not_expandable = state.to_board().is_game_over()
-        self.is_expanded = self.not_expandable
+        self.not_expandable = self.immutable_data.is_terminal
+        self.is_expanded = self.immutable_data.is_terminal
         self.num_visits = 1
         self.all_values = [value]
         self.children = []
@@ -303,8 +308,9 @@ class Tree:
                 probability=node.immutable_data.probability,
                 value=node.get_value(),
                 num_visits=node.num_visits,
-                not_expandable=node.not_expandable,
+                is_terminal=node.immutable_data.is_terminal,
                 is_expanded=node.is_expanded,
+                not_expandable=node.not_expandable,
                 state=node.immutable_data.state,
             )
             tree_list.append(node_tuple)
