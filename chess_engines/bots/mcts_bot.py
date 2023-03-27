@@ -45,6 +45,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         cllp_num_beams: int = None,
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
+        subgoal_distance_k: int = 3,
         generator_num_subgoals: int = None,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
@@ -59,6 +60,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         self.cllp_num_return_sequences = cllp_num_return_sequences
         self.generator_num_beams = generator_num_beams
         self.generator_num_subgoals = generator_num_subgoals
+        self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
         self.num_top_subgoals = num_top_subgoals
 
@@ -73,6 +75,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
             cllp_num_return_sequences=self.cllp_num_return_sequences,
             generator_num_beams=self.generator_num_beams,
             generator_num_subgoals=self.generator_num_subgoals,
+            subgoal_distance_k=self.subgoal_distance_k,
             sort_subgoals_by=self.sort_subgoals_by,
             num_top_subgoals=self.num_top_subgoals,
         )
