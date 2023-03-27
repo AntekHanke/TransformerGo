@@ -15,7 +15,7 @@ DEFAULT_STOCKFISH_PATH_CLUSTER = "/Stockfish/src/stockfish"
 class StockfishEngine:
     """Wrapper for stockfish chess engine."""
 
-    def __init__(self, stockfish_path: Union[str, None] = None, depth_limit: int = 10):
+    def __init__(self, stockfish_path: Union[str, None] = None, depth_limit: int = 15):
 
         if stockfish_path is None:
             print(f"Using default stockfish path.")
@@ -27,7 +27,7 @@ class StockfishEngine:
         self.depth_limit = depth_limit
 
     @staticmethod
-    def get_result_score(immutable_board, result):
+    def get_result_score(result):
         if not result.is_mate():
             return result.relative.cp
         else:
@@ -54,8 +54,10 @@ class StockfishEngine:
                 immutable_board.to_board(), chess.engine.Limit(depth=self.depth_limit), game=object()
             )["score"]
             engine.quit()
+            if result.is_mate():
+                return VALUE_FOR_MATE
             return StockfishEngine.absolute_v(
-                immutable_board.active_player, self.get_result_score(immutable_board, result)
+                immutable_board.active_player, self.get_result_score(result)
             )
         except chess.engine.EngineTerminatedError:
             return None
@@ -72,7 +74,8 @@ class StockfishEngine:
         for move, score in zip(board.legal_moves, move_scores_list):
             move_scores[move] = score
 
-        sorted_moves, scores = zip(*sorted(move_scores.items(), key=lambda x: x[1], reverse=True))
+        reverse_order = immutable_board.active_player == "w"
+        sorted_moves, scores = zip(*sorted(move_scores.items(), key=lambda x: x[1], reverse=reverse_order))
         if top_n_moves is None:
             return sorted_moves
         else:

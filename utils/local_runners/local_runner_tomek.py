@@ -15,6 +15,7 @@ RESUME_GENERATOR = (
     "/home/tomasz/Research/subgoal_search_chess/experiments/train/generator/ultra_small_generator_resume.py"
 )
 GENERATE_TREE = "/home/tomasz/Research/subgoal_search_chess/experiments/generate_tree_local.py"
+GAME = "/home/tomasz/Research/subgoal_search_chess/experiments/games_between_engines/game_between_engines.py"
 
 
-local_run(GENERATE_TREE, True, LOCAL_PATH_BINDING)
+local_run(GAME, True, LOCAL_PATH_BINDING)

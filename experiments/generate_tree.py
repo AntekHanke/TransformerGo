@@ -28,7 +28,8 @@ experiment_config = {
     "StandardExpandFunction.cllp_num_return_sequences": 2,
     "StandardExpandFunction.generator_num_beams": 16,
     "StandardExpandFunction.generator_num_subgoals": 8,
-    "StandardExpandFunction.sort_subgoals_by": "highest_total_probability",
+    "StandardExpandFunction.subgoal_distance_k": 3,
+    "StandardExpandFunction.sort_subgoals_by": "highest_min_probability",
     "StandardExpandFunction.num_top_subgoals": 4,
 
     "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
@@ -36,8 +37,8 @@ experiment_config = {
     "ChessStateExpander.subgoal_generator_class": "@neural_networks.BasicChessSubgoalGenerator",
     "ChessStateExpander.cllp_class": "@neural_networks.CLLP",
 
-    "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_mg/generators/generator_k_3/checkpoint-221500",
-    "CLLP.checkpoint_path_or_model": "/data_mg/cllp/medium",
+    "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_gg/out_models/medium_generator_from_scratch_with_all_subgoals/16_03_22/k_3/checkpoint-95000/",
+    "CLLP.checkpoint_path_or_model": "/data_gg/out_models/medium_cllp_from_scratch_k_form_1_to_9/14_03_23/checkpoint-89500/",
 }
 
 params_grid = {

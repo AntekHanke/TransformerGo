@@ -1,5 +1,5 @@
 import time
-from typing import Type, List
+from typing import Type, List, Union
 
 import numpy as np
 from chess import Move
@@ -30,13 +30,19 @@ class ChessStateExpander:
         self,
         chess_policy_class: Type[ChessPolicy],
         chess_value_class: Type[ChessValue],
-        subgoal_generator_class: Type[BasicChessSubgoalGenerator],
-        cllp_class: Type[CLLP],
+        subgoal_generator_or_class: Union[Type[BasicChessSubgoalGenerator], BasicChessSubgoalGenerator],
+        cllp_or_class: Union[Type[CLLP], CLLP]
     ):
         self.policy = chess_policy_class()
         self.value = chess_value_class()
-        self.subgoal_generator = subgoal_generator_class()
-        self.cllp = cllp_class()
+        if isinstance(subgoal_generator_or_class, BasicChessSubgoalGenerator):
+            self.subgoal_generator = subgoal_generator_or_class
+        else:
+            self.subgoal_generator = subgoal_generator_or_class()
+        if isinstance(cllp_or_class, CLLP):
+            self.cllp = cllp_or_class
+        else:
+            self.cllp = cllp_or_class()
 
     def one_subgoal_cllp_batch(self, input_immutable_board, subgoal, paths_to_subgoal):
         paths = []

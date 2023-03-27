@@ -10,4 +10,4 @@ if is_local_machine():
     elif get_local_machine() == "malgorzata":
         DEFAULT_LC_ZERO_WEIGHTS_PATH = "/home/gosia/dane/subgoal_chess_data/lczero/medium/medium"
 else:
-    DEFAULT_LC_ZERO_WEIGHTS_PATH = "/lcezero_weights/medium"
+    DEFAULT_LC_ZERO_WEIGHTS_PATH = "/lczero_weights/medium"
