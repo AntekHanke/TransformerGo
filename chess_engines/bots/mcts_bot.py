@@ -7,7 +7,6 @@ from chess_engines.bots.basic_chess_engines import ChessEngine
 from data_structures.data_structures import ImmutableBoard
 from mcts.mcts import Tree, StandardExpandFunction, score_function, LeelaExpandFunction
 from mcts.node_expansion import ChessStateExpander
-from metric_logging import log_param
 from policy.chess_policy import LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator

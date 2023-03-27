@@ -43,6 +43,7 @@ class StandardExpandFunction(ExpandFunction):
         subgoal_distance_k: int = 3,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
+        debug_mode: bool = True,
     ):
         if isinstance(chess_state_expander_or_class, ChessStateExpander):
             self.chess_state_expander = chess_state_expander_or_class
@@ -55,6 +56,8 @@ class StandardExpandFunction(ExpandFunction):
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
         self.num_top_subgoals = num_top_subgoals
+        self.debug_mode = debug_mode
+        self.leela = LCZeroPolicy()
 
         log_param("Parameters for ", self.__class__.__name__)
         log_param("cllp_num_beams", self.cllp_num_beams)
@@ -87,6 +90,18 @@ class StandardExpandFunction(ExpandFunction):
             child = TreeNode(state=subgoal, parent=node, value=value, probability=probability)
             node.children.append(child)
             node.paths_to_children[subgoal] = details["path_with_highest_min_probability"]
+
+        if self.debug_mode:
+            node.best_moves_by_leela = self.leela.get_best_moves(
+                node.immutable_data.state, num_return_sequences=self.num_top_subgoals
+            )
+            moves_by_subgoals = [node.paths_to_children[subgoal][0] for subgoal in subgoals]
+            top_n_moves = []
+            for idx, move in enumerate(node.best_moves_by_leela):
+                top_n_moves.append(move)
+                intersection = set(top_n_moves).intersection(set(moves_by_subgoals))
+                log_value_to_average(f"moves_len_intersect_subgoal_top_{idx+1}_leela", len(intersection))
+                log_value_to_average(f"moves_intersect_subgoal_top_{idx+1}_leela", len(intersection) > 0)
 
 
 class LeelaExpandFunction(ExpandFunction):
@@ -146,6 +161,7 @@ class TreeNode:
         self.all_values = [value]
         self.children = []
         self.paths_to_children = {}
+        self.best_moves_by_leela = None
 
     def get_player(self) -> chess.Color:
         return self.immutable_data.state.to_board().turn
