@@ -28,10 +28,11 @@ class StockfishEngine:
 
     @staticmethod
     def get_result_score(result):
-        if not result.is_mate():
-            return result.relative.cp
-        else:
-            return VALUE_FOR_MATE
+        return result.score(mate_score=VALUE_FOR_MATE)
+        #if not result.is_mate():
+        #    return result.relative.cp
+        #else:
+        #    return VALUE_FOR_MATE
 
     @staticmethod
     def absolute_v(player, v):
@@ -54,10 +55,10 @@ class StockfishEngine:
                 immutable_board.to_board(), chess.engine.Limit(depth=self.depth_limit), game=object()
             )["score"]
             engine.quit()
-            if result.is_mate():
-                return VALUE_FOR_MATE
+            #if result.is_mate():
+            #    return VALUE_FOR_MATE
             return StockfishEngine.absolute_v(
-                immutable_board.active_player, self.get_result_score(result)
+                player, self.get_result_score(result)
             )
         except chess.engine.EngineTerminatedError:
             return None
