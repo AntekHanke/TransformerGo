@@ -39,7 +39,7 @@ experiment_config = {
     "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
     "ChessStateExpander.chess_value_class": "@neural_networks.LCZeroValue",
     "ChessStateExpander.subgoal_generator_or_class": "@neural_networks.BasicChessSubgoalGenerator",
-    "ChessStateExpander.cllp_class": "@neural_networks.CLLP",
+    "ChessStateExpander.cllp_or_class": "@neural_networks.CLLP",
 
     "BasicChessSubgoalGenerator.checkpoint_path_or_model": "/data_gg/out_models/medium_generator_from_scratch_with_all_subgoals/16_03_22/k_3/checkpoint-95000/",
     "CLLP.checkpoint_path_or_model": "/data_gg/out_models/medium_cllp_from_scratch_k_form_1_to_9/14_03_23/checkpoint-89500/",
