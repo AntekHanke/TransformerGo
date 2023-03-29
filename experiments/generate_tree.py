@@ -29,7 +29,7 @@ experiment_config = {
     "StandardExpandFunction.generator_num_beams": 8,
     "StandardExpandFunction.generator_num_subgoals": 4,
     "StandardExpandFunction.subgoal_distance_k": 3,
-    "StandardExpandFunction.sort_subgoals_by": "highest_total_probability",
+    "StandardExpandFunction.sort_subgoals_by": "highest_min_probability",
     "StandardExpandFunction.num_top_subgoals": 4,
 
     "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
