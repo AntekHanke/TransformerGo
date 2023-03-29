@@ -185,6 +185,21 @@ class TreeNode:
             return [self.immutable_data.state]
         return [node.immutable_data.state for node in self.immutable_data.parent.children]
 
+    def to_named_tuple(self) -> NodeTuple:
+        parent_id = (
+            self.immutable_data.parent.immutable_data.n_id if self.immutable_data.parent is not None else None
+        )
+        return NodeTuple(
+            n_id=self.immutable_data.n_id,
+            parent_id=parent_id,
+            probability=self.immutable_data.probability,
+            value=self.get_value(),
+            num_visits=self.num_visits,
+            is_terminal=self.immutable_data.is_terminal,
+            is_expanded=self.is_expanded,
+            not_expandable=self.not_expandable,
+            state=self.immutable_data.state,
+        )
 
 class Tree:
     def __init__(
@@ -304,19 +319,6 @@ class Tree:
     def to_list(self):
         tree_list = []
         for node in self.node_list:
-            parent_id = (
-                node.immutable_data.parent.immutable_data.n_id if node.immutable_data.parent is not None else None
-            )
-            node_tuple = NodeTuple(
-                n_id=node.immutable_data.n_id,
-                parent_id=parent_id,
-                probability=node.immutable_data.probability,
-                value=node.get_value(),
-                num_visits=node.num_visits,
-                is_terminal=node.immutable_data.is_terminal,
-                is_expanded=node.is_expanded,
-                not_expandable=node.not_expandable,
-                state=node.immutable_data.state,
-            )
+            node_tuple = node.to_named_tuple()
             tree_list.append(node_tuple)
         return tree_list
