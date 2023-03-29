@@ -80,9 +80,12 @@ class CLLP:
         time_cllp = time.time()
         inputs_tokenized = []
         for input_immutable_board, target_immutable_board in queries_list:
-            inputs_tokenized.append(
-                self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
-            )
+            try:
+                inputs_tokenized.append(
+                    self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
+                )
+            except AssertionError:
+                print(f"An error during tokenization occurred: {input_immutable_board}, {target_immutable_board}")
         moves_batch = self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences)
         for query, paths in zip(queries_list, moves_batch):
             self.memory[query] = paths
