@@ -202,6 +202,8 @@ class TreeNode:
         )
 
 class Tree:
+    total_mcts_passes_counter = 0
+
     def __init__(
         self,
         initial_state: ImmutableBoard,
@@ -210,7 +212,6 @@ class Tree:
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
         expand_function_or_class: Union[Type[ExpandFunction], ExpandFunction] = None,
-        counter_initial_value: int = 0,
         output_root_values_list: bool = False,
     ):
         assert initial_state is not None, "Initial state is None"
@@ -219,7 +220,6 @@ class Tree:
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.counter_initial_value = counter_initial_value
         if isinstance(expand_function_or_class, ExpandFunction):
             self.expand_function = expand_function_or_class
         else:
@@ -266,6 +266,7 @@ class Tree:
 
     def execute_mcts_pass(self):
         self.mcts_passes_counter += 1
+        Tree.total_mcts_passes_counter += 1
         nodes_before_pass = len(self.node_list)
         log_value_without_step("MCTS passes", self.mcts_passes_counter)
         node = self.tree_traversal(self.root)
@@ -273,11 +274,11 @@ class Tree:
         self.backpropogate(node, value)
         log_value(
             "Nodes in a single pass",
-            self.counter_initial_value + self.mcts_passes_counter,
+            Tree.total_mcts_passes_counter,
             len(self.node_list) - nodes_before_pass,
         )
         log_value_to_average("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
-        accumulator_to_logger(self.counter_initial_value + self.mcts_passes_counter)
+        accumulator_to_logger(Tree.total_mcts_passes_counter)
         if self.output_root_values_list:
             self.root_values_list.append(self.root.get_value())
 
