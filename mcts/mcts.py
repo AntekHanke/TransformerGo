@@ -85,9 +85,9 @@ class StandardExpandFunction(ExpandFunction):
         if not subgoals:
             log_object("Subgoal generation failed", node.immutable_data.state.fen())
             log_value_to_accumulate("Number of node expansions failed", 1)
-            log_value_to_average("Proportion of node expansions failed", 1)
+            log_value_to_average("Fraction of node expansions failed", 1)
         else:
-            log_value_to_average("Proportion of node expansions failed", 0)
+            log_value_to_average("Fraction of node expansions failed", 0)
         for subgoal in subgoals:
             details = subgoals_info[subgoal]
             value = details["value"]
