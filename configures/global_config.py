@@ -41,3 +41,5 @@ N_MOVES_HISTORY_FOR_MODEL_INPUT = 10
 LCZERO_CLUSTER = "athena"  # "prometheus" or "athena"
 
 NUMBER_OF_PRINT_SEPARATORS: int = 150
+
+STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"

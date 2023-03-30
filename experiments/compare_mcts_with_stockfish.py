@@ -8,8 +8,8 @@ experiment_dir_path = os.path.dirname(os.path.abspath("__file__"))
 sys.path.append(experiment_dir_path)
 
 from mrunner.helpers.specification_helper import create_experiments_helper
+from configures.global_config import STOCKFISH_PATH
 
-STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
 EVAL_DATA_FILE = "/data_mg/data/only_immutable_board_eval_data/eval_immutable_boards_lichess.pkl"
 OUT_DIR = f"/out_models/mcts_vs_stockfish_statistics/{date.today()}_{random.randint(0, 100000)}_lichess"
 
