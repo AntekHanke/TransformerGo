@@ -1,4 +1,3 @@
-import logging
 import math
 import random
 import time
@@ -186,9 +185,7 @@ class TreeNode:
         return [node.immutable_data.state for node in self.immutable_data.parent.children]
 
     def to_named_tuple(self) -> NodeTuple:
-        parent_id = (
-            self.immutable_data.parent.immutable_data.n_id if self.immutable_data.parent is not None else None
-        )
+        parent_id = self.immutable_data.parent.immutable_data.n_id if self.immutable_data.parent is not None else None
         return NodeTuple(
             n_id=self.immutable_data.n_id,
             parent_id=parent_id,
@@ -200,6 +197,7 @@ class TreeNode:
             not_expandable=self.not_expandable,
             state=self.immutable_data.state,
         )
+
 
 class Tree:
     total_mcts_passes_counter = 0

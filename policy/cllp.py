@@ -1,7 +1,7 @@
+import time
 from typing import List, Tuple
 
 import torch
-import time
 from transformers import BartForConditionalGeneration
 
 from data_processing.chess_tokenizer import ChessTokenizer

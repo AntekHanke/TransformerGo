@@ -7,7 +7,7 @@ from transformers import BartForConditionalGeneration
 from configures.global_config import TOKENIZED_BOARD_LEN
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
-from metric_logging import log_object, log_value_to_average, log_value_to_accumulate
+from metric_logging import log_value_to_average, log_value_to_accumulate
 
 
 def chunks(lst, n):
@@ -16,15 +16,11 @@ def chunks(lst, n):
 
 
 class ChessSubgoalGenerator:
-    def __init__(
-        self, checkpoint_path_or_model: Union[str, BartForConditionalGeneration]
-    ):
+    def __init__(self, checkpoint_path_or_model: Union[str, BartForConditionalGeneration]):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Device used for evaluation subgoal generator:", device)
         if isinstance(checkpoint_path_or_model, str):
-            self.model = BartForConditionalGeneration.from_pretrained(
-                checkpoint_path_or_model
-            )
+            self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
         else:
             self.model = checkpoint_path_or_model
         self.model.to(device)
@@ -81,9 +77,7 @@ class BasicChessSubgoalGenerator(ChessSubgoalGenerator):
             **subgoal_generation_kwargs,
         ).tolist()
         log_value_to_average("subgoal_generation_time_avg", time.time() - time_start)
-        log_value_to_accumulate(
-            "subgoal_generation_time_total", time.time() - time_start
-        )
+        log_value_to_accumulate("subgoal_generation_time_total", time.time() - time_start)
         all_subgoals = [
             [ChessTokenizer.decode_board(sequence) for sequence in subgoal_out]
             for subgoal_out in chunks(outputs, generator_num_subgoals)
