@@ -1,12 +1,12 @@
+import time
 from typing import List, Tuple
 
 import torch
-import time
 from transformers import BartForConditionalGeneration
 
 from data_processing.chess_tokenizer import ChessTokenizer
 from data_structures.data_structures import ImmutableBoard
-from metric_logging import log_value_to_accumulate, log_value_to_average
+from metric_logging import log_value_to_accumulate, log_value_to_average, log_object
 
 
 class CLLP:
@@ -80,9 +80,14 @@ class CLLP:
         time_cllp = time.time()
         inputs_tokenized = []
         for input_immutable_board, target_immutable_board in queries_list:
-            inputs_tokenized.append(
-                self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
-            )
+            try:
+                inputs_tokenized.append(
+                    self.input_and_target_to_list_of_tokens(input_immutable_board, target_immutable_board)
+                )
+            except (AssertionError, ValueError) as e:
+                log_object("Error during tokenization", e)
+                log_object("Error occurred when input board was", input_immutable_board.fen())
+                log_object("Error occurred when target board was", target_immutable_board.fen())
         moves_batch = self.generate_moves_batch_from_model(inputs_tokenized, num_beams, num_return_sequences)
         for query, paths in zip(queries_list, moves_batch):
             self.memory[query] = paths

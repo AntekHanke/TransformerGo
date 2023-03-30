@@ -2,9 +2,10 @@ contexts:
 
   athena_gpu:
     backend_type: slurm
+    account: plgplggllmeffi-gpu-a100
     cmd_type: sbatch
     cpu: 2
-    mem: 120G
+    mem: 20G
     gpu: 4
     nodes: 1
     ntasks: 1
@@ -25,6 +26,7 @@ contexts:
 
   athena_cpu:
     backend_type: slurm
+    account: plgplggllmeffi-gpu-a100
     cmd_type: sbatch
     cpu: 8
     mem: 80G

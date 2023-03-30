@@ -15,6 +15,7 @@ from metric_logging import (
     log_value,
     log_value_to_average,
     log_param,
+    log_object,
 )
 from policy.chess_policy import LCZeroPolicy
 from value.chess_value import LCZeroValue
@@ -81,6 +82,12 @@ class StandardExpandFunction(ExpandFunction):
             sort_subgoals_by=self.sort_subgoals_by,
         )
         subgoals = subgoals[: self.num_top_subgoals]
+        if not subgoals:
+            log_object("Subgoal generation failed", node.immutable_data.state.fen())
+            log_value_to_accumulate("Number of node expansions failed", 1)
+            log_value_to_average("Fraction of node expansions failed", 1)
+        else:
+            log_value_to_average("Fraction of node expansions failed", 0)
         for subgoal in subgoals:
             details = subgoals_info[subgoal]
             value = details["value"]
@@ -133,7 +140,9 @@ class LeelaExpandFunction(ExpandFunction):
 
 
 TreeNodeData = namedtuple("TreeNode", "n_id level state parent is_terminal probability")
-NodeTuple = namedtuple("NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded state")
+NodeTuple = namedtuple(
+    "NodeTuple", "n_id parent_id probability value num_visits is_terminal is_expanded not_expandable state"
+)
 
 
 class TreeNode:
@@ -156,6 +165,7 @@ class TreeNode:
         )
         TreeNode.node_counter += 1
         log_value_to_accumulate("tree_nodes", 1)
+        self.not_expandable = self.immutable_data.is_terminal
         self.is_expanded = self.immutable_data.is_terminal
         self.num_visits = 1
         self.all_values = [value]
@@ -174,8 +184,24 @@ class TreeNode:
             return [self.immutable_data.state]
         return [node.immutable_data.state for node in self.immutable_data.parent.children]
 
+    def to_named_tuple(self) -> NodeTuple:
+        parent_id = self.immutable_data.parent.immutable_data.n_id if self.immutable_data.parent is not None else None
+        return NodeTuple(
+            n_id=self.immutable_data.n_id,
+            parent_id=parent_id,
+            probability=self.immutable_data.probability,
+            value=self.get_value(),
+            num_visits=self.num_visits,
+            is_terminal=self.immutable_data.is_terminal,
+            is_expanded=self.is_expanded,
+            not_expandable=self.not_expandable,
+            state=self.immutable_data.state,
+        )
+
 
 class Tree:
+    total_mcts_passes_counter = 0
+
     def __init__(
         self,
         initial_state: ImmutableBoard,
@@ -184,7 +210,7 @@ class Tree:
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
         expand_function_or_class: Union[Type[ExpandFunction], ExpandFunction] = None,
-        counter_initial_value: int = 0,
+        output_root_values_list: bool = False,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
@@ -192,12 +218,14 @@ class Tree:
         self.node_list = [self.root]
         self.exploration_constant = exploration_constant
         self.score_function = score_function
-        self.counter_initial_value = counter_initial_value
         if isinstance(expand_function_or_class, ExpandFunction):
             self.expand_function = expand_function_or_class
         else:
             self.expand_function = expand_function_or_class()
         self.mcts_passes_counter = 0
+        self.output_root_values_list = output_root_values_list
+        if output_root_values_list:
+            self.root_values_list = []
 
         assert (
             time_limit is not None or max_mcts_passes is not None
@@ -224,15 +252,19 @@ class Tree:
 
         best_child = self.get_best_child(self.root, 0)
         best_path = self.root.paths_to_children[best_child.immutable_data.state]
-        return {
+        output_dir = {
             "best_node": best_child,
             "best_path": best_path,
             "best_child": best_child.immutable_data.state,
             "expected_value": best_child.get_value(),
         }
+        if self.output_root_values_list:
+            output_dir["root_values_list"] = self.root_values_list
+        return output_dir
 
     def execute_mcts_pass(self):
         self.mcts_passes_counter += 1
+        Tree.total_mcts_passes_counter += 1
         nodes_before_pass = len(self.node_list)
         log_value_without_step("MCTS passes", self.mcts_passes_counter)
         node = self.tree_traversal(self.root)
@@ -240,20 +272,25 @@ class Tree:
         self.backpropogate(node, value)
         log_value(
             "Nodes in a single pass",
-            self.counter_initial_value + self.mcts_passes_counter,
+            Tree.total_mcts_passes_counter,
             len(self.node_list) - nodes_before_pass,
         )
         log_value_to_average("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
-        accumulator_to_logger(self.counter_initial_value + self.mcts_passes_counter)
+        accumulator_to_logger(Tree.total_mcts_passes_counter)
+        if self.output_root_values_list:
+            self.root_values_list.append(self.root.get_value())
 
     def tree_traversal(self, node: TreeNode) -> TreeNode:
-        while not node.immutable_data.is_terminal:
+        while not node.not_expandable:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
             else:
                 self.expand_function.expand_function(node=node)
                 self.node_list += node.children
                 node.is_expanded = True
+                if not node.children:
+                    node.not_expandable = True
+                    return node
                 return self.get_best_child(node, self.exploration_constant)
         return node
 
@@ -266,6 +303,7 @@ class Tree:
     def get_best_child(self, node: TreeNode, exploration_constant: float) -> TreeNode:
         best_score = float("-inf")
         best_nodes = []
+        assert node.children, "Node provided to get_best_child method has no children"
         for child in node.children:
             node_score = self.score_function(
                 node=child, root_player=self.root_player, exploration_constant=exploration_constant
@@ -280,18 +318,6 @@ class Tree:
     def to_list(self):
         tree_list = []
         for node in self.node_list:
-            parent_id = (
-                node.immutable_data.parent.immutable_data.n_id if node.immutable_data.parent is not None else None
-            )
-            node_tuple = NodeTuple(
-                n_id=node.immutable_data.n_id,
-                parent_id=parent_id,
-                probability=node.immutable_data.probability,
-                value=node.get_value(),
-                num_visits=node.num_visits,
-                is_terminal=node.immutable_data.is_terminal,
-                is_expanded=node.is_expanded,
-                state=node.immutable_data.state,
-            )
+            node_tuple = node.to_named_tuple()
             tree_list.append(node_tuple)
         return tree_list

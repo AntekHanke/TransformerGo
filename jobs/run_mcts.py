@@ -15,7 +15,7 @@ from mcts.mcts import score_function, TreeNode
 from mcts.mcts_tree_network import mcts_tree_network
 from metric_logging import log_param, log_value
 
-TreeData = namedtuple("TreeData", "tree_as_list best_tree_state")
+TreeData = namedtuple("TreeData", "tree_as_list mcts_output")
 
 
 class RunMCTSJob(Job):
@@ -58,8 +58,9 @@ class RunMCTSJob(Job):
             expand_function_or_class=self.expand_function_class,
         )
         mcts_output = tree.mcts()
+        mcts_output["best_node"] = mcts_output["best_node"].to_named_tuple()
         log_value("MCTS time", 0, time.time() - time_start)
         mcts_tree_network(tree=tree, target_path=self.out_dir, target_name=self.out_file_name, with_images=True)
-        output = TreeData(tree_as_list=tree.to_list(), best_tree_state=mcts_output)
+        output = TreeData(tree_as_list=tree.to_list(), mcts_output=mcts_output)
         with open(os.path.join(self.out_dir, self.out_file_name + ".pkl"), "wb+") as f:
             pickle.dump(output, f)
