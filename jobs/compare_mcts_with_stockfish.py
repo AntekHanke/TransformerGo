@@ -61,6 +61,7 @@ class CompareMCTSWithStockfish(Job):
                 max_mcts_passes=self.max_mcts_passes,
                 exploration_constant=self.exploration_constant,
                 score_function=self.score_function,
+                expand_function_or_class=self.expand_function_class,
                 output_root_values_list=True,
             )
             mcts_output_dict = tree.mcts()
