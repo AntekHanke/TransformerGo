@@ -31,7 +31,7 @@ class ChessStateExpander:
         chess_policy_class: Type[ChessPolicy],
         chess_value_class: Type[ChessValue],
         subgoal_generator_or_class: Union[Type[BasicChessSubgoalGenerator], BasicChessSubgoalGenerator],
-        cllp_or_class: Union[Type[CLLP], CLLP]
+        cllp_or_class: Union[Type[CLLP], CLLP],
     ):
         self.policy = chess_policy_class()
         self.value = chess_value_class()
@@ -75,7 +75,7 @@ class ChessStateExpander:
                 generator_num_beams=generator_num_beams,
                 generator_num_subgoals=generator_num_subgoals,
                 subgoal_distance_k=subgoal_distance_k,
-                **subgoal_generation_kwargs
+                **subgoal_generation_kwargs,
             )
             cllp_input_batch = []
             for sibling, targets in zip(siblings_states, all_subgoals):
@@ -97,7 +97,9 @@ class ChessStateExpander:
                 if subgoal_info is not None:
                     subgoals_info[subgoal] = subgoal_info
             except ValueError as e:
-                log_object("Failed to find paths", f"from {input_immutable_board} to {subgoal}")
+                log_object(
+                    "Failed to find paths", f"{e}, when looking for path from {input_immutable_board} to {subgoal}"
+                )
 
         sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
         log_value_to_accumulate("analysis_time", time.time() - analysis_time_start)
