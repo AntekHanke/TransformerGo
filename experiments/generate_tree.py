@@ -28,9 +28,11 @@ experiment_config = {
     "StandardExpandFunction.cllp_num_return_sequences": 1,
     "StandardExpandFunction.generator_num_beams": 8,
     "StandardExpandFunction.generator_num_subgoals": 4,
+    "StandardExpandFunction.generator_num_subgoals_first_layer": 6,
     "StandardExpandFunction.subgoal_distance_k": 3,
     "StandardExpandFunction.sort_subgoals_by": "highest_min_probability",
     "StandardExpandFunction.num_top_subgoals": 4,
+    "StandardExpandFunction.num_top_subgoals_first_layer": 6,
 
     "ChessStateExpander.chess_policy_class": "@neural_networks.LCZeroPolicy",
     "ChessStateExpander.chess_value_class": "@neural_networks.LCZeroValue",
