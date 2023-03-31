@@ -275,17 +275,26 @@ class Tree:
         if self.output_root_values_list:
             output_dir["root_values_list"] = self.root_values_list
         if self.log_root_data:
+            final_move = best_path[0]
             log_object("root_moves", f"root_moves_{Tree.trees_counter} {[str(x) for x in root_moves]}")
             subgoal_values = self.stockfish.evaluate_boards_in_parallel(root_subgoals)
             input_board_value = self.stockfish.evaluate_immutable_board(self.root.immutable_data.state)
+            subgoal_mcts_values = [round(x.get_value(), 2) for x in self.root.children]
             move_boards = []
             for move in root_moves:
                 board = self.root.immutable_data.state.to_board()
                 board.push(move)
                 move_boards.append(ImmutableBoard.from_board(board))
             move_values = self.stockfish.evaluate_boards_in_parallel(move_boards)
-            descriptions = [f"m: {x} v_s: {y} v_m: {z}" for x, y, z in zip(root_moves, subgoal_values, move_values)]
-            fig = immutable_boards_to_img([self.root.immutable_data.state] + root_subgoals, [f"input v: {input_board_value}"] + descriptions)
+            descriptions = [
+                f"m: {a} v_s: {b} v_m: {c} t_v: {d}"
+                for a, b, c, d in zip(root_moves, subgoal_values, move_values, subgoal_mcts_values)
+            ]
+            fig = immutable_boards_to_img(
+                [self.root.immutable_data.state] + root_subgoals,
+                [f"input v: {input_board_value} t_v: {round(self.root.get_value(),2)} chosen m: {final_move}"]
+                + descriptions,
+            )
             log_object("root_subgoals", fig)
         return output_dir
 
@@ -302,7 +311,6 @@ class Tree:
             Tree.total_mcts_passes_counter,
             len(self.node_list) - nodes_before_pass,
         )
-        log_value_to_average("Nodes in a single pass", len(self.node_list) - nodes_before_pass)
         accumulator_to_logger(Tree.total_mcts_passes_counter)
         if self.output_root_values_list:
             self.root_values_list.append(self.root.get_value())
