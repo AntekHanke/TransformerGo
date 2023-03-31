@@ -2,6 +2,7 @@ contexts:
 
   athena_gpu:
     backend_type: slurm
+    account: plgplggllmeffi-gpu-a100
     cmd_type: sbatch
     cpu: 2
     mem: 20G

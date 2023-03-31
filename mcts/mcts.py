@@ -6,6 +6,7 @@ from typing import Callable, Type, List, Union
 
 import chess
 
+from chess_engines.third_party.stockfish import StockfishEngine
 from data_structures.data_structures import ImmutableBoard
 from mcts.node_expansion import ChessStateExpander
 from metric_logging import (
@@ -18,6 +19,7 @@ from metric_logging import (
     log_object,
 )
 from policy.chess_policy import LCZeroPolicy
+from utils.data_utils import immutable_boards_to_img
 from value.chess_value import LCZeroValue
 
 
@@ -201,6 +203,7 @@ class TreeNode:
 
 class Tree:
     total_mcts_passes_counter = 0
+    trees_counter = 0
 
     def __init__(
         self,
@@ -210,7 +213,8 @@ class Tree:
         exploration_constant: float = 1 / math.sqrt(2),
         score_function: Callable[[TreeNode, chess.Color, float], float] = score_function,
         expand_function_or_class: Union[Type[ExpandFunction], ExpandFunction] = None,
-        output_root_values_list: bool = False,
+        output_root_values_list: bool = True,
+        log_root_data: bool = True,
     ):
         assert initial_state is not None, "Initial state is None"
         self.root = TreeNode(state=initial_state, parent=None)
@@ -226,12 +230,17 @@ class Tree:
         self.output_root_values_list = output_root_values_list
         if output_root_values_list:
             self.root_values_list = []
+        self.log_root_data = log_root_data
 
         assert (
             time_limit is not None or max_mcts_passes is not None
         ), "Can't have both time_limit and max_mcts_passes set to None"
         self.time_limit = time_limit
         self.max_mcts_passes = max_mcts_passes
+
+        self.lc0_policy = LCZeroPolicy()
+        self.stockfish = StockfishEngine(depth_limit=20)
+        Tree.trees_counter += 1
 
     def mcts(self) -> dict:
         self.mcts_passes_counter = 0
@@ -252,14 +261,32 @@ class Tree:
 
         best_child = self.get_best_child(self.root, 0)
         best_path = self.root.paths_to_children[best_child.immutable_data.state]
+        root_moves = [x[0] for x in self.root.paths_to_children.values()]
+        root_subgoals = [x.immutable_data.state for x in self.root.children]
         output_dir = {
             "best_node": best_child,
             "best_path": best_path,
             "best_child": best_child.immutable_data.state,
             "expected_value": best_child.get_value(),
+            "root_moves": root_moves,
+            "root_subgoals": root_subgoals,
+            "leela_best_move": self.lc0_policy.get_best_moves(self.root.immutable_data.state, None, 1)[0],
         }
         if self.output_root_values_list:
             output_dir["root_values_list"] = self.root_values_list
+        if self.log_root_data:
+            log_object("root_moves", f"root_moves_{Tree.trees_counter} {[str(x) for x in root_moves]}")
+            subgoal_values = self.stockfish.evaluate_boards_in_parallel(root_subgoals)
+            input_board_value = self.stockfish.evaluate_immutable_board(self.root.immutable_data.state)
+            move_boards = []
+            for move in root_moves:
+                board = self.root.immutable_data.state.to_board()
+                board.push(move)
+                move_boards.append(ImmutableBoard.from_board(board))
+            move_values = self.stockfish.evaluate_boards_in_parallel(move_boards)
+            descriptions = [f"m: {x} v_s: {y} v_m: {z}" for x, y, z in zip(root_moves, subgoal_values, move_values)]
+            fig = immutable_boards_to_img([self.root.immutable_data.state] + root_subgoals, [f"input v: {input_board_value}"] + descriptions)
+            log_object("root_subgoals", fig)
         return output_dir
 
     def execute_mcts_pass(self):

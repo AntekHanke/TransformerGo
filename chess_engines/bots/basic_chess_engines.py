@@ -74,7 +74,7 @@ class PolicyChess(ChessEngine):
 
         self.name: str = name
         self.log_dir = log_dir
-        self.debug_mode = debug_mode
+        self.debug_mode = False
         self.replace_legall_move_with_random = replace_legall_move_with_random
         self.do_sample = do_sample
         self.policy_checkpoint = policy_checkpoint
@@ -115,18 +115,18 @@ class PolicyChess(ChessEngine):
             log_engine_specific_info(f"NUMBER OF GENERATED MOVES: {number_of_moves}", self.log_dir)
             log_engine_specific_info("JUST BEFORE SELECTING BEST MOVES", self.log_dir)
 
-        try:
-            moves, probs = self.chess_policy.get_best_moves(
-                immutable_board=ImmutableBoard.from_board(current_state),
-                history=None,
-                num_return_sequences=number_of_moves,
-                return_probs=True,
-                do_sample=self.do_sample,
-            )
-            log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
-        except Exception as e:
-            log_engine_specific_info(f"ERROR: {e}", self.log_dir)
-            return None
+        # try:
+        moves, probs = self.chess_policy.get_best_moves(
+            immutable_board=ImmutableBoard.from_board(current_state),
+            history=None,
+            num_return_sequences=number_of_moves,
+            return_probs=True,
+            do_sample=self.do_sample,
+        )
+        # log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
+        # except Exception as e:
+        #     log_engine_specific_info(f"ERROR: {e}", self.log_dir)
+        #     return None
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER SELECTING BEST MOVES. BEST MOVES: {moves}", self.log_dir)
