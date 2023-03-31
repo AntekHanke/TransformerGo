@@ -49,7 +49,7 @@ contexts:
     time: 2880
 
   ares_quick:
-    account: plgrlresearchgpu-gpu
+    account: plgplggllmeffi-gpu
     backend_type: slurm
     cmd_type: sbatch
     partition: plgrid-bigmem
@@ -70,7 +70,7 @@ contexts:
                             -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
 
   ares_gpu:
-    account: plgrlresearchgpu-gpu
+    account: plgplggllmeffi-gpu
     backend_type: slurm
     cmd_type: sbatch
     partition: plgrid-gpu-v100

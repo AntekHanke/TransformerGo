@@ -5,7 +5,7 @@ import numpy as np
 from chess import Move
 
 from data_structures.data_structures import ImmutableBoard
-from metric_logging import log_value_to_average, log_value_to_accumulate
+from metric_logging import log_value_to_average, log_value_to_accumulate, log_object
 from policy.chess_policy import ChessPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
@@ -31,7 +31,7 @@ class ChessStateExpander:
         chess_policy_class: Type[ChessPolicy],
         chess_value_class: Type[ChessValue],
         subgoal_generator_or_class: Union[Type[BasicChessSubgoalGenerator], BasicChessSubgoalGenerator],
-        cllp_or_class: Union[Type[CLLP], CLLP]
+        cllp_or_class: Union[Type[CLLP], CLLP],
     ):
         self.policy = chess_policy_class()
         self.value = chess_value_class()
@@ -75,7 +75,7 @@ class ChessStateExpander:
                 generator_num_beams=generator_num_beams,
                 generator_num_subgoals=generator_num_subgoals,
                 subgoal_distance_k=subgoal_distance_k,
-                **subgoal_generation_kwargs
+                **subgoal_generation_kwargs,
             )
             cllp_input_batch = []
             for sibling, targets in zip(siblings_states, all_subgoals):
@@ -91,10 +91,15 @@ class ChessStateExpander:
         analysis_time_start = time.time()
         subgoals_info = {}
         for subgoal in subgoals:
-            paths_to_subgoal = self.cllp.get_paths_use_memory(input_immutable_board, subgoal)
-            subgoal_info = self.analyze_subgoal(input_immutable_board, subgoal, paths_to_subgoal)
-            if subgoal_info is not None:
-                subgoals_info[subgoal] = subgoal_info
+            try:
+                paths_to_subgoal = self.cllp.get_paths_use_memory(input_immutable_board, subgoal)
+                subgoal_info = self.analyze_subgoal(input_immutable_board, subgoal, paths_to_subgoal)
+                if subgoal_info is not None:
+                    subgoals_info[subgoal] = subgoal_info
+            except ValueError as e:
+                log_object(
+                    "Failed to find paths", f"{e}, when looking for path from {input_immutable_board} to {subgoal}"
+                )
 
         sorted_subgoals = self.sort_subgoals(subgoals_info, sort_subgoals_by)
         log_value_to_accumulate("analysis_time", time.time() - analysis_time_start)
