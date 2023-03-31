@@ -18,6 +18,8 @@ subgoal_mcts_engine_params = {
     "subgoal_distance_k": 3,
     "sort_subgoals_by": "highest_min_probability",
     "num_top_subgoals": 4,
+    "log_trees": False,
+    "log_dir": None,
 }
 
 leela_engine_params = {

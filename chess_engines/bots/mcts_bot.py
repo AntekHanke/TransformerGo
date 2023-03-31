@@ -1,4 +1,8 @@
 import math
+import os
+import pickle
+from datetime import datetime, date
+from pathlib import Path
 from typing import Optional, List
 
 import chess
@@ -6,6 +10,7 @@ import chess
 from chess_engines.bots.basic_chess_engines import ChessEngine
 from data_structures.data_structures import ImmutableBoard
 from mcts.mcts import Tree, StandardExpandFunction, score_function, LeelaExpandFunction
+from mcts.mcts_tree_network import mcts_tree_network
 from mcts.node_expansion import ChessStateExpander
 from policy.chess_policy import LCZeroPolicy
 from policy.cllp import CLLP
@@ -27,10 +32,28 @@ class MCTSChessEngine(ChessEngine):
             expand_function_or_class=self.expand_function,
         )
         mcts_output = tree.mcts()
+        self.tree_count += 1
+        if self.log_trees:
+            mcts_tree_network(
+                tree=tree,
+                target_path=os.path.join(self.out_dir, f"tree_{self.tree_count}"),
+                target_name="tree",
+                with_images=True,
+            )
+            with open(os.path.join(self.out_dir, f"tree_{self.tree_count}.pkl"), "wb") as f:
+                pickle.dump(tree.to_list(), f)
+
         return mcts_output["best_path"][0].uci()
 
     def new_game(self) -> None:
-        pass
+        self.tree_count = 0
+        if self.log_trees:
+            today = date.today()
+            now = datetime.now()
+            self.out_dir = os.path.join(
+                self.log_dir, str(today), f"{now.hour}_{now.minute}_{now.second}", f"{self.name}"
+            )
+            Path(self.out_dir).mkdir(parents=True, exist_ok=True)
 
 
 class SubgoalMCTSChessEngine(MCTSChessEngine):
@@ -48,6 +71,8 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         generator_num_subgoals: int = None,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
+        log_trees: bool = False,
+        log_dir: str = None,
     ):
         self.name = "Subgoal_MCTS"
         self.time_limit = time_limit
@@ -62,8 +87,11 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
         self.num_top_subgoals = num_top_subgoals
+        self.log_trees = log_trees
+        self.log_dir = log_dir
 
         self.log_all_params()
+        self.game_count = 0
 
         generator = BasicChessSubgoalGenerator(self.generator_path)
         cllp = CLLP(self.cllp_path)
@@ -88,6 +116,8 @@ class VanillaMCTSChessEngine(MCTSChessEngine):
         exploration_constant: float = 1 / math.sqrt(2),
         policy_num_moves: int = None,
         policy_num_beams: int = None,
+        log_trees: bool = False,
+        log_dir: str = None,
     ):
         self.name = "Vanilla_MCTS"
         self.time_limit = time_limit
@@ -95,8 +125,11 @@ class VanillaMCTSChessEngine(MCTSChessEngine):
         self.exploration_constant = exploration_constant
         self.policy_num_moves = policy_num_moves
         self.policy_num_beams = policy_num_beams
+        self.log_trees = log_trees
+        self.log_dir = log_dir
 
         self.log_all_params()
+        self.game_count = 0
 
         self.expand_function = LeelaExpandFunction(
             num_return_moves=self.policy_num_moves, num_beams=self.policy_num_beams
