@@ -11,12 +11,12 @@ subgoal_mcts_engine_params = {
     "max_mcts_passes": 15,
     "generator_path": None,
     "cllp_path": None,
-    "cllp_num_beams": 1,
+    "cllp_num_beams": 2,
     "cllp_num_return_sequences": 1,
-    "generator_num_beams": 8,
+    "generator_num_beams": 12,
     "generator_num_subgoals": 4,
     "subgoal_distance_k": 3,
-    "sort_subgoals_by": None,
+    "sort_subgoals_by": "highest_min_probability",
     "num_top_subgoals": 4,
 }
 
