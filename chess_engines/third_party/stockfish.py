@@ -5,10 +5,10 @@ from joblib import Parallel, delayed
 import chess
 import chess.engine
 
-from configures.global_config import VALUE_FOR_MATE, MAX_JOBLIB_N_JOBS
+from configures.global_config import VALUE_FOR_MATE, MAX_JOBLIB_N_JOBS, STOCKFISH_PATH
 from data_structures.data_structures import ImmutableBoard
 
-DEFAULT_STOCKFISH_PATH = "stockfish"
+DEFAULT_STOCKFISH_PATH = STOCKFISH_PATH
 DEFAULT_STOCKFISH_PATH_CLUSTER = "/Stockfish/src/stockfish"
 
 
