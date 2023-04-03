@@ -43,9 +43,11 @@ class StandardExpandFunction(ExpandFunction):
         cllp_num_return_sequences: int = None,
         generator_num_beams: int = None,
         generator_num_subgoals: int = None,
+        generator_num_subgoals_first_layer: int = None,
         subgoal_distance_k: int = 3,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
+        num_top_subgoals_first_layer: int = None,
         debug_mode: bool = True,
     ):
         if isinstance(chess_state_expander_or_class, ChessStateExpander):
@@ -56,9 +58,17 @@ class StandardExpandFunction(ExpandFunction):
         self.cllp_num_return_sequences = cllp_num_return_sequences
         self.generator_num_beams = generator_num_beams
         self.generator_num_subgoals = generator_num_subgoals
+        self.generator_num_subgoals_first_layer = (
+            generator_num_subgoals_first_layer
+            if generator_num_subgoals_first_layer is not None
+            else generator_num_subgoals_first_layer
+        )
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
         self.num_top_subgoals = num_top_subgoals
+        self.num_top_subgoals_first_layer = (
+            num_top_subgoals_first_layer if num_top_subgoals_first_layer is not None else num_top_subgoals
+        )
         self.debug_mode = debug_mode
         self.leela = LCZeroPolicy()
 
@@ -73,17 +83,20 @@ class StandardExpandFunction(ExpandFunction):
 
     def expand_function(self, node: "TreeNode", **kwargs) -> None:
         assert self.chess_state_expander is not None, "ChessStateExpander hasn't been provided"
+        first_layer = node.immutable_data.level == 0
+        generator_num_subgoals = self.generator_num_subgoals_first_layer if first_layer else self.generator_num_subgoals
         subgoals, subgoals_info = self.chess_state_expander.expand_state(
             input_immutable_board=node.immutable_data.state,
             siblings_states=node.get_siblings_states(),
             cllp_num_beams=self.cllp_num_beams,
             cllp_num_return_sequences=self.cllp_num_return_sequences,
             generator_num_beams=self.generator_num_beams,
-            generator_num_subgoals=self.generator_num_subgoals,
+            generator_num_subgoals=generator_num_subgoals,
             subgoal_distance_k=self.subgoal_distance_k,
             sort_subgoals_by=self.sort_subgoals_by,
         )
-        subgoals = subgoals[: self.num_top_subgoals]
+        num_top_subgoals = self.num_top_subgoals_first_layer if first_layer else self.num_top_subgoals
+        subgoals = subgoals[:num_top_subgoals]
         if not subgoals:
             log_object("Subgoal generation failed", node.immutable_data.state.fen())
             log_value_to_accumulate("Number of node expansions failed", 1)
@@ -118,16 +131,23 @@ class LeelaExpandFunction(ExpandFunction):
         self,
         num_return_moves: int,
         num_beams: int,
+        num_return_moves_first_layer: int = None,
     ):
         self.policy = LCZeroPolicy()
         self.value = LCZeroValue()
         self.num_return_moves = num_return_moves
+        self.num_return_moves_first_layer = (
+            num_return_moves_first_layer if num_return_moves_first_layer is not None else num_return_moves
+        )
         self.num_beams = num_beams
 
     def expand_function(self, node: "TreeNode", **kwargs) -> None:
+        num_return_sequences = (
+            self.num_return_moves_first_layer if node.immutable_data.level == 0 else self.num_return_moves
+        )
         moves, probs = self.policy.get_best_moves(
             immutable_board=node.immutable_data.state,
-            num_return_sequences=self.num_return_moves,
+            num_return_sequences=num_return_sequences,
             num_beams=self.num_beams,
             return_probs=True,
         )
