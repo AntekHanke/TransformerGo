@@ -42,4 +42,7 @@ LCZERO_CLUSTER = "athena"  # "prometheus" or "athena"
 
 NUMBER_OF_PRINT_SEPARATORS: int = 150
 
-STOCKFISH_PATH = "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
+STOCKFISH_PATH = None if is_local_machine() else "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
+
+TREE_DISPLAY_SCORE_FACTOR = 1000
+TREE_DISPLAY_LEVEL_DISTANCE_FACTOR = 1.2
