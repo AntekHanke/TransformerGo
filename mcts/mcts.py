@@ -193,6 +193,7 @@ class TreeNode:
         self.all_values = [value]
         self.children = []
         self.paths_to_children = {}
+        self.root_final_path = None
         self.best_moves_by_leela = None
 
     def get_player(self) -> chess.Color:
@@ -292,6 +293,7 @@ class Tree:
             "root_subgoals": root_subgoals,
             "leela_best_move": self.lc0_policy.get_best_moves(self.root.immutable_data.state, None, 1)[0],
         }
+        self.root.root_final_path = best_path
         if self.output_root_values_list:
             output_dir["root_values_list"] = self.root_values_list
         if self.log_root_data:

@@ -12,6 +12,7 @@ from data_structures.data_structures import ImmutableBoard
 from mcts.mcts import Tree, StandardExpandFunction, score_function, LeelaExpandFunction
 from mcts.mcts_tree_network import mcts_tree_network
 from mcts.node_expansion import ChessStateExpander
+from metric_logging import log_object
 from policy.chess_policy import LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
@@ -30,6 +31,8 @@ class MCTSChessEngine(ChessEngine):
             exploration_constant=self.exploration_constant,
             score_function=score_function,
             expand_function_or_class=self.expand_function,
+            output_root_values_list=True,
+            log_root_data=False,
         )
         mcts_output = tree.mcts()
         self.tree_count += 1
@@ -69,6 +72,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         generator_num_beams: int = None,
         subgoal_distance_k: int = 3,
         generator_num_subgoals: int = None,
+        generator_num_subgoals_first_layer: int = None,
         sort_subgoals_by: str = None,
         num_top_subgoals: int = None,
         log_trees: bool = False,
@@ -84,6 +88,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         self.cllp_num_return_sequences = cllp_num_return_sequences
         self.generator_num_beams = generator_num_beams
         self.generator_num_subgoals = generator_num_subgoals
+        self.generator_num_subgoals_first_layer = generator_num_subgoals_first_layer
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
         self.num_top_subgoals = num_top_subgoals
@@ -101,12 +106,14 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
             cllp_num_beams=self.cllp_num_beams,
             cllp_num_return_sequences=self.cllp_num_return_sequences,
             generator_num_beams=self.generator_num_beams,
+            generator_num_subgoals_first_layer=self.generator_num_subgoals_first_layer,
             generator_num_subgoals=self.generator_num_subgoals,
             subgoal_distance_k=self.subgoal_distance_k,
             sort_subgoals_by=self.sort_subgoals_by,
             num_top_subgoals=self.num_top_subgoals,
         )
 
+        log_object("Status", "ready")
 
 class VanillaMCTSChessEngine(MCTSChessEngine):
     def __init__(
