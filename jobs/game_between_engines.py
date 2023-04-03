@@ -31,6 +31,8 @@ class GameBetweenEngines(Job):
         log_object("Players", f"White: {self.players['white'].name}, Black: {self.players['black'].name}")
 
     def execute(self):
+        self.engine_white.new_game()
+        self.engine_black.new_game()
         board = chess.Board()
         moves_counter = 0
         while not board.is_game_over():
