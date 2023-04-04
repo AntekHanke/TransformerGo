@@ -6,17 +6,18 @@
 preexisting virtual environment.
 
 ### Setting up the bot
-1. There are two main objects you will be modifying:
+1. There is one main object you will be modifying:
    1. **config.yaml** - this file contains all the configuration needed to run your
    engine as a Lichess bot
-   2. **engines** directory - this directory contains executables to the engines 
-   you will be running
-2. Put your executable engine in the `engines` directory following the format of the engines
-in *chess_engines/banksia_gui_uci*.
+2. Put your executable engine in the appropriate directory in *chess_engines/banksia_gui_uci/<your_name>*.
 3. Double-check the engine file is executable by running `chmod +x <engine_name>`.
 5. In the `config.yaml` file, change the `engine` field to the name of your engine.
+6. Change also `dir` so that it points to your directory.
 6. If you wish, you can also play around with other settings, according to instructions in
 the [Lichess Bot documentation - Engine Configuration](README.md#engine-configuration).
+
+*Sidenote: `uci_options: Move Overhead, Threads, Hash, SyzygyPath` have been commented out to ensure
+the engine running according to https://github.com/lichess-bot-devs/lichess-bot/issues/312* .
 
 ### Running the bot
 

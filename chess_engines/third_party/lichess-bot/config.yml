@@ -2,7 +2,7 @@ token: "lip_JwrHpEw7bVXS8WYpYeNJ"    # Lichess OAuth2 Token.
 url: "https://lichess.org/"  # Lichess base URL.
 
 engine:                      # Engine settings.
-  dir: "./engines/"          # Directory containing the engine. This can be an absolute path or one relative to lichess-bot/.
+  dir: "../../banksia_gui_uci/martyna/"          # Directory containing the engine. This can be an absolute path or one relative to lichess-bot/.
   name: "random_engine.py"        # Binary name of the engine to use.
   working_dir: ""            # Directory where the chess engine will read and write files. If blank or missing, the current directory is used.
   protocol: "uci"            # "uci", "xboard" or "homemade"
