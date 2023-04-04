@@ -20,8 +20,9 @@ the [Lichess Bot documentation - Engine Configuration](README.md#engine-configur
 
 ### Running the bot
 
-1. Run `python3 lichess-bot.py` to start the bot. Use `python3 lichess-bot.py -v` to see 
+1. The first time upgrade to bot account by running `python3 lichess-bot.py -u`.
+2. Run `python3 lichess-bot.py` to start the bot. Use `python3 lichess-bot.py -v` to see 
 the output and debugging information. 
-2. If you want to log the output to a file, use
+3. If you want to log the output to a file, use
 `python3 lichess-bot.py --logfile log.txt`
-3. Stop the bot by pressing `Ctrl+C`.
+4. Stop the bot by pressing `Ctrl+C`.
