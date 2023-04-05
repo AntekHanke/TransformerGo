@@ -17,7 +17,17 @@ subgoal_mcts_engine_params = {
     "generator_num_subgoals": 4,
     "subgoal_distance_k": 3,
     "sort_subgoals_by": "highest_min_probability",
+    "subgoal_probs_opponent_only": True,
     "num_top_subgoals": 4,
+    "log_trees": False,
+    "log_dir": None,
+}
+
+vanilla_mcts_engine_params = {
+    "time_limit": 300,
+    "max_mcts_passes": 15,
+    "policy_num_moves": 4,
+    "policy_num_beams": 12,
     "log_trees": False,
     "log_dir": None,
 }

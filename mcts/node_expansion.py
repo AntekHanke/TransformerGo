@@ -1,6 +1,7 @@
 import time
 from typing import Type, List, Union
 
+import chess
 import numpy as np
 from chess import Move
 
@@ -64,6 +65,8 @@ class ChessStateExpander:
         generator_num_subgoals: int = None,
         subgoal_distance_k: int = 3,
         sort_subgoals_by: str = None,
+        subgoal_probs_opponent_only: bool = None,
+        root_player: chess.Color = None,
         **subgoal_generation_kwargs,
     ):
 
@@ -93,7 +96,9 @@ class ChessStateExpander:
         for subgoal in subgoals:
             try:
                 paths_to_subgoal = self.cllp.get_paths_use_memory(input_immutable_board, subgoal)
-                subgoal_info = self.analyze_subgoal(input_immutable_board, subgoal, paths_to_subgoal)
+                subgoal_info = self.analyze_subgoal(
+                    input_immutable_board, subgoal, paths_to_subgoal, subgoal_probs_opponent_only, root_player
+                )
                 if subgoal_info is not None:
                     subgoals_info[subgoal] = subgoal_info
             except ValueError as e:
@@ -118,7 +123,14 @@ class ChessStateExpander:
         else:
             raise ValueError(f"Unknown sort_subgoals_by: {sort_subgoals_by}")
 
-    def analyze_subgoal(self, input_immutable_board, subgoal, paths_to_subgoal):
+    def analyze_subgoal(
+        self,
+        input_immutable_board,
+        subgoal,
+        paths_to_subgoal,
+        subgoal_probs_opponent_only,
+        root_player,
+    ):
         correct_paths = [
             correct_path
             for path in paths_to_subgoal
@@ -131,6 +143,11 @@ class ChessStateExpander:
         paths_raw_probabilities = [
             self.policy.get_path_probabilities(input_immutable_board, path) for path in correct_paths
         ]
+        if subgoal_probs_opponent_only:
+            assert root_player is not None
+            start = 0 if root_player == input_immutable_board.to_board().turn else 1
+            paths_raw_probabilities = [path[start::2] for path in paths_raw_probabilities]
+
         log_value_to_accumulate("paths_raw_probabilities_total", time.time() - time_start)
         log_value_to_average("paths_raw_probabilities_avg", time.time() - time_start)
 
