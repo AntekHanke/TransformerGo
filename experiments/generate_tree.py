@@ -31,6 +31,7 @@ experiment_config = {
     "StandardExpandFunction.generator_num_subgoals_first_layer": 6,
     "StandardExpandFunction.subgoal_distance_k": 3,
     "StandardExpandFunction.sort_subgoals_by": "highest_min_probability",
+    "StandardExpandFunction.subgoal_probs_opponent_only": True,
     "StandardExpandFunction.num_top_subgoals": 4,
     "StandardExpandFunction.num_top_subgoals_first_layer": 6,
 

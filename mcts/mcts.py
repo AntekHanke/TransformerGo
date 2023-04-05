@@ -46,6 +46,7 @@ class StandardExpandFunction(ExpandFunction):
         generator_num_subgoals_first_layer: int = None,
         subgoal_distance_k: int = 3,
         sort_subgoals_by: str = None,
+        subgoal_probs_opponent_only: bool = True,
         num_top_subgoals: int = None,
         num_top_subgoals_first_layer: int = None,
         debug_mode: bool = True,
@@ -65,6 +66,7 @@ class StandardExpandFunction(ExpandFunction):
         )
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
+        self.subgoal_probs_opponent_only = subgoal_probs_opponent_only
         self.num_top_subgoals = num_top_subgoals
         self.num_top_subgoals_first_layer = (
             num_top_subgoals_first_layer if num_top_subgoals_first_layer is not None else num_top_subgoals
@@ -79,9 +81,10 @@ class StandardExpandFunction(ExpandFunction):
         log_param("generator_num_subgoals", self.generator_num_subgoals)
         log_param("subgoal_distance_k", self.subgoal_distance_k)
         log_param("sort_subgoals_by", self.sort_subgoals_by)
+        log_param("subgoal_probs_opponent_only", self.subgoal_probs_opponent_only)
         log_param("num_top_subgoals", self.num_top_subgoals)
 
-    def expand_function(self, node: "TreeNode", **kwargs) -> None:
+    def expand_function(self, node: "TreeNode", root_player: chess.Color, **kwargs) -> None:
         assert self.chess_state_expander is not None, "ChessStateExpander hasn't been provided"
         first_layer = node.immutable_data.level == 0
         generator_num_subgoals = self.generator_num_subgoals_first_layer if first_layer else self.generator_num_subgoals
@@ -94,6 +97,8 @@ class StandardExpandFunction(ExpandFunction):
             generator_num_subgoals=generator_num_subgoals,
             subgoal_distance_k=self.subgoal_distance_k,
             sort_subgoals_by=self.sort_subgoals_by,
+            subgoal_probs_opponent_only=self.subgoal_probs_opponent_only,
+            root_player=root_player,
         )
         num_top_subgoals = self.num_top_subgoals_first_layer if first_layer else self.num_top_subgoals
         subgoals = subgoals[:num_top_subgoals]
@@ -342,7 +347,7 @@ class Tree:
             if node.is_expanded:
                 node = self.get_best_child(node, self.exploration_constant)
             else:
-                self.expand_function.expand_function(node=node)
+                self.expand_function.expand_function(node=node, root_player=self.root_player)
                 self.node_list += node.children
                 node.is_expanded = True
                 if not node.children:
