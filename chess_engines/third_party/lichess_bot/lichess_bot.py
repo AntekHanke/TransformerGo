@@ -327,6 +327,10 @@ def lichess_bot_main(
                 control_queue.task_done()  # type: ignore[attr-defined]
             except NoMoreBotsToChallenge as e:
                 logger.info("Terminated")
+                raise NoMoreBotsToChallenge from e
+            except Exception as e:
+                logger.exception("Terminated")
+                raise Exception from e
 
     logger.info("Terminated")
 
@@ -979,12 +983,17 @@ def start_lichess_bot(**kwargs) -> None:
     if args.u and not is_bot:
         is_bot = upgrade_account(li)
 
-    if is_bot:
-        start(li, user_profile, CONFIG, logging_level, args.logfile)
-    else:
-        logger.error(
-            f"{username} is not a bot account. Please upgrade it to a bot account!"
-        )
+    try:
+        if is_bot:
+            start(li, user_profile, CONFIG, logging_level, args.logfile)
+        else:
+            logger.error(
+                f"{username} is not a bot account. Please upgrade it to a bot account!"
+            )
+    except NoMoreBotsToChallenge as e:
+        raise NoMoreBotsToChallenge from e
+    except Exception as e:
+        raise Exception from e
 
 
 def check_python_version() -> None:
@@ -1035,7 +1044,9 @@ def run_lichess_bot(**kwargs):
             restart = False
             start_lichess_bot(**kwargs)
             time.sleep(10 if restart else 0)
-    except Exception:
+    except NoMoreBotsToChallenge as e:
+        logger.info("Quitting lichess_bot due to no more bots to challege.")
+    except Exception as e:
         logger.exception("Quitting lichess_bot due to an error:")
     finally:
         return results

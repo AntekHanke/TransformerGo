@@ -221,7 +221,7 @@ class Matchmaking:
         except Exception:
             if online_bots:
                 logger.exception("Error:")
-                raise NoMoreBotsToChallenge("Error:")
+                raise Exception("Error:")
             else:
                 logger.error("No suitable bots found to challenge.")
                 raise NoMoreBotsToChallenge("No suitable bots found to challenge.")
@@ -274,6 +274,8 @@ class Matchmaking:
             self.challenge_id = challenge_id
         except NoMoreBotsToChallenge as e:
             raise NoMoreBotsToChallenge from e
+        except Exception as e:
+            raise Exception from e
 
     def add_to_block_list(self, username: str) -> None:
         logger.info(f"Will not challenge {username} again during this session.")
