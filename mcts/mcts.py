@@ -24,7 +24,7 @@ from value.chess_value import LCZeroValue
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
-    players_score_factor = 1 if root_player else -1
+    players_score_factor = 1 if root_player == chess.WHITE else -1
     exploit_score = players_score_factor * node.get_value() * node.immutable_data.probability
     explore_score = math.sqrt(2 * math.log(node.immutable_data.parent.num_visits) / node.num_visits)
     return exploit_score + exploration_constant * explore_score
@@ -246,6 +246,7 @@ class Tree:
         self.root = TreeNode(state=initial_state, parent=None)
         self.root_player = self.root.get_player()
         self.node_list = [self.root]
+        self.tree_depth = 0
         self.exploration_constant = exploration_constant
         self.score_function = score_function
         if isinstance(expand_function_or_class, ExpandFunction):
@@ -284,6 +285,7 @@ class Tree:
             if self.max_mcts_passes is not None:
                 for i in range(self.max_mcts_passes):
                     self.execute_mcts_pass()
+        log_value("tree_depth", Tree.trees_counter, self.tree_depth)
 
         best_child = self.get_best_child(self.root, 0)
         best_path = self.root.paths_to_children[best_child.immutable_data.state]
@@ -353,6 +355,7 @@ class Tree:
                 if not node.children:
                     node.not_expandable = True
                     return node
+                self.tree_depth = max(self.tree_depth, node.children[0].immutable_data.level)
                 return self.get_best_child(node, self.exploration_constant)
         return node
 
