@@ -24,7 +24,7 @@ from value.chess_value import LCZeroValue
 
 
 def score_function(node: "TreeNode", root_player: chess.Color, exploration_constant: float) -> float:
-    players_score_factor = 1 if root_player else -1
+    players_score_factor = 1 if root_player == chess.WHITE else -1
     exploit_score = players_score_factor * node.get_value() * node.immutable_data.probability
     explore_score = math.sqrt(2 * math.log(node.immutable_data.parent.num_visits) / node.num_visits)
     return exploit_score + exploration_constant * explore_score
