@@ -1,5 +1,12 @@
 ## How to run Lichess Bot
 
+## Running from pythonic interface
+
+1. Install updated requirements from `requirements.txt` file in the general directory.
+2. Example on how to use pythonic interface can be found in `utils/run_lichess_bot.py`.
+
+## Running as external bot
+
 ### Requirements
 
 1. Install requirements from `requirements.txt` file to your 

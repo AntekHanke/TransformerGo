@@ -3,11 +3,16 @@ from urllib.parse import urljoin
 import logging
 import datetime
 from enum import Enum
-from timer import Timer
-from config import Configuration
+from chess_engines.third_party.lichess_bot.timer import Timer
+from chess_engines.third_party.lichess_bot.config import Configuration
 from typing import Dict, Any, Tuple, List, DefaultDict
 
 logger = logging.getLogger(__name__)
+
+
+class NoMoreBotsToChallenge(Exception):
+    "Raised when the input value is less than 18"
+    pass
 
 
 class Challenge:

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import yaml
 import os
 import os.path
@@ -428,7 +430,9 @@ def load_config(config_file: str) -> Configuration:
             f"Your engine's working directory `{working_dir}` is not a directory.",
         )
 
-        engine = os.path.join(CONFIG["engine"]["dir"], CONFIG["engine"]["name"])
+        engine = os.path.join(
+            Path(CONFIG["engine"]["dir"]).resolve(), CONFIG["engine"]["name"]
+        )
         config_assert(
             os.path.isfile(engine) or CONFIG["engine"]["protocol"] == "homemade",
             f"The engine {engine} file does not exist.",

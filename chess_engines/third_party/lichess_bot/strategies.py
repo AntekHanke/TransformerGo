@@ -6,7 +6,7 @@ from __future__ import annotations
 import chess
 from chess.engine import PlayResult
 import random
-from engine_wrapper import MinimalEngine
+from chess_engines.third_party.lichess_bot.engine_wrapper import MinimalEngine
 from typing import Any
 
 

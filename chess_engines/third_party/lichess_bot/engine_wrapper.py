@@ -10,10 +10,10 @@ import time
 import random
 from collections import Counter
 from contextlib import contextmanager
-import config
-import model
-import lichess
-from config import Configuration
+from chess_engines.third_party.lichess_bot import config
+from chess_engines.third_party.lichess_bot import model
+from chess_engines.third_party.lichess_bot import lichess
+from chess_engines.third_party.lichess_bot.config import Configuration
 from typing import Dict, Any, List, Optional, Union, Tuple, Generator, Callable, Type
 
 OPTIONS_TYPE = Dict[str, Any]

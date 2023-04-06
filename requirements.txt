@@ -153,3 +153,6 @@ webencodings==0.5.1
 websocket-client==1.4.1
 xxhash==3.1.0
 yarl==1.8.1
+pydantic
+backoff==2.2.1
+rich==13.3.3

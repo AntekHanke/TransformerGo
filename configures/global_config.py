@@ -46,3 +46,9 @@ STOCKFISH_PATH = None if is_local_machine() else "/data_mg/stockfish/stockfish_1
 
 TREE_DISPLAY_SCORE_FACTOR = 1000
 TREE_DISPLAY_LEVEL_DISTANCE_FACTOR = 1.2
+
+LICHESS_ACCOUNTS_TO_TOKENS = {
+    "subgoalsearchchess2": "lip_JwrHpEw7bVXS8WYpYeNJ",
+    "subgoalchess_dev": "lip_kX19O4xorWT0WBtzmMmW",
+    "martynawck": "lip_z5euZzVe9wzLgA5IWnnA"
+}

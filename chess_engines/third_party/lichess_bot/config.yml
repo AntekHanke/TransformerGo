@@ -1,8 +1,9 @@
-token: "lip_JwrHpEw7bVXS8WYpYeNJ"    # Lichess OAuth2 Token.
+token: "lip_z5euZzVe9wzLgA5IWnnA"    # Lichess OAuth2 Token.
 url: "https://lichess.org/"  # Lichess base URL.
 
 engine:                      # Engine settings.
-  dir: "../../banksia_gui_uci/martyna/"          # Directory containing the engine. This can be an absolute path or one relative to lichess-bot/.
+  dir: "chess_engines/banksia_gui_uci/martyna/"          # Directory containing the engine. This can be an absolute path or one relative to lichess_bot/.
+#  dir: "./engines/"
   name: "random_engine.py"        # Binary name of the engine to use.
   working_dir: ""            # Directory where the chess engine will read and write files. If blank or missing, the current directory is used.
   protocol: "uci"            # "uci", "xboard" or "homemade"
@@ -57,7 +58,7 @@ engine:                      # Engine settings.
       source: "lichess"      # One of "lichess", "chessdb".
       move_quality: "best"   # One of "good", "best", "suggest" (it takes all the "good" moves and tells the engine to only consider these; will move instantly if there is only 1 "good" move).
 
-  lichess_bot_tbs:           # The tablebases list here will be read by lichess-bot, not the engine.
+  lichess_bot_tbs:           # The tablebases list here will be read by lichess_bot, not the engine.
     syzygy:
       enabled: false
       paths:
@@ -164,15 +165,15 @@ greeting:
 # pgn_directory: "game_records" # A directory where PGN-format records of the bot's games are kept
 
 matchmaking:
-  allow_matchmaking: false    # Set it to 'true' to challenge other bots.
+  allow_matchmaking: true    # Set it to 'true' to challenge other bots.
   challenge_variant: "random" # If set to 'random', the bot will choose one variant from the variants enabled in 'challenge.variants'.
-  challenge_timeout: 30       # Create a challenge after being idle for 'challenge_timeout' minutes. The minimum is 1 minute.
+  challenge_timeout: 1      # Create a challenge after being idle for 'challenge_timeout' minutes. The minimum is 1 minute.
   challenge_initial_time:     # Initial time in seconds of the challenge (to be chosen at random).
     - 60
     - 120
   challenge_increment:        # Increment in seconds of the challenge (to be chosen at random).
     - 1
-    - 2
+#    - 2
 #  challenge_days:            # Days for correspondence challenge (to be chosen at random).
 #    - 1
 #    - 2

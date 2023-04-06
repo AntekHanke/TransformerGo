@@ -1,8 +1,8 @@
 from __future__ import annotations
 import logging
-import model
-from engine_wrapper import EngineWrapper
-from lichess import Lichess
+from chess_engines.third_party.lichess_bot import model
+from chess_engines.third_party.lichess_bot.engine_wrapper import EngineWrapper
+from chess_engines.third_party.lichess_bot.lichess import Lichess
 from typing import Dict, List
 
 MULTIPROCESSING_LIST_TYPE = List[model.Challenge]
@@ -48,7 +48,7 @@ class Conversation:
             name = game.me.name
             self.send_reply(
                 line,
-                f"{name} running {self.engine.name()} (lichess-bot v{self.version})",
+                f"{name} running {self.engine.name()} (lichess_bot v{self.version})",
             )
         elif cmd == "howto":
             self.send_reply(line, "How to run: Check out 'Lichess Bot API'")

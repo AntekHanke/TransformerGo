@@ -6,7 +6,7 @@ from http.client import RemoteDisconnected
 import backoff
 import logging
 from collections import defaultdict
-from timer import Timer
+from chess_engines.third_party.lichess_bot.timer import Timer
 from typing import Optional, Dict, Union, Any, List, DefaultDict
 import chess.engine
 

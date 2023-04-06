@@ -3,14 +3,10 @@ import argparse
 import chess
 import chess.pgn
 from chess.variant import find_variant
-import engine_wrapper
-import model
 import json
-import lichess
 import logging
 import logging.handlers
 import multiprocessing
-import matchmaking
 import signal
 import time
 import backoff
@@ -20,9 +16,17 @@ import copy
 import math
 import sys
 import yaml
-from config import load_config, Configuration
-from conversation import Conversation, ChatLine
-from timer import Timer
+
+from chess_engines.third_party.lichess_bot.consts import CONST_BOT_NAME, CONST_TOKEN
+from chess_engines.third_party.lichess_bot import engine_wrapper
+from chess_engines.third_party.lichess_bot import matchmaking
+from chess_engines.third_party.lichess_bot import lichess
+from chess_engines.third_party.lichess_bot import model
+from chess_engines.third_party.lichess_bot.config import load_config, Configuration
+from chess_engines.third_party.lichess_bot.model import NoMoreBotsToChallenge
+from configures.global_config import LICHESS_ACCOUNTS_TO_TOKENS
+from chess_engines.third_party.lichess_bot.conversation import Conversation, ChatLine
+from chess_engines.third_party.lichess_bot.timer import Timer
 from requests.exceptions import (
     ChunkedEncodingError,
     ConnectionError,
@@ -37,6 +41,8 @@ from queue import Queue
 from multiprocessing.pool import Pool
 from typing import Dict, Any, Optional, Set, List, Iterator, DefaultDict, Union
 
+from data_structures.data_structures import ChessMetadata
+
 USER_PROFILE_TYPE = Dict[str, Any]
 EVENT_TYPE = Dict[str, Any]
 PLAY_GAME_ARGS_TYPE = Dict[str, Any]
@@ -50,13 +56,14 @@ POOL_TYPE = Pool
 
 logger = logging.getLogger(__name__)
 
-with open("versioning.yml") as version_file:
+with open("chess_engines/third_party/lichess_bot/versioning.yml") as version_file:
     versioning_info = yaml.safe_load(version_file)
 
 __version__ = versioning_info["lichess_bot_version"]
 
 terminated = False
 restart = True
+results = defaultdict(list)
 
 
 def signal_handler(signal: int, frame: Any) -> None:
@@ -216,7 +223,7 @@ def lichess_bot_main(
     correspondence_queue: CORRESPONDENCE_QUEUE_TYPE,
     logging_queue: LOGGING_QUEUE_TYPE,
     one_game: bool,
-) -> None:
+) -> defaultdict[Any, list] | defaultdict[str, list]:
     global restart
 
     max_games = config.challenge.concurrency
@@ -253,6 +260,7 @@ def lichess_bot_main(
     with multiprocessing.pool.Pool(max_games + 1) as pool:
         while not (terminated or (one_game and one_game_completed) or restart):
             event = next_event(control_queue)
+            logger.info(event)
             if not event:
                 continue
 
@@ -261,6 +269,14 @@ def lichess_bot_main(
                 control_queue.task_done()  # type: ignore[attr-defined]
                 break
             elif event["type"] in ["local_game_done", "gameFinish"]:
+                if event["type"] == "gameFinish":
+                    opponent_name = event["game"]["opponent"]["id"]
+                    pgn_game = ChessMetadata(
+                        **chess.pgn.read_game(
+                            io.StringIO(li.get_game_pgn(event["game"]["id"]))
+                        ).headers
+                    )
+                    results[opponent_name].append((pgn_game.Result, pgn_game))
                 active_games.discard(event["game"]["id"])
                 matchmaker.last_game_ended_delay.reset()
                 log_proc_count("Freed", active_games)
@@ -303,11 +319,14 @@ def lichess_bot_main(
                 active_games,
                 max_games,
             )
-            accept_challenges(li, challenge_queue, active_games, max_games)
-            matchmaker.challenge(active_games, challenge_queue)
-            check_online_status(li, user_profile, last_check_online_time)
-
-            control_queue.task_done()  # type: ignore[attr-defined]
+            logger.info(f"Queue status: {len(challenge_queue)}")
+            try:
+                matchmaker.challenge(active_games, challenge_queue)
+                accept_challenges(li, challenge_queue, active_games, max_games)
+                check_online_status(li, user_profile, last_check_online_time)
+                control_queue.task_done()  # type: ignore[attr-defined]
+            except NoMoreBotsToChallenge as e:
+                logger.info("Terminated")
 
     logger.info("Terminated")
 
@@ -380,6 +399,7 @@ def accept_challenges(
     while len(active_games) < max_games and challenge_queue:
         chlng = challenge_queue.pop(0)
         if chlng.from_self:
+            # active_games.add(chlng.id)
             continue
 
         try:
@@ -403,7 +423,7 @@ def check_online_status(
     if last_check_online_time.is_expired():
         try:
             if not li.is_online(user_profile["id"]):
-                logger.info("Will restart lichess-bot")
+                logger.info("Will restart lichess_bot")
                 restart = True
             last_check_online_time.reset()
         except (HTTPError, ReadTimeout):
@@ -790,7 +810,6 @@ def try_print_pgn_game_record(
 ) -> None:
     if board is None:
         return
-
     try:
         print_pgn_game_record(li, config, game, board, engine)
     except Exception:
@@ -908,13 +927,13 @@ def intro() -> str:
     return rf"""
     .   _/|
     .  // o\
-    .  || ._)  lichess-bot {__version__}
+    .  || ._)  lichess_bot {__version__}
     .  //__\
     .  )___(   Play on Lichess with a bot
     """
 
 
-def start_lichess_bot() -> None:
+def start_lichess_bot(**kwargs) -> None:
     parser = argparse.ArgumentParser(description="Play on Lichess with a bot")
     parser.add_argument(
         "-u", action="store_true", help="Upgrade your account to a bot account."
@@ -935,7 +954,17 @@ def start_lichess_bot() -> None:
     logging_level = logging.DEBUG if args.v else logging.INFO
     logging_configurer(logging_level, args.logfile)
     logger.info(intro(), extra={"highlighter": None})
-    CONFIG = load_config(args.config or "./config.yml")
+    CONFIG = load_config(
+        args.config or "chess_engines/third_party/lichess_bot/config.yml"
+    )
+
+    if not kwargs.get(CONST_BOT_NAME) is None:
+        # assign token based on the bot_name
+        CONFIG.config[CONST_TOKEN] = LICHESS_ACCOUNTS_TO_TOKENS[kwargs[CONST_BOT_NAME]]
+        from pydantic.utils import deep_update
+
+        CONFIG.config = deep_update(CONFIG.config, kwargs)
+
     max_retries = CONFIG.engine.online_moves.max_retries
     check_python_version()
     li = lichess.Lichess(
@@ -978,11 +1007,11 @@ def check_python_version() -> None:
     )
     out_of_date_error = RuntimeError(
         "A newer version of Python is required "
-        f"to run this version of lichess-bot. {upgrade_request}."
+        f"to run this version of lichess_bot. {upgrade_request}."
     )
     out_of_date_warning = (
         "A newer version of Python will be required "
-        f"on {version_change_date} to run lichess-bot. {upgrade_request} before then."
+        f"on {version_change_date} to run lichess_bot. {upgrade_request} before then."
     )
 
     this_lichess_bot_version = version_numeric(__version__)
@@ -998,12 +1027,19 @@ def check_python_version() -> None:
             raise out_of_date_error
 
 
-if __name__ == "__main__":
+def run_lichess_bot(**kwargs):
+    global restart
     multiprocessing.set_start_method("spawn")
     try:
         while restart:
             restart = False
-            start_lichess_bot()
+            start_lichess_bot(**kwargs)
             time.sleep(10 if restart else 0)
     except Exception:
-        logger.exception("Quitting lichess-bot due to an error:")
+        logger.exception("Quitting lichess_bot due to an error:")
+    finally:
+        return results
+
+
+if __name__ == "__main__":
+    run_lichess_bot()
