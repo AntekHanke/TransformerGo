@@ -36,8 +36,8 @@ leela_engine_params = {
     "policy_checkpoint": None,
     "log_dir": None,
     "debug_mode": True,
-    "replace_legall_move_with_random": False,
-    "do_sample": False,
+    "replace_legall_move_with_random": True,
+    "do_sample": True,
     "name": "LeelaChessZero_POLICY",
     "use_lczero_policy": True,
 }
