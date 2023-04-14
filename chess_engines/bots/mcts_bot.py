@@ -26,7 +26,7 @@ class MCTSChessEngine(ChessEngine):
         self.moves_count += 1
         immutable_state = ImmutableBoard.from_board(current_state)
 
-        if self.moves_count <= 2:
+        if self.moves_count <= self.first_n_moves_sampled:
             return LCZeroPolicy().sample_move(immutable_board=immutable_state).uci()
         else:
             tree = Tree(
@@ -84,6 +84,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         subgoal_probs_opponent_only: bool = None,
         num_top_subgoals: int = None,
         num_top_subgoals_first_layer: int = None,
+        first_n_moves_sampled: int = 0,
         log_trees: bool = False,
         log_dir: str = None,
     ):
@@ -103,6 +104,7 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         self.subgoal_probs_opponent_only = subgoal_probs_opponent_only
         self.num_top_subgoals = num_top_subgoals
         self.num_top_subgoals_first_layer = num_top_subgoals_first_layer
+        self.first_n_moves_sampled = first_n_moves_sampled
         self.log_trees = log_trees
         self.log_dir = log_dir
 
@@ -136,6 +138,7 @@ class VanillaMCTSChessEngine(MCTSChessEngine):
         exploration_constant: float = 1 / math.sqrt(2),
         policy_num_moves: int = None,
         policy_num_beams: int = None,
+        first_n_moves_sampled: int = 0,
         log_trees: bool = False,
         log_dir: str = None,
     ):
@@ -145,6 +148,7 @@ class VanillaMCTSChessEngine(MCTSChessEngine):
         self.exploration_constant = exploration_constant
         self.policy_num_moves = policy_num_moves
         self.policy_num_beams = policy_num_beams
+        self.first_n_moves_sampled = first_n_moves_sampled
         self.log_trees = log_trees
         self.log_dir = log_dir
 
