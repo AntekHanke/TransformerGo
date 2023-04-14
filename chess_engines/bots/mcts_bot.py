@@ -23,32 +23,39 @@ class MCTSChessEngine(ChessEngine):
     def propose_best_moves(
         self, current_state: chess.Board, number_of_moves: int = 0, history: List[chess.Move] = None
     ) -> Optional[str]:
+        self.moves_count += 1
         immutable_state = ImmutableBoard.from_board(current_state)
-        tree = Tree(
-            initial_state=immutable_state,
-            time_limit=self.time_limit,
-            max_mcts_passes=self.max_mcts_passes,
-            exploration_constant=self.exploration_constant,
-            score_function=score_function,
-            expand_function_or_class=self.expand_function,
-            output_root_values_list=True,
-            log_root_data=False,
-        )
-        mcts_output = tree.mcts()
-        self.tree_count += 1
-        if self.log_trees:
-            mcts_tree_network(
-                tree=tree,
-                target_path=os.path.join(self.out_dir, f"tree_{self.tree_count}"),
-                target_name="tree",
-                with_images=True,
-            )
-            with open(os.path.join(self.out_dir, f"tree_{self.tree_count}.pkl"), "wb") as f:
-                pickle.dump(tree.to_list(), f)
 
-        return mcts_output["best_path"][0].uci()
+        if self.moves_count <= 2:
+            return LCZeroPolicy().sample_move(immutable_board=immutable_state).uci()
+        else:
+            tree = Tree(
+                initial_state=immutable_state,
+                time_limit=self.time_limit,
+                max_mcts_passes=self.max_mcts_passes,
+                exploration_constant=self.exploration_constant,
+                score_function=score_function,
+                expand_function_or_class=self.expand_function,
+                output_root_values_list=True,
+                log_root_data=False,
+            )
+            mcts_output = tree.mcts()
+            self.tree_count += 1
+
+            if self.log_trees:
+                mcts_tree_network(
+                    tree=tree,
+                    target_path=os.path.join(self.out_dir, f"tree_{self.tree_count}"),
+                    target_name="tree",
+                    with_images=True,
+                )
+                with open(os.path.join(self.out_dir, f"tree_{self.tree_count}.pkl"), "wb") as f:
+                    pickle.dump(tree.to_list(), f)
+
+            return mcts_output["best_path"][0].uci()
 
     def new_game(self) -> None:
+        self.moves_count = 0
         self.tree_count = 0
         if self.log_trees:
             today = date.today()
@@ -74,7 +81,9 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         generator_num_subgoals: int = None,
         generator_num_subgoals_first_layer: int = None,
         sort_subgoals_by: str = None,
+        subgoal_probs_opponent_only: bool = None,
         num_top_subgoals: int = None,
+        num_top_subgoals_first_layer: int = None,
         log_trees: bool = False,
         log_dir: str = None,
     ):
@@ -91,12 +100,13 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
         self.generator_num_subgoals_first_layer = generator_num_subgoals_first_layer
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by
+        self.subgoal_probs_opponent_only = subgoal_probs_opponent_only
         self.num_top_subgoals = num_top_subgoals
+        self.num_top_subgoals_first_layer = num_top_subgoals_first_layer
         self.log_trees = log_trees
         self.log_dir = log_dir
 
         self.log_all_params()
-        self.game_count = 0
 
         generator = BasicChessSubgoalGenerator(self.generator_path)
         cllp = CLLP(self.cllp_path)
@@ -106,14 +116,17 @@ class SubgoalMCTSChessEngine(MCTSChessEngine):
             cllp_num_beams=self.cllp_num_beams,
             cllp_num_return_sequences=self.cllp_num_return_sequences,
             generator_num_beams=self.generator_num_beams,
-            generator_num_subgoals_first_layer=self.generator_num_subgoals_first_layer,
             generator_num_subgoals=self.generator_num_subgoals,
+            generator_num_subgoals_first_layer=self.generator_num_subgoals_first_layer,
             subgoal_distance_k=self.subgoal_distance_k,
             sort_subgoals_by=self.sort_subgoals_by,
+            subgoal_probs_opponent_only=self.subgoal_probs_opponent_only,
             num_top_subgoals=self.num_top_subgoals,
+            num_top_subgoals_first_layer=self.num_top_subgoals_first_layer,
         )
 
         log_object("Status", "ready")
+
 
 class VanillaMCTSChessEngine(MCTSChessEngine):
     def __init__(
