@@ -62,7 +62,7 @@ class StandardExpandFunction(ExpandFunction):
         self.generator_num_subgoals_first_layer = (
             generator_num_subgoals_first_layer
             if generator_num_subgoals_first_layer is not None
-            else generator_num_subgoals_first_layer
+            else generator_num_subgoals
         )
         self.subgoal_distance_k = subgoal_distance_k
         self.sort_subgoals_by = sort_subgoals_by

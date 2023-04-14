@@ -19,6 +19,7 @@ subgoal_mcts_engine_params = {
     "sort_subgoals_by": "highest_min_probability",
     "subgoal_probs_opponent_only": True,
     "num_top_subgoals": 4,
+    "first_n_moves_sampled": 2,
     "log_trees": False,
     "log_dir": None,
 }
@@ -28,6 +29,7 @@ vanilla_mcts_engine_params = {
     "max_mcts_passes": 15,
     "policy_num_moves": 4,
     "policy_num_beams": 12,
+    "first_n_moves_sampled": 2,
     "log_trees": False,
     "log_dir": None,
 }
@@ -36,8 +38,8 @@ leela_engine_params = {
     "policy_checkpoint": None,
     "log_dir": None,
     "debug_mode": True,
-    "replace_legall_move_with_random": False,
-    "do_sample": False,
+    "replace_legall_move_with_random": True,
+    "do_sample": True,
     "name": "LeelaChessZero_POLICY",
     "use_lczero_policy": True,
 }
