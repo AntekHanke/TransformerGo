@@ -1,0 +1,15 @@
+# Job
+run.job_class = @jobs.GoTrainBertForSequenceModel
+
+# Job's params
+GoTrainBertForSequenceModel.go_database_cls = @data.GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
+GoTrainBertForSequenceModel.output_dir = 'C:\\Users\\Antek\\PycharmProjects'
+
+#Generator params
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.sgf_files='C:\\Users\\Antek\\PycharmProjects\\subgoal_search_chess\\data_processing\\val.txt'
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_data_every_n_games=100
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.p_sample=1
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.max_games=102
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.train_eval_split=0.95
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_path_to_eval_set='C:\\Users\\Antek\\PycharmProjects\\subgoal_search_chess\\data_processing\\tokenized_data\\job_run\\eval'
+GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_path_to_train_set='C:\\Users\\Antek\\PycharmProjects\\subgoal_search_chess\\data_processing\\tokenized_data\\job_run\\train'
