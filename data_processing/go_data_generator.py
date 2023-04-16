@@ -288,7 +288,11 @@ class GoGamesDataGenerator(GoDataProvider):
         part: int = 0
 
         for n_iterations in range(self.max_games):
-            self.path_to_sgf_file = self.sgf_files_directories[self.n_games][:-1]
+            try:
+                self.path_to_sgf_file = self.sgf_files_directories[self.n_games][:-1]
+            except:
+                print("Run out of games, ending loop")
+                break
             train_eval = get_split(n_iterations, self.train_eval_split)
             if not self.only_eval or train_eval == "eval":
                 current_dataset = self.select_dataset(train_eval)
@@ -302,6 +306,8 @@ class GoGamesDataGenerator(GoDataProvider):
                         self.log_progress(n_iterations)
                 except:
                     print("Error in game: ", self.path_to_sgf_file)
+                    self.n_games += 1
+                    self.log_progress(n_iterations)
 
             if (
                 (self.save_path_to_eval_set and self.save_path_to_train_set) is not None
@@ -313,6 +319,13 @@ class GoGamesDataGenerator(GoDataProvider):
 
             if (n_iterations%100 == 0):
                 print(n_iterations)
+
+        if (
+                (self.save_path_to_eval_set and self.save_path_to_train_set) is not None
+        ):
+            self.save_data(part)
+            part += 1
+
 
         self.data_constructed = True
 
@@ -450,155 +463,8 @@ class GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(GoGamesDataGenerator):
         # )
         return 0
 
-#
-# class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
-#     def __init__(self, k: int, number_of_datapoint_from_one_game: int, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.save_path_to_train_set: str = os.path.join(
-#             self.save_path_to_train_set, "subgoals_k=" + str(k), "train" + "/"
-#         )
-#         self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set, "subgoals_k=" + str(k), "eval" + "/")
-#
-#         try:
-#             os.makedirs(self.save_path_to_train_set)
-#             os.makedirs(self.save_path_to_eval_set)
-#             print(f"Directory {self.save_path_to_train_set} created successfully")
-#             print(f"Directory {self.save_path_to_eval_set} created successfully")
-#         except OSError as error:
-#             print(
-#                 f"Directory {self.save_path_to_eval_set} or {self.save_path_to_train_set} can not be created. "
-#                 f"Probably exists."
-#                 f"Error {error}"
-#             )
-#
-#         self.k = k
-#         self.prob_selector = prob_table_for_diff_n((5, 500))
-#         self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game
-#
-#     def game_to_datapoints_all(self, one_game_data: OneGameData, current_dataset: List[Dict[str, List[int]]]) -> None:
-#         game_length = len(one_game_data.transitions)
-#         for num in range(game_length - self.k):
-#
-#             input_board = one_game_data.transitions[num].immutable_board
-#             target_board_num = min(game_length - 1, num + self.k)
-#             target_board = one_game_data.transitions[target_board_num].immutable_board
-#
-#             if random.random() <= self.p_sample:
-#                 current_dataset[len(current_dataset)] = {
-#                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-#                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-#                     "labels": ChessTokenizer.encode_immutable_board(target_board),
-#                 }
-#
-#             sample = {
-#                 "input_board": input_board,
-#                 "target_board": target_board,
-#                 "num": num,
-#                 "move": one_game_data.transitions[num].move.uci(),
-#             }
-#             self.log_sample(sample, one_game_data.metadata)
-#
-#     def game_to_datapoints(
-#         self, one_game_data: OneGameData, current_dataset: List[Dict[str, Union[List[int], str, int]]]
-#     ) -> None:
-#
-#         game_length: int = len(one_game_data.transitions)
-#         if game_length > 0 and game_length - self.k >= 0:
-#
-#             if game_length <= len(self.prob_selector):
-#                 p: np.ndarray = self.prob_selector[game_length - 1]
-#             else:
-#                 p: np.ndarray = prob_select_function(game_length - 1)
-#
-#             assert (
-#                 self.number_of_datapoint_from_one_game is not None
-#             ), "Please select number of datapoints frome game. Must be integer."
-#
-#             selected_datapoints = np.random.choice(
-#                 list(range(game_length - 1)), size=self.number_of_datapoint_from_one_game, p=p
-#             )
-#
-#             # selected_datapoints = list(range(game_length - 1))
-#
-#             for key in selected_datapoints:
-#                 input_board: ImmutableBoard = one_game_data.transitions[key].immutable_board
-#                 target_board_num = min(game_length - 1, key + self.k)
-#                 target_board: ImmutableBoard = one_game_data.transitions[target_board_num].immutable_board
-#                 position: int = len(current_dataset)
-#                 current_dataset[position] = {
-#                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-#                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-#                     "labels": ChessTokenizer.encode_immutable_board(target_board),
-#                 }
-#                 all_moves_from_start: Dict[str, List[int]] = {
-#                     "all_moves_from_start": [
-#                         ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0] for i in range(key)
-#                     ]
-#                 }
-#                 moves_between_input_and_target: Dict[str, List[int]] = {
-#                     "moves_between_input_and_target": [
-#                         ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
-#                         for i in range(key, target_board_num)
-#                     ]
-#                 }
-#
-#                 boards_stats: Dict[str, str] = {"Result": "", "WhiteElo": "", "BlackElo": "", "Opening": ""}
-#
-#                 for stat in one_game_data.metadata.__dict__:
-#                     if stat in boards_stats:
-#                         boards_stats[stat] = one_game_data.metadata.__dict__[stat]
-#
-#                 current_dataset[position].update(all_moves_from_start)
-#                 current_dataset[position].update(moves_between_input_and_target)
-#                 current_dataset[position].update(boards_stats)
-#                 current_dataset[position].update({"move_number_form_start": key})
-#                 current_dataset[position].update({"game_length": game_length})
-#
-#     def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
-#         return immutable_boards_to_img(
-#             [sample["input_board"], sample["target_board"]],
-#             [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
-#         )
-#
-#
-# class ChessCLLPGamesDataGenerator(ChessGamesDataGenerator):
-#     def __init__(self, max_k, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.max_k = max_k
-#
-#     def game_to_datapoints(self, one_game_data: OneGameData, current_dataset: Dict) -> None:
-#         game_length = len(one_game_data.transitions)
-#         for num in range(game_length - 1):
-#
-#             input_board = one_game_data.transitions[num].immutable_board
-#             max_target_board_num = min(game_length - 1, num + self.max_k)
-#             target_board_num = random.randint(num + 1, max_target_board_num)
-#             move = one_game_data.transitions[num].move
-#             all_cllp_moves = [one_game_data.transitions[i].move for i in range(num + 1, target_board_num + 1)]
-#             target_board = one_game_data.transitions[target_board_num].immutable_board
-#
-#             if random.random() <= self.p_sample:
-#                 current_dataset[len(current_dataset)] = {
-#                     "input_ids": ChessTokenizer.encode_immutable_board(input_board)
-#                     + ChessTokenizer.encode_immutable_board(input_board)
-#                     + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
-#                     "labels": ChessTokenizer.encode_move(move),
-#                 }
-#
-#             sample = {
-#                 "input_board": input_board,
-#                 "target_board": target_board,
-#                 "num": num,
-#                 "move": move.uci(),
-#                 "all_cllp_moves": all_cllp_moves,
-#             }
-#             self.log_sample(sample, one_game_data.metadata)
-#
-#     def sample_to_log_object(self, sample: Dict, metadata: ChessMetadata) -> plt.Figure:
-#         return immutable_boards_to_img(
-#             [sample["input_board"], sample["target_board"]],
-#             [f"{sample['num']} : {sample['all_cllp_moves']}, res: {metadata.Result}", ""],
-#         )
+
+
 
 import re
 
