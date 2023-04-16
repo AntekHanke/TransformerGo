@@ -1,6 +1,6 @@
 import gin
 from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
-
+from go_policy.policy_config import AlphaZeroPolicyConfig
 from data_processing.archive.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.archive.pgn.prepare_and_save_data import (
     PandasPolicyPrepareAndSaveData,
@@ -22,6 +22,7 @@ from data_processing.pandas_iterable_data_provider import (
     PandasIterableSubgoalToPolicyDataProvider,
     PandasIterableCLLPDataProvider,
     PandasIterableSubgoalAllDistancesDataProvider,
+    PandasIterablePolicyDataProviderGo
 )
 from data_processing.pandas_static_dataset_provider import (
     PandasStaticDataProvider,
@@ -31,6 +32,7 @@ from data_processing.pandas_static_dataset_provider import (
     PandasStaticSubgoalToPolicyDataProvider,
     PandasStaticCLLPDataProvider,
     PandasStaticSubgoalAllDistancesDataProvider,
+    PandasStaticPolicyDataProviderGo
 )
 from jobs.chess_retokenization import RetokenizationJob
 from jobs.create_pgn_dataset import CreatePGNDataset
@@ -42,12 +44,14 @@ from jobs.job_leela_dataset import (
 )
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.local_jobs_antek.go_data_generator_tokenized_policy import GoTokenizedPolicyGeneratorAlwaysBlack
+from jobs.local_jobs_mgrot.go_convolution_data_generation import GoConvolutionDataGeneration
+from jobs.go_train_convolutions import GoTrainConvolution 
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
-from jobs.train_model import TrainModelFromScratch, ResumeTraining
+from jobs.train_model import TrainModelFromScratch, ResumeTraining, TrainConvolutionFromScratch
 from jobs.run_mcts import RunMCTSJob
 from mcts.mcts import score_function, expand_function, mock_expand_function
 
-from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
+from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack, SimpleGamesDataGenerator
 
 
 def configure_class(cls, module=None) -> None:
@@ -81,9 +85,13 @@ configure_classes(
         RetokenizationJob,
         GoTokenizedPolicyGeneratorAlwaysBlack,
         RunMCTSJob,
+        GoConvolutionDataGeneration,
+        GoTrainConvolution,
+        TrainConvolutionFromScratch
     ],
     "jobs",
 )
+configure_class(AlphaZeroPolicyConfig, "AlphaZero")
 configure_classes([Trainer, TrainingArguments, BartConfig, BertConfig], "transformers")
 configure_classes([NoFilter, ResultFilter, ELOFilter], "filters")
 configure_classes(
@@ -109,6 +117,9 @@ configure_classes(
         PandasBertForSequenceDataProvider,
         CLLPPrepareAndSaveData,
         GoSimpleGamesDataGeneratorTokenizedAlwaysBlack,
+        SimpleGamesDataGenerator,
+        PandasIterablePolicyDataProviderGo,
+        PandasStaticPolicyDataProviderGo
     ],
     "data",
 )

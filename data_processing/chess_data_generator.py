@@ -19,6 +19,7 @@ from metric_logging import log_value, log_object
 
 from utils.probability_subgoal_selector_tools import prob_table_for_diff_n
 from policy.chess_policy import LCZeroPolicy
+import random as rng
 
 # TODO: fill in fields
 GameMetadata = namedtuple("GameMetadata", "game_id, winner, result")
@@ -348,7 +349,7 @@ class ChessSubgoalGamesDataGenerator(ChessGamesDataGenerator):
     def __init__(
         self,
         number_of_datapoint_from_one_game: int,
-        range_of_k: [List[int]],
+        range_of_k: List[int],
         *args,
         **kwargs,
     ) -> None:

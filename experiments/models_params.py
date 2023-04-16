@@ -5,6 +5,12 @@ common_train_params = {
         "TrainModelFromScratch.training_args_cls": "@transformers.TrainingArguments",
         "use_neptune": True,
     },
+    "from_scratch_go_policy" : {
+        "run.job_class" : "@jobs.TrainConvolutionFromScratch",
+        "TrainConvolutionFromScratch.model_config_cls" : "@AlphaZero.AlphaZeroPolicyConfig",
+        "TrainConvolutionFromScratch.training_args_cls" : "@transformers.TrainingArguments",
+        "use_neptune" : True
+    },
     "from_scratch_with_all_subgoals": {
         "run.job_class": "@jobs.TrainModelFromScratch",
         "TrainModelFromScratch.model_config_cls": "@transformers.BartConfig",
@@ -24,6 +30,7 @@ common_train_params = {
         "use_neptune": True,
     },
 }
+
 
 ultra_small_model = {
     "BartConfig.vocab_size": 4600,
@@ -90,3 +97,23 @@ medium_model = {
     "TrainingArguments.eval_steps": 500,
     "TrainingArguments.learning_rate": 2e-4,
 }
+
+AlphaZeroModel = {
+    "AlphaZeroPolicyConfig.num_residual_blocks" : 19,
+    "AlphaZeroPolicyConfig.num_in_channels" : 5,
+    "AlphaZeroPolicyConfig.num_out_channels" : 256,
+    "AlphaZeroPolicyConfig.kernel_size" : 3,
+    "AlphaZeroPolicyConfig.stride" : 1,
+    "AlphaZeroPolicyConfig.board_size" : (19, 19),   
+    "TrainingArguments.max_steps" : 5000,
+    "TrainingArguments.per_device_train_batch_size": 256 ,
+    "TrainingArguments.per_device_eval_batch_size": 256 ,
+    "TrainingArguments.warmup_steps": 10,
+    "TrainingArguments.weight_decay": 0.01,
+    "TrainingArguments.logging_steps": 1,
+    "TrainingArguments.evaluation_strategy": "steps",
+    "TrainingArguments.eval_steps": 2,
+    "TrainingArguments.learning_rate": 0.0002,
+}
+
+ 

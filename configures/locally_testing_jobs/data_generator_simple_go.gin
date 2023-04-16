@@ -1,0 +1,14 @@
+# Job
+run.job_class = @jobs.GoConvolutionDataGeneration
+
+# Job's params
+GoConvolutionDataGeneration.GoConvolutionDataGenerator = @data.SimpleGamesDataGenerator
+
+#Generator params
+SimpleGamesDataGenerator.sgf_files='./data_processing/jgdb/val.txt'
+SimpleGamesDataGenerator.save_data_every_n_games=1
+SimpleGamesDataGenerator.p_sample=1
+SimpleGamesDataGenerator.max_games=10
+SimpleGamesDataGenerator.train_eval_split=1
+SimpleGamesDataGenerator.save_path_to_eval_set='~/Moje/Coding/subgoal-go/conv-eval'
+SimpleGamesDataGenerator.save_path_to_train_set='~/Moje/Coding/subgoal-go/conv-train'

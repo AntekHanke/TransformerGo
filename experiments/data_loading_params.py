@@ -30,6 +30,10 @@ policy_data_loading_header = {
         "TrainModelFromScratch.train_data_provider": "@data.PandasIterablePolicyDataProvider",
         "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
     },
+    "from_scratch_go_policy" :{
+        "TrainConvolutionFromScratch.train_data_provider": "@data.PandasIterablePolicyDataProviderGo",
+        "TrainConvolutionFromScratch.eval_data_provider": "@data.PandasStaticPolicyDataProviderGo",
+    }, 
     "resume": {
         "ResumeTraining.train_data_provider": "@data.PandasIterablePolicyDataProvider",
         "ResumeTraining.eval_data_provider": "@data.PandasStaticPolicyDataProvider",
@@ -50,6 +54,12 @@ ultra_small_data = {
         "TrainModelFromScratch.path_to_training_data": "/ultra_small_data/train_small.pkl",
         "TrainModelFromScratch.path_to_eval_data": "/ultra_small_data/eval_small.pkl",
         "TrainModelFromScratch.files_batch_size": 5,
+    },
+    "from_scratch_go_policy" : {
+        "TrainConvolutionFromScratch.eval_n_batches" : 5,
+        "TrainConvolutionFromScratch.path_to_training_data" : "/godata/ConvolutionData/validation",
+        "TrainConvolutionFromScratch.path_to_eval_data" : "/godata/ConvolutionData/test",
+        "TrainConvolutionFromScratch.files_batch_size" : 5
     },
     "from_scratch_with_all_subgoals": {
         "TrainModelFromScratch.eval_n_batches": 4,
