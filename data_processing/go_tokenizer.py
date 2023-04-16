@@ -132,7 +132,7 @@ if __name__ == '__main__':
     np.set_printoptions(threshold=10000)
     aaa = pd.read_pickle("trainsgf_directories.txt_train_part_0.pkl")
 
-    bbb = pd.read_pickle("tokenized_data\\trainval.txt_train_part_2.pkl")
+    bbb = pd.read_pickle("../exclude/tokenized_data\\trainval.txt_train_part_2.pkl")
     print(bbb)
     #print(aaa['input_ids'][2].shape)
     #print(np.where(test_arr == 1, test_arr, -1))
