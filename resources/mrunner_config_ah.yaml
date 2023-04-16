@@ -4,8 +4,8 @@ contexts:
     backend_type: slurm
     cmd_type: sbatch
     cpu: 2
-    mem: 80G
-    gpu: 4
+    mem: 150G
+    gpu: 8
     nodes: 1
     ntasks: 1
     partition: plgrid-gpu-a100
@@ -13,14 +13,10 @@ contexts:
       - CUDA/11.6.0
     singularity_container:  -H $PWD:/homeplaceholder 
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/leela_models/:/leela_models
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/save_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/subgoal_chess_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/:/leela_generator_data_train
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/eval_data/:/leela_generator_data_eval
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
-    slurm_url: plgtodrzygozdz@athena.cyfronet.pl
-    storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/mrunner_scratch
+                            -B /net/tscratch/people/plgantekhanke/:/plgantekhanke
+                            -B $TMPDIR:/tmp --nv /net/tscratch/people/plggracjangoral/singularity/14.03.2023.sif
+    slurm_url: plgantekhanke@athena.cyfronet.pl
+    storage_dir: /net/tscratch/people/plgantekhanke/storage_dir
     time: 2880
 
   athena_cpu:
@@ -36,14 +32,10 @@ contexts:
       - CUDA/11.6.0
     singularity_container:  -H $PWD:/homeplaceholder 
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/leela_models/:/leela_models
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/save_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/subgoal_chess_data
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/large_data/subgoals/train/:/leela_generator_data_train
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/eval_data/:/leela_generator_data_eval
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/athena_19.12.2022.sif
-    slurm_url: plgtodrzygozdz@athena.cyfronet.pl
-    storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/mrunner_scratch
+                            -B /net/tscratch/people/plgantekhanke/:/plgantekhanke
+                            -B $TMPDIR:/tmp --nv /net/tscratch/people/plggracjangoral/singularity/14.03.2023.sif
+    slurm_url: plgantekhanke@athena.cyfronet.pl
+    storage_dir: /net/tscratch/people/plgantekhanke/storage_dir
     time: 2880
 
   ares_quick:
@@ -86,115 +78,39 @@ contexts:
                             -B /net/ascratch/people/plggracjangoral/chess_data/subgoals_data_eval:/leela_generator_data_eval
                             -B $TMPDIR:/tmp --nv /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
 
-  eagle_quick_go2:
-    account: plgrlresearch
+  eagle_gpu_antek:
+    account: 619
     backend_type: slurm
     cmd_type: sbatch
-    partition: fast
-    time: 59
-    cpu: 4
+    partition: tesla
+    time: 300
+    cpu: 20
+    gpu: 1
     ntasks: 1
     mem: 120G
     nodes: 1
-    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
-    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-    singularity_container:  -H $PWD:/homeplaceholder
-                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
-                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+    slurm_url: antekhanke@eagle.man.poznan.pl
+    storage_dir: /home/users/antekhanke/grant_619/scratch/AH/subgoal_go
+    singularity_container: -H $PWD:/homeplaceholder
+      -B /home/users/antekhanke/grant_619/scratch/AH:/AH
+      -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /home/users/antekhanke/grant_619/scratch/ggoral/singularities/14.03.2023.sif
 
-  eagle_data:
-    account: plgrlresearch
+
+  eagle_cpu_antek:
+    account: 619
     backend_type: slurm
     cmd_type: sbatch
     partition: standard
-    time: 50
-    cpu: 1
+    time: 200
+    cpu: 20
     ntasks: 1
-    mem: 10G
-    nodes: 1
-    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
-    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-    singularity_container:  -H $PWD:/homeplaceholder
-                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/leela_data
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
-                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
-
-  eagle_quick_tesla:
-    account: plgrlresearch
-    backend_type: slurm
-    cmd_type: sbatch
-    partition: tesla
-    time: 59
-    cpu: 4
-    gpu: 1
-    ntasks: 1
-    mem: 120G
-    nodes: 1
-    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
-    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-    singularity_container: -H $PWD:/homeplaceholder
-      -B /tmp/lustre/plgtodrzygozdz/
-      -B /home/plgrid/plgtodrzygozdz/
-      --env NEPTUNEPWD=$PWD  --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_8.08.2022.sif
-
-  eagle_alpacka_g:
-    account: plgrlresearch
-    backend_type: slurm
-    cmd_type: sbatch
-    partition: plgrid-long
-    time: 10000
-    cpu: 1
     mem: 30G
     nodes: 1
-    slurm_url: plggracjangoral@eagle.man.poznan.pl
-    storage_dir: /tmp/lustre/plggracjangoral/leela_chess
+    slurm_url: antekhanke@eagle.man.poznan.pl
+    storage_dir: /home/users/antekhanke/grant_619/scratch/AH/subgoal_go
     singularity_container: -H $PWD:/homeplaceholder
-      -B /home/plgrid/plggracjangoral/data/chess_database
-      -B /home/plgrid/plggracjangoral/leela_weights
-      -B /home/plgrid/plggracjangoral/leela
-      --env NEPTUNEPWD=$PWD --nv /home/plgrid/plggracjangoral/singularity/transformers_26.09.2022.sif
-
-  eagle_tesla:
-    account: plgrlresearch
-    backend_type: slurm
-    cmd_type: sbatch
-    partition: tesla
-    time: 4300
-    cpu: 4
-    gpu: 1
-    ntasks: 1
-    mem: 120G
-    nodes: 1
-    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
-    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-    singularity_container:  -H $PWD:/homeplaceholder
-                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
-                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
-
-  eagle_tesla_data:
-    account: plgrlresearch
-    backend_type: slurm
-    cmd_type: sbatch
-    partition: tesla
-    time: 4300
-    cpu: 4
-    gpu: 1
-    ntasks: 1
-    mem: 120G
-    nodes: 1
-    modules_to_load:
-      - plgrid/tools/singularity/stable
-    slurm_url: plgtodrzygozdz@eagle.man.poznan.pl
-    storage_dir: /tmp/lustre/plgtodrzygozdz/subgoal_chess
-    singularity_container:  -H $PWD:/homeplaceholder
-                            -B /tmp/lustre/plggracjangoral/leela_chess/mrunner_scratch/subgoal-chess/05_10-14_53-objective_feynman:/trees
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/subgoal_leela_train/:/save_data
-                            -B /tmp/lustre/plgtodrzygozdz/subgoal_chess_data/leela_models_2/:/leela_models
-                            --env NEPTUNEPWD=$PWD --nv /home/plgrid/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+      -B /home/users/antekhanke/grant_619/scratch/AH:/AH
+      -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /home/users/antekhanke/grant_619/scratch/ggoral/singularities/14.03.2023.sif
 
   entropy:
     account: students
@@ -345,5 +261,5 @@ contexts:
     slurm_url: plgantekhanke@prometheus.cyfronet.pl
     storage_dir: /net/scratch/people/plgantekhanke/godata_generation
     singularity_container: -H $PWD:/homeplaceholder
-                           -B /net/scratch/people/plgantekhanke/godata_generation:/godata_generation
-                           -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plgtodrzygozdz/singularity_images/transformers_09.10.2022.sif
+                           -B /net/scratch/people/plgantekhanke:/plgantekhanke
+                           -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plggracjangoral/singularity/14.03.2023.sif
