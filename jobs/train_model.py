@@ -104,6 +104,10 @@ class TrainModel(Job):
 
         self.model = self.get_model()
 
+        self.pytorch_total_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+        log_param("number of parameters", self.pytorch_total_params)
+
         for param_name, param_value in self.training_args.to_dict().items():
             log_object(f"Training arguments/{param_name}", str(param_value))
 

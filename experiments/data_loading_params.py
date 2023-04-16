@@ -48,6 +48,14 @@ policy_data_loading_header = {
     },
 }
 
+policy_data_loading_headerGo = {
+    "from_scratch": {
+        "TrainModelFromScratch.train_data_provider": "@data.PandasIterablePolicyDataProviderGo",
+        "TrainModelFromScratch.eval_data_provider": "@data.PandasStaticPolicyDataProviderGo",
+    },
+}
+
+
 ultra_small_data = {
     "from_scratch": {
         "TrainModelFromScratch.eval_n_batches": 4,
@@ -82,6 +90,26 @@ ultra_small_data = {
         "ResumeTraining.range_of_k": [1, 2, 3, 4, 5, 6],
     },
 }
+
+go_ultra_small_data = {
+    "from_scratch": {
+        "TrainModelFromScratch.eval_n_batches": 4,
+        "TrainModelFromScratch.path_to_training_data": "/plgantekhanke/sgfs/tokenizeddata/trainval_train_part_0.pkl",
+        "TrainModelFromScratch.path_to_eval_data": "/plgantekhanke/sgfs/tokenizeddata/evalval_eval_part_0.pkl",
+        "TrainModelFromScratch.files_batch_size": 5,
+    },
+
+}
+go_medium_data = {
+    "from_scratch": {
+        "TrainModelFromScratch.eval_n_batches": 10,
+        "TrainModelFromScratch.path_to_training_data": "/plgantekhanke/sgfs/tokenizeddata/trainval_train_part_0.pkl",
+        "TrainModelFromScratch.path_to_eval_data": "/plgantekhanke/sgfs/tokenizeddata/evalval_eval_part_0.pkl",
+        "TrainModelFromScratch.files_batch_size": 10,
+    },
+
+}
+
 
 STANDARD_DATA_K_3_TRAIN = "/data_to/data/k_3"
 STANDARD_DATA_K_3_EVAL = "/data_to/data/k_3_eval"

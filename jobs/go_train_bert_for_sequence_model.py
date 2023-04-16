@@ -56,6 +56,10 @@ class GoTrainBertForSequenceModel(Job):
 
         self.model = BertForSequenceClassification(self.model_config)
 
+        self.pytorch_total_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+        log_param("number of parameters", self.self.pytorch_total_params)
+
         log_param("real learning rate", self.training_args.learning_rate)
 
         self.trainer = Trainer(
