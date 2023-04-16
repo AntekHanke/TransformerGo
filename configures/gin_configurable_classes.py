@@ -17,6 +17,7 @@ from data_processing.chess_data_generator import (
 from data_processing.pandas_iterable_data_provider import (
     PandasIterableSubgoalDataProvider,
     PandasIterablePolicyDataProvider,
+    PandasIterablePolicyDataProviderGo,
     PandasIterablePolicyWithHistoryDataProvider,
     PandasBertForSequenceDataProvider,
     PandasIterableSubgoalToPolicyDataProvider,
@@ -27,6 +28,7 @@ from data_processing.pandas_static_dataset_provider import (
     PandasStaticDataProvider,
     PandasStaticSubgoalDataProvider,
     PandasStaticPolicyDataProvider,
+    PandasStaticPolicyDataProviderGo,
     PandasStaticPolicyWithHistoryDataProvider,
     PandasStaticSubgoalToPolicyDataProvider,
     PandasStaticCLLPDataProvider,
@@ -43,9 +45,10 @@ from jobs.job_leela_dataset import (
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.local_jobs_antek.go_data_generator_tokenized_policy import GoTokenizedPolicyGeneratorAlwaysBlack
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
+from jobs.go_train_bert_for_sequence_model import GoTrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining
-from jobs.run_mcts import RunMCTSJob
-from mcts.mcts import score_function, expand_function, mock_expand_function
+# from jobs.run_mcts import RunMCTSJob
+# from mcts.mcts import score_function, expand_function, mock_expand_function
 
 from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
 
@@ -80,7 +83,8 @@ configure_classes(
         LeelaPrepareAndSaveData,
         RetokenizationJob,
         GoTokenizedPolicyGeneratorAlwaysBlack,
-        RunMCTSJob,
+        GoTrainBertForSequenceModel,
+        # RunMCTSJob,
     ],
     "jobs",
 )
@@ -96,12 +100,14 @@ configure_classes(
         PandasIterableSubgoalAllDistancesDataProvider,
         PandasStaticSubgoalAllDistancesDataProvider,
         PandasIterablePolicyDataProvider,
+        PandasIterablePolicyDataProviderGo,
         PandasIterablePolicyWithHistoryDataProvider,
         PandasIterableSubgoalToPolicyDataProvider,
         PandasIterableCLLPDataProvider,
         PandasStaticDataProvider,
         PandasStaticSubgoalDataProvider,
         PandasStaticPolicyDataProvider,
+        PandasStaticPolicyDataProviderGo,
         PandasStaticPolicyWithHistoryDataProvider,
         PandasStaticSubgoalToPolicyDataProvider,
         PandasStaticCLLPDataProvider,
@@ -113,5 +119,5 @@ configure_classes(
     "data",
 )
 
-configure_objects([expand_function, mock_expand_function], "expand_functions")
-configure_objects([score_function], "score_functions")
+# configure_objects([expand_function, mock_expand_function], "expand_functions")
+# configure_objects([score_function], "score_functions")
