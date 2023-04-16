@@ -5,13 +5,13 @@ base_config = {
     "run.job_class": "@jobs.GoTokenizedPolicyGeneratorAlwaysBlack",
     "GoTokenizedPolicyGeneratorAlwaysBlack.GoTokenizedDataGenerator": "@data.GoSimpleGamesDataGeneratorTokenizedAlwaysBlack",
     # class's parametres (ChessSubgoalGamesDataGenerator)
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.sgf_files": "/net/scratch/people/plgantekhanke/sgfs/val.txt",
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_data_every_n_games": 990,
+    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.sgf_files": "/plgantekhanke/raw_data/sgfs/test.txt",
+    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_data_every_n_games": 29990,
     "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.p_sample": 1.0,
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.max_games": 9950,
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.train_eval_split": 0.95,
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_path_to_eval_set": "/net/scratch/people/plgantekhanke/sgfs/tokenizeddata/eval",
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_path_to_train_set": "/net/scratch/people/plgantekhanke/sgfs/tokenizeddata/train",
+    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.max_games": 19950,
+    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.train_eval_split": 0.0,
+    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_path_to_eval_set": "/plgantekhanke/tokenized_data/test/",
+    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.save_path_to_train_set": "/plgantekhanke/tokenized_data/test/",
     # class's parameters (ELOFilter)
 
     "use_neptune": True,
@@ -19,7 +19,7 @@ base_config = {
 
 params_grid = {
     "idx": [0],
-    "GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.max_games": [9950]
+    #"GoSimpleGamesDataGeneratorTokenizedAlwaysBlack.max_games": [9950]
 }
 
 experiments_list = create_experiments_helper(
@@ -28,9 +28,9 @@ experiments_list = create_experiments_helper(
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
-    exclude=['sgf','data_processing', 'val'], #niepotrzebne pliki do clustra
+    exclude=['sgf', 'val', 'exclude'], #niepotrzebne pliki do clustra
     python_path="",
-    tags=["dataset", "generate", "tokenized", "go"],
+    tags=["dataset", "generate", "tokenized", "go", "test"],
     with_neptune=True,
     env={},
 )
