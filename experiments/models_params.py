@@ -72,8 +72,8 @@ go_ultra_small_model = {
 small_model = {
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 128,
-    "BartConfig.encoder_layers": 4,
-    "BartConfig.decoder_layers": 4,
+    "BartConfig.encoder_layers": 6,
+    "BartConfig.decoder_layers": 6,
     "BartConfig.encoder_attention_heads": 4,
     "BartConfig.decoder_attention_heads": 4,
     "BartConfig.decoder_ffn_dim": 1024,
@@ -88,7 +88,7 @@ small_model = {
     "TrainingArguments.logging_steps": 100,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 500,
-    "TrainingArguments.learning_rate": 2e-4,
+    "TrainingArguments.learning_rate": 1e-4,
 }
 
 medium_model = {

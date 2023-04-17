@@ -5,6 +5,7 @@ import chess
 import chess.engine
 
 from chess_engines.bots.basic_chess_engines import PolicyChess, ChessEngine
+from metric_logging import turn_off_loggers
 
 # UCI commands
 UCI_COMMAND: str = "uci"
@@ -52,6 +53,7 @@ def output(s):
 
 
 def main_uci_loop(engine: ChessEngine):
+    turn_off_loggers()
     log("Starting chess engine")
     log(f"Engine type {type(engine)}")
     log("Chess engine started")
@@ -69,7 +71,7 @@ def main_uci_loop(engine: ChessEngine):
 
         if commands[0] == UCI_COMMAND:
             output("id name " + str(engine.name))
-            output("id authors Tomek and Gracjan")
+            output("id authors Tomek, Gracjan and Gosia")
             output(UCI_OK_COMMAND)
 
         elif commands[0] == UCI_IS_READY_COMMAND:

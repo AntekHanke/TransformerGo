@@ -2,11 +2,13 @@
 import os
 import sys
 
+import chess
+
 sys.path.append("/home/tomasz/Research/subgoal_search_chess")
 os.environ["SUBGOAL_PROJECT_ROOT"] = "/home/tomasz/Research/subgoal_search_chess"
 
 from chess_engines.bots.basic_chess_engines import PolicyChess
-from chess_engines.banksia_gui_uci.gracjan.banksia_gui_core import main_uci_loop
+from chess_engines.banksia_gui_uci.banksia_gui_core import main_uci_loop
 
 
 log_dir: str = "/home/tomasz/Research/subgoal_chess_data/bot_logs"

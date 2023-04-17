@@ -41,7 +41,10 @@ class EvaluateGenerator(Job):
             input_eval = self.stockfish.evaluate_immutable_board(input_board)
             data_target = ChessTokenizer.decode_board(eval_data[idx]["labels"])
             target_eval = self.stockfish.evaluate_immutable_board(data_target)
-            subgoals = self.subgoal_generator.generate_subgoals(input_board, self.n_subgoals)
+            subgoals = self.subgoal_generator.generate_subgoals(input_board=input_board,
+                                                                generator_num_beams=16,
+                                                                generator_num_subgoals=self.n_subgoals,
+                                                                subgoal_distance_k=3)
             subgoals = [s for s in subgoals if s.board != input_board.board]
             subgoals_values = [self.stockfish.evaluate_immutable_board(subgoal) for subgoal in subgoals]
 

@@ -11,9 +11,11 @@ import numpy as np
 
 from chess_engines.third_party.stockfish import StockfishEngine
 from data_structures.data_structures import ImmutableBoard, HistoryLength
+from metric_logging import log_param
 from policy.chess_policy import BasicChessPolicy, LCZeroPolicy
 from policy.cllp import CLLP
 from subgoal_generator.subgoal_generator import BasicChessSubgoalGenerator
+from utils.chess960_conversion import chess960_to_standard
 from utils.data_utils import immutable_boards_to_img
 
 
@@ -36,6 +38,9 @@ class ChessEngine(ABC):
     ) -> Optional[str]:
         raise NotImplementedError
 
+    def log_all_params(self) -> None:
+        for attr, value in self.__dict__.items():
+            log_param(f"{self.__class__.__name__}_{attr}", str(value))
 
 class RandomChessEngine(ChessEngine):
     def __init__(self):
@@ -69,17 +74,18 @@ class PolicyChess(ChessEngine):
 
         self.name: str = name
         self.log_dir = log_dir
-        self.debug_mode = debug_mode
+        self.debug_mode = False
         self.replace_legall_move_with_random = replace_legall_move_with_random
         self.do_sample = do_sample
         self.policy_checkpoint = policy_checkpoint
+        self.use_lczero_policy = use_lczero_policy
         self.history_length = history_length
-        if not use_lczero_policy:
-            self.chess_policy = BasicChessPolicy(self.policy_checkpoint, self.history_length)
-        else:
-            self.chess_policy = LCZeroPolicy()
+        self.chess_policy = None
+
+        self.log_all_params()
 
     def new_game(self) -> None:
+
         today: datetime.date = date.today()
         now: datetime.date = datetime.now()
         self.log_dir = os.path.join(self.log_dir, str(today), f"{now.hour}_{now.minute}_{now.second}", f"{self.name}")
@@ -96,30 +102,42 @@ class PolicyChess(ChessEngine):
     def propose_best_moves(
         self, current_state: chess.Board, number_of_moves: int, history: List[chess.Move] = None
     ) -> Optional[str]:
+
+        if self.chess_policy is None:
+            if not self.use_lczero_policy:
+                self.chess_policy = BasicChessPolicy(self.policy_checkpoint, self.history_length)
+            else:
+                self.chess_policy = LCZeroPolicy()
+
         if self.debug_mode:
             log_engine_specific_info("\n", self.log_dir)
             log_engine_specific_info(f"CURRENT STATE:{current_state.fen()}", self.log_dir)
             log_engine_specific_info(f"NUMBER OF GENERATED MOVES: {number_of_moves}", self.log_dir)
             log_engine_specific_info("JUST BEFORE SELECTING BEST MOVES", self.log_dir)
 
-        try:
-            moves, probs = self.chess_policy.get_best_moves(
-                immutable_board=ImmutableBoard.from_board(current_state),
-                history=history,
-                num_return_sequences=number_of_moves,
-                return_probs=True,
-                do_sample=self.do_sample,
-            )
-            log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
-        except Exception as e:
-            log_engine_specific_info(f"ERROR: {e}", self.log_dir)
-            # return None
+        # try:
+        moves, probs = self.chess_policy.get_best_moves(
+            immutable_board=ImmutableBoard.from_board(current_state),
+            history=None,
+            num_return_sequences=number_of_moves,
+            return_probs=True,
+            do_sample=self.do_sample,
+        )
+        # log_engine_specific_info(f"MOVES PROBABILITIES: {[int(10000*prob)/10000 for prob in probs]}", self.log_dir)
+        # except Exception as e:
+        #     log_engine_specific_info(f"ERROR: {e}", self.log_dir)
+        #     return None
 
         if self.debug_mode:
             log_engine_specific_info(f"AFTER SELECTING BEST MOVES. BEST MOVES: {moves}", self.log_dir)
 
         legall_moves: List[chess.Move] = list(current_state.legal_moves)
-        for move in moves:
+        print(f"FEN = {current_state.fen()}")
+        converted_moves = [chess960_to_standard(move, current_state) for move in moves]
+        print(f"POLICY {moves}: conv_moves: {converted_moves} | legall moves: {legall_moves}")
+
+
+        for move in converted_moves:
             if move in legall_moves:
                 if self.debug_mode:
                     log_engine_specific_info(f"BEST MOVE CHOOSEN FROM LIST OF LEAGL MOVES: {move.uci()}", self.log_dir)
@@ -233,12 +251,15 @@ class SubgoalWithCLLPStockfish(ChessEngine):
         immutable_current: ImmutableBoard = ImmutableBoard.from_board(current_state)
         batch_to_predict: List[Tuple[ImmutableBoard, ImmutableBoard]] = []
 
-        subgoals: List[ImmutableBoard] = self.generator.generate_subgoals(
-            ImmutableBoard.from_board(current_state), self.n_subgoals
+        subgoals = self.generator.generate_subgoals(
+            input_boards=[ImmutableBoard.from_board(current_state)],
+            generator_num_beams=16,
+            generator_num_subgoals=self.n_subgoals,
+            subgoal_distance_k=3
         )
-        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals)
+        subgoal_values: List[float] = self.stockfish.evaluate_boards_in_parallel(subgoals[0])
 
-        subgoals, subgoal_values = self.subgoal_filter(subgoals, subgoal_values)
+        subgoals, subgoal_values = self.subgoal_filter(subgoals[0], subgoal_values)
 
         for subgoal in subgoals:
             batch_to_predict.append((immutable_current, subgoal))
@@ -253,7 +274,7 @@ class SubgoalWithCLLPStockfish(ChessEngine):
 
         log_engine_specific_info(f"BATCH TO PREDICT: {batch_to_predict}", self.log_dir)
 
-        paths: List[List[chess.Move]] = self.cllp.get_batch_path(batch_to_predict)
+        paths: List[List[chess.Move]] = self.cllp.get_paths_batch(batch_to_predict)
         moves: List[chess.Move] = [path[0] for path in paths]
 
         if self.debug_mode:
