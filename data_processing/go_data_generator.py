@@ -395,14 +395,19 @@ class GoGamesDataGenerator(GoDataProvider):
 class SimpleGamesDataGenerator(GoGamesDataGenerator):
     '''
     Function generates data suitable for training convolutional networks for Go. It returns a dataframe, with the current state of board
-    (19x19x4 - Black/White/Empty/Ko) in the first column, and the next move in the game (x: 0-18, y: 0-18, Black:True/False) in the second column
+    (19x19x5 - Black/White/Empty/Ko/Colour of the next player to move) 
+    in the first column, and the next move in the game (x: 0-18, y: 0-18, Black:True/False) 
+    in the second column
     '''
     def game_to_datapoints(self, one_game_data: GoOneGameData, current_dataset: Dict):
         for num, transition in enumerate(one_game_data.transitions):
             if random.random() <= self.p_sample and self.go_filter.use_transition(transition, one_game_data):
+                board = transition.immutable_board.boards
+                move = transition.move
                 current_dataset[len(current_dataset)] = {
-                    "input_ids": transition.immutable_board.boards,
-                    "labels": transition.move,
+                    "input_ids": np.append(board, np.full((board.shape[0], board.shape[1], 1) 
+                                            , transition.move[-1]), axis = -1),
+                    "labels": (move[0], move[1]) 
                 }
                 sample = {"input_board": transition.immutable_board, "move": transition.move, "num": num}
                 self.log_sample(sample, one_game_data.metadata)

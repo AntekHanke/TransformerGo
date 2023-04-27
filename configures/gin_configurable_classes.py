@@ -4,6 +4,7 @@ from transformers import Trainer, TrainingArguments, BartConfig, BertConfig
 from chess_engines.bots.basic_chess_engines import RandomChessEngine, PolicyChess, SubgoalWithCLLPStockfish
 from chess_engines.bots.mcts_bot import SubgoalMCTSChessEngine, VanillaMCTSChessEngine
 from chess_engines.bots.stockfish_bot import StockfishBotEngine
+from go_policy.policy_config import AlphaZeroPolicyConfig
 from data_processing.archive.pgn.mcts_data_generator import SubgoalMCGamesDataGenerator
 from data_processing.archive.pgn.prepare_and_save_data import (
     PandasPolicyPrepareAndSaveData,
@@ -26,6 +27,7 @@ from data_processing.pandas_iterable_data_provider import (
     PandasIterableSubgoalToPolicyDataProvider,
     PandasIterableCLLPDataProvider,
     PandasIterableSubgoalAllDistancesDataProvider,
+    PandasIterablePolicyDataProviderGo
 )
 from data_processing.pandas_static_dataset_provider import (
     PandasStaticDataProvider,
@@ -36,6 +38,7 @@ from data_processing.pandas_static_dataset_provider import (
     PandasStaticSubgoalToPolicyDataProvider,
     PandasStaticCLLPDataProvider,
     PandasStaticSubgoalAllDistancesDataProvider,
+    PandasStaticPolicyDataProviderGo
 )
 from jobs.chess_retokenization import RetokenizationJob
 # from jobs.compare_mcts_with_stockfish import CompareMCTSWithStockfish
@@ -49,12 +52,15 @@ from jobs.job_leela_dataset import (
 )
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.local_jobs_antek.go_data_generator_tokenized_policy import GoTokenizedPolicyGeneratorAlwaysBlack
+from jobs.go_convolution_data_generation import GoConvolutionDataGeneration
+from jobs.go_train_convolutions import GoTrainConvolution
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.go_train_bert_for_sequence_model import GoTrainBertForSequenceModel
-from jobs.train_model import TrainModelFromScratch, ResumeTraining
+from jobs.train_model import TrainModelFromScratch, ResumeTraining, TrainConvolutionFromScratch
 # from jobs.run_mcts import RunMCTSJob
 # from mcts.mcts import score_function, expand_function, mock_expand_function
 
+from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack, SimpleGamesDataGenerator
 from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
 from jobs.run_mcts import RunMCTSJob
 from mcts.mcts import score_function, StandardExpandFunction, LeelaExpandFunction
@@ -100,9 +106,13 @@ configure_classes(
         RunMCTSJob,
         GameBetweenEngines,
         # CompareMCTSWithStockfish,
+        GoConvolutionDataGeneration,
+        GoTrainConvolution,
+        TrainConvolutionFromScratch
     ],
     "jobs",
 )
+configure_class(AlphaZeroPolicyConfig, "AlphaZero")
 configure_classes([Trainer, TrainingArguments, BartConfig, BertConfig], "transformers")
 configure_classes([NoFilter, ResultFilter, ELOFilter], "filters")
 configure_classes(
@@ -130,6 +140,9 @@ configure_classes(
         PandasBertForSequenceDataProvider,
         CLLPPrepareAndSaveData,
         GoSimpleGamesDataGeneratorTokenizedAlwaysBlack,
+        SimpleGamesDataGenerator,
+        PandasIterablePolicyDataProviderGo,
+        PandasStaticPolicyDataProviderGo
     ],
     "data",
 )

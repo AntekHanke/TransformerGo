@@ -10,6 +10,8 @@ from transformers import (
     BartConfig,
     TrainingArguments,
 )
+from go_policy.policy_config import AlphaZeroPolicyConfig
+from go_policy.policy_model  import AlphaZeroPolicyModel
 from transformers.integrations import NeptuneCallback
 
 import metric_logging
@@ -178,6 +180,24 @@ class TrainModelFromScratch(TrainModel):
     def train_model(self):
         self.trainer.train()
 
+class TrainConvolutionFromScratch(TrainModelFromScratch):
+    
+    @staticmethod
+    def compute_metrics(eval_preds):
+        predictions, labels = eval_preds
+        predictions, _ = predictions
+        return{
+            "accuracy": (predictions == np.prod(labels, axis = -1)).astype(np.float32).mean().item(),
+        }
+    @staticmethod
+    def preprocess_logits_for_metrics(logits, labels):
+        pred_ids = torch.argmax(logits, dim = -1)
+        labels = torch.prod(labels, dim = -1)
+        return pred_ids, labels
+    
+    def get_model(self):
+        return AlphaZeroPolicyModel(self.model_config_cls())
+    
 
 class ResumeTraining(TrainModel):
     def __init__(self, checkpoint_path, checkpoint_num, **kwargs):
