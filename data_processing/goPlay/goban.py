@@ -24,6 +24,7 @@ from typing import Dict, Any, Optional, List, Type, Union, Tuple
 from data_structures.go_data_structures import GoImmutableBoard
 import sente
 
+
 BACKGROUND = 'images/ramin.jpg'
 BOARD_SIZE = (820, 820)
 WHITE = (255, 255, 255)
@@ -136,6 +137,74 @@ class playingGoModel:
         pass
 
 
+class valueGoModel:
+    """Model which can play the game."""
+
+    def value(self, position: GoImmutableBoard) -> (float):
+        """Returns value of given position. (Probability of black winning)"""
+        raise NotImplementedError
+
+
+class TransformerValue(valueGoModel):
+    def __init__(self, checkpoint_path_or_model):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Device used for policy:", device)
+
+        if isinstance(checkpoint_path_or_model, str):
+            self.model = BartForConditionalGeneration.from_pretrained(checkpoint_path_or_model)
+
+        else:
+            self.model = checkpoint_path_or_model
+
+        self.model.to(device)
+        self.model.eval()
+        self.tokenizer = GoTokenizer()
+        self.softmax = torch.nn.Softmax()
+
+    def get_best_moves(
+        self,
+        immutable_board: GoImmutableBoard,
+        num_return_sequences: int = 2,
+        num_beams: int = 2
+    ):
+        input_tensor: torch.Tensor = torch.IntTensor(
+            [self.tokenizer.encode_immutable_board(immutable_board)]
+        ).to(self.model.device)
+        outputs = self.model.generate(
+            inputs=input_tensor,
+            num_beams=num_beams,
+            num_return_sequences=num_return_sequences,
+            max_new_tokens=2,
+            output_scores=True,
+            return_dict_in_generate=True
+        )
+
+        sequence = outputs.sequences.tolist()
+
+        scores = outputs.sequences_scores
+        probs = self.softmax(scores)
+        moves = []
+        moves_ids = []
+
+
+        for output in sequence:
+            real_move = [output[1]]
+            moves.append(real_move)
+            moves_ids.append(output)
+
+        print("My values i found: ", moves)
+        return moves, probs
+
+
+    def value(self, position: GoImmutableBoard) -> float:
+
+        results, probs = self.get_best_moves(position)
+        for res,prob in zip(results, probs):
+            if res==[4]:
+                prob_real = prob
+
+        print(f"Black winning chance: {prob_real}")
+        return prob_real
 
 
 
@@ -154,6 +223,7 @@ class TransformerPolicy(playingGoModel):
         self.model.to(device)
         self.model.eval()
         self.tokenizer = GoTokenizer()
+        self.softmax = torch.nn.Softmax()
 
     def get_best_moves(
         self,
@@ -174,8 +244,9 @@ class TransformerPolicy(playingGoModel):
         )
 
         sequence = outputs.sequences.tolist()
-        scores = outputs.scores[0]
 
+        scores = outputs.sequences_scores
+        probs = self.softmax(scores)
         moves = []
         moves_ids = []
 
@@ -192,7 +263,7 @@ class TransformerPolicy(playingGoModel):
         #board = immutable_board.to_board()
         #converted_moves = [chess960_to_standard(move, board) for move in moves]
 
-        return moves
+        return moves, probs
     def play_move(self, position: GoImmutableBoard) -> (int, int):
         moves = self.get_best_moves(position)
         print(f"My moves are: {moves}")
@@ -206,21 +277,29 @@ class TransformerPolicy(playingGoModel):
         if(position.active_player == sente.stone.WHITE):
             position = GoImmutableBoard.from_all_data(position.boards[:,:,[1,0,2,3]], position.legal_moves, position.active_player, position.metadata)
 
-        moves = self.get_best_moves(position)
+        moves, probs = self.get_best_moves(position)
         realmoves = [(x+1, y+1) for (x,y,b) in moves]
         print(f"My moves are: {realmoves}")
-        return realmoves
+        return realmoves, probs.tolist()
 
 
 
 
-def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE):
+def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, sgf = None):
     curr_game = sente.Game()
-
+    if sgf:
+        curr_game = sente.sgf.load(sgf)
+        seq = curr_game.get_default_sequence()
+        for mov in seq:
+            curr_game.play(mov)
+            x = mov.get_x() + 1
+            y = mov.get_y() + 1
+            added_stone = Stone(board, (x, y), board.turn())
+            board.update_liberties(added_stone)
     while True:
         pygame.time.wait(250)
-
-        if(curr_game == youPlayAs):
+        sente.sgf.dump(curr_game, "autosave.sgf")
+        if(curr_game.get_active_player() == youPlayAs):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     moves = curr_game.get_current_sequence()
@@ -241,11 +320,11 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE):
         else:
             goImmut = GoImmutableBoard.from_game(curr_game)
 
-            moves = model.play_moves(goImmut)
+            moves, probs = model.play_moves(goImmut)
             whichChoice = 0
             bestmove = moves[whichChoice]
-            x = bestmove[0]+1
-            y = bestmove[1]+1
+            x = bestmove[0]
+            y = bestmove[1]
             print("Playing ", x, y)
 
             if(x==20 and y==20):
@@ -267,13 +346,17 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE):
                 added_stone = Stone(board, (x, y), board.turn())
                 board.update_liberties(added_stone)
                 curr_game.play(x,y)
+                fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs))
+                fig.show()
+                plt.clf()
 
             print(curr_game)
 
 from data_processing.goGraphics import plot_go_game
 
-def play_bots_match(black_player: playingGoModel = None, white_player: playingGoModel = None):
+def play_bots_match(black_player: playingGoModel = None, white_player: playingGoModel = None, value_model: valueGoModel = None):
     curr_game = sente.Game()
+    move_num = 0
     model_dict = {
         sente.stone.WHITE: white_player,
         sente.stone.BLACK: black_player
@@ -283,12 +366,24 @@ def play_bots_match(black_player: playingGoModel = None, white_player: playingGo
 
         print(curr_game)
 
-        fig, ax = plot_go_game(curr_game)
-        fig.show()
-        plt.clf()
+
         next = curr_game.get_active_player()
         goImmut = GoImmutableBoard.from_game(curr_game)
-        moves = model_dict[next].play_moves(goImmut)
+        moves, probs = model_dict[next].play_moves(goImmut)
+        if(value_model):
+            value = value_model.value(goImmut)
+        else:
+            value = None
+
+        try:
+            fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs), black_winning_prob=value)
+            #fig.show()
+            plt.savefig(f'plots/{move_num}.png')
+            #plt.close()
+            #plt.clf()
+        except Exception as e:
+            print(e)
+
         whichChoice = 0
         while True:
             x,y = moves[whichChoice]
@@ -302,6 +397,7 @@ def play_bots_match(black_player: playingGoModel = None, white_player: playingGo
             except:
                 print(f"Oops illegal!{x},{y}")
                 whichChoice+=1
+        move_num+=1
 
     sente.sgf.dump(curr_game, "bot game.sgf")
     print(curr_game)
@@ -316,12 +412,32 @@ if __name__ == '__main__':
     import sente
 
     t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
-    t67k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-67000")
+    # t67k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-67000")
+    # v127k = TransformerValue("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/value_models/checkpoint-127000")
 
-    # pygame.init()
-    # pygame.display.set_caption('Goban')
-    # screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
-    # background = pygame.image.load(BACKGROUND).convert()
-    # board = Board()
-    # playAgainstModel(cos)
-    play_bots_match(t67k, t192k)
+    """ For playing against a model: """
+    pygame.init()
+    pygame.display.set_caption('Goban')
+    screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
+    background = pygame.image.load(BACKGROUND).convert()
+    board = Board()
+    #playAgainstModel(model = t192k)
+    playAgainstModel(model = t192k, sgf="my game.sgf")
+
+    """For games between 2 bots"""
+    # play_bots_match(t67k, t192k, v127k)
+
+
+
+    # """testing"""
+    # game = sente.sgf.loads("(;GM[1]FF[4]SZ[19];B[pp];W[dd];B[dq];W[pd];B[cn];W[qn];B[qo];W[pn];B[mq];W[pj];B[gq];W[jd];B[dk];W[jj];B[cc];W[dc];B[cd];W[ce];B[be];W[cf];B[db];W[eb];B[bb];W[da];B[cb];W[fc];B[hc];W[ic];B[hd];W[bf];B[bd];W[if];B[hf];W[hg];B[gf];W[gg];B[ef];W[fg];B[ff];W[df];B[eg];W[ci];B[ei];W[dj];B[fh];W[ih];B[ej];W[ck];B[ie];W[je];B[jf];W[ig];B[kf];W[ld];B[mf];W[of];B[lh];W[lj];B[nh];W[nj];B[ph];W[qi];B[qh];W[qf];B[rf];W[rg];B[ji];W[ii];B[ij];W[ki];B[jh];W[hj];B[ik];W[hk];B[jk];W[kj];B[hl];W[gl];B[hm];W[fk];B[gm];W[fm];B[gj];W[gi];B[fj];W[gk];B[fn];W[dl];B[ek];W[el];B[cl];W[cm];B[bl];W[bm];B[bk];W[cj];B[bj];W[bi];B[em];W[dm];B[fl];W[jg];B[kh];W[fm];B[mi];W[en];B[mj];W[mk];B[nk];W[ok];B[nl];W[nn];B[ml];W[rh];B[ee];W[de];B[ed];W[ec];B[kc];W[lc];B[ib];W[id];B[jb];W[he];B[ge];W[gb];B[ie];W[kd];B[hb];W[lb];B[qc];W[pc];B[qd];W[re];B[qe];W[pe];B[rd];W[sf];B[pb];W[rb];B[qb];W[ob];B[ra];W[sb];B[pa];W[sd];B[sc];W[rc];B[ne];W[nc];B[fo];W[ol];B[mn];W[no];B[mo];W[np];B[nq];W[mp];B[lp];W[oq];B[op];W[lq];B[lr];W[lo];B[kp];W[mm];B[ln];W[lm];B[kn];W[lk])")
+    # sequence = game.get_default_sequence()
+    # print(sequence)
+    # black_win_probs = []
+    # for move in sequence:
+    #     goImmut = GoImmutableBoard.from_game(game)
+    #     black_win_probs.append(v127k.value(goImmut))
+    #     game.play(move)
+
+
+    #plt.plot(black_win_probs)
