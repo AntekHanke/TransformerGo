@@ -72,7 +72,7 @@ def plot_go_boards(boards, expmov=None, predmov=None, predmovs=None):
     return fig, ax
 
 import sente
-def plot_go_game(game: sente.Game, lastmove = True):
+def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None, black_winning_prob = None):
     '''Accepts boards same as boards dumped by sente library (numpy 19x19x4 array)'''
     # create a 8" x 8" board
     fig = plt.figure(figsize=[8, 8])
@@ -97,31 +97,40 @@ def plot_go_game(game: sente.Game, lastmove = True):
     # draw Go stones at (10,10) and (13,16)
     boards = game.numpy()
 
-    for y, row in enumerate(boards):
+    for x, row in enumerate(boards):
         # print("row: ",row)
-        for x, val in enumerate(row):
+        for y, val in enumerate(row):
             # print("val: ",val)
             if (val[0] == 1):
-                s2, = ax.plot(x, y, 'o', markersize=30, markeredgecolor=(.5, .5, .5), markerfacecolor='k',
+                s2, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(.5, .5, .5), markerfacecolor='k',
                               markeredgewidth=2)
             elif (val[1] == 1):
-                s1, = ax.plot(x, y, 'o', markersize=30, markeredgecolor=(0, 0, 0), markerfacecolor='w',
+                s1, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(0, 0, 0), markerfacecolor='w',
                               markeredgewidth=2)
 
     if (lastmove):
         try:
             moves = game.get_sequence()
             lastmov = moves[-1]
-            y = lastmov.get_x()
-            x = lastmov.get_y()
+            x = lastmov.get_x()
+            y = lastmov.get_y()
             stone = lastmov.get_stone()
             col = (stone == sente.stone.WHITE)
             if (col == 0):
-                s2, = ax.plot(x, y, 'o', markersize=25, markeredgecolor=(1, 0, 0), markerfacecolor='k',
+                s2, = ax.plot(x, 18-y, 'o', markersize=25, markeredgecolor=(1, 0, 0), markerfacecolor='k',
                               markeredgewidth=2)
             else:
-                s1, = ax.plot(x, y, 'o', markersize=25, markeredgecolor=(1, 0, 0), markerfacecolor='w',
+                s1, = ax.plot(x, 18-y, 'o', markersize=25, markeredgecolor=(1, 0, 0), markerfacecolor='w',
                               markeredgewidth=2)
         except:
             print("no last move")
+
+    if (explore_move_possibs):
+        for move, prob in zip(explore_move_possibs[0], explore_move_possibs[1]):
+            x, y = move
+            s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='red', fontsize=11+5*prob, ha="center", va="center")
+
+    if (black_winning_prob):
+        ax.text(0, -1, f"Black winning probability: "+"{:.0%}".format(black_winning_prob), color='black', fontsize=12)
+
     return fig, ax
