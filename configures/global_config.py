@@ -19,8 +19,7 @@ if is_local_machine():
         NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIyNzdhMDQzNi0yOTJmLTQ3MzAtYmU1Yi1hYTgzNWEwNzUyZjMifQ=="
     elif get_local_machine() == "mgrot":
         NEPTUNE_API_TOKEN = "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI0YTRhYTg1YS0yZjdiLTRlNWItYWVhMC1lNjg2ZTQ2NTRkOGIifQ==" 
-#NEPTUNE_PROJECT = "pmtest/subgoal-chess"
-NEPTUNE_PROJECT = "mgrotkowski/debug-project" 
+NEPTUNE_PROJECT = "pmtest/subgoal-chess"
 
 EAGLE_DATASET = ""
 ENTROPY_HOME = ""

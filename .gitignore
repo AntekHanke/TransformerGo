@@ -1,1 +1,17 @@
 .idea/
+__pycache__/
+*.py[cod]
+*$py.class
+/**/.sgf
+bin/
+.neptune/
+.vscode/
+change_dir.sh
+split_data.sh
+share
+lib
+lib64
+pyvenv.cfg
+exclude
+DataGenerationlocaltry.py
+lczero

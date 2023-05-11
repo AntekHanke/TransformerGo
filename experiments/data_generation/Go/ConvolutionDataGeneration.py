@@ -5,27 +5,27 @@ base_config = {
     "run.job_class": "@jobs.GoConvolutionDataGeneration",
     "GoConvolutionDataGeneration.GoConvolutionDataGenerator": "@data.SimpleGamesDataGenerator",
     #"SimpleGamesDataGenerator.sgf_files": "/home/users/mgrotkowski/grant_619/scratch/AH/raw_data/val.txt",
-    "SimpleGamesDataGenerator.save_data_every_n_games": 999,
+    "SimpleGamesDataGenerator.save_data_every_n_games": 16000,
     "SimpleGamesDataGenerator.p_sample": 1.0,
-    "SimpleGamesDataGenerator.max_games": 999,
-    "SimpleGamesDataGenerator.train_eval_split": 0.95,
-    "SimpleGamesDataGenerator.save_path_to_eval_set": "/godata/val/",
-    "SimpleGamesDataGenerator.save_path_to_train_set": "/godata/val/",
+    "SimpleGamesDataGenerator.max_games":  15000,
+    "SimpleGamesDataGenerator.train_eval_split": 1.0,
+    "SimpleGamesDataGenerator.save_path_to_eval_set": "/godata/train/",
+    "SimpleGamesDataGenerator.save_path_to_train_set": "/godata/train/",
     # class's parameters (ELOFilter)
 
     "use_neptune": True,
 }
-PATH_STR = "/godata/validx/validx_"
+PATH_STR = "/godata/trainidx/trainidx_"
 params_grid = {
     "idx": [0],
     "SimpleGamesDataGenerator.sgf_files" : [PATH_STR + str(0) + str(i) + ".txt"
-                                            if i < 10 else PATH_STR + str(i) + ".txt" for i in range(1,11)] 
+                                            if i < 10 else PATH_STR + str(i) + ".txt" for i in range(1,51)] 
     #"SimpleGamesDataGenerator.sgf_files" : [PATH_STR + "01" ".txt"] 
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"generating-go-dataset",
-    project_name="mgrotkowski/debug-project",
+    experiment_name=f"train-go-dataset",
+    project_name="pmtest/subgoal-chess",
     base_config=base_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",

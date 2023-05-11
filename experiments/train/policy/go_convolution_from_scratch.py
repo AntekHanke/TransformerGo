@@ -26,13 +26,13 @@ params_grid = {
 
 experiments_list = create_experiments_helper(
     experiment_name=f"go_conv_policy_train",
-    project_name="mgrotkowski/debug-project",
+    project_name="pmtest/subgoal-chess",
     base_config=experiment_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
     exclude=["data", ".pytest_cache", "out", ".git", "exclude", "lib", "lib64"],
     python_path="",
-    tags=["train", "small", "policy", "from_scratch"],
+    tags=["train", "policy", "go", "convolution", "from_scratch"],
     with_neptune=True,
     env={},
 )

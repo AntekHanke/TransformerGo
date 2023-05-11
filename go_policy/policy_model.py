@@ -21,7 +21,6 @@ class   AlphaZeroPolicyModel(PreTrainedModel):
 
     def forward(self, input_ids : torch.Tensor, labels : torch.Tensor = None):
         logits = self.model(input_ids.permute(0,3,1,2).float()) # batch, channels, board_size, board_size 
-        print(type(input_ids), type(labels))
         if labels is not None:
             labels = torch.prod(labels, dim = -1).flatten()
             loss = torch.nn.functional.cross_entropy(logits, torch.nn.functional.one_hot(
