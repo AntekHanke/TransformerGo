@@ -165,19 +165,34 @@ class GoGamesDataGenerator(GoDataProvider):
     ):
         self.size_of_computed_dataset: int = 0
         self.anchor = os.path.dirname(sgf_files)
+        print("Anchor is: ", self.anchor)
 
-        with open(sgf_files, encoding="utf8") as f:
-            self.sgf_files_directories = f.readlines()
-        self.sgf_file = self.sgf_files_directories[0]
-        if self.sgf_files_directories is not None:
-            self.path_to_sgf_file = sgf_file
+        if(sgf_files[-3:]=="aio"):
+            self.aio = True
+            print("AIO mode enabled")
+            self.allgames = []
             self.name_of_sgf_file: str = os.path.basename(sgf_files)[:-4]
-            #self.sgf_database = open(self.path_to_sgf_file, errors="ignore")
+            with open(sgf_files, encoding="utf8") as f:
+                self.sgf_lines = f.readlines()
+            for line in self.sgf_lines:
+                if(line[0] == ';'):
+                    self.allgames.append('(;BR[]WR[]KM[]RE[]'+line)
+            #print("Allgames: ", self.allgames)
+        else:
+            self.aio = False
+            with open(sgf_files, encoding="utf8") as f:
+                self.sgf_files_directories = f.readlines()
+            self.sgf_file = self.sgf_files_directories[0]
+            if self.sgf_files_directories is not None:
+                self.path_to_sgf_file = sgf_file
+                self.name_of_sgf_file: str = os.path.basename(sgf_files)[:-4]
+                #self.sgf_database = open(self.path_to_sgf_file, errors="ignore")
+
 
         if go_filter is None:
             go_filter = NoFilter()
         self.go_filter = go_filter
-        assert go_filter is not None, "Chess filter must be specified"
+        assert go_filter is not None, "Go filter must be specified"
 
         print(100 * "=")
         print(
@@ -214,17 +229,22 @@ class GoGamesDataGenerator(GoDataProvider):
         :return: OneGameData contains inforamtion about chess game.
         """
 
+        if (self.aio):
+            #print("Loading from sgf: ", self.allgames[self.n_games])
+            current_game = sente.sgf.loads(self.allgames[self.n_games])
+        else:
+            sgf_dir = os.path.normpath(os.path.join(self.anchor, self.path_to_sgf_file))
+            if(sgf_dir[-3:]!="sgf"):
+                sgf_dir += ".sgf"
+            current_game = sente.sgf.load(sgf_dir, disable_warnings=True)
 
-        sgf_dir = os.path.normpath(os.path.join(self.anchor, self.path_to_sgf_file))
-        current_game = sente.sgf.load(sgf_dir, disable_warnings=True)
-
-        ### The following few lines are required to fix the handicap errors of Sente SGF loader
-        sgf = sente.sgf.dumps(current_game)
-        sgf = re.sub("([a-z])\];AB\[", '\\1];W[];AB[', sgf)
-        sgf = re.sub("AB\[", 'B[', sgf)
-        #print(f"in dir {sgf_dir}, sgf: {sgf}")
-        current_game = sente.sgf.loads(sgf)
-        #print("properties: ", current_game.get_properties())
+            ### The following few lines are required to fix the handicap errors of Sente SGF loader
+            sgf = sente.sgf.dumps(current_game)
+            sgf = re.sub("([a-z])\];AB\[", '\\1];W[];AB[', sgf)
+            sgf = re.sub("AB\[", 'B[', sgf)
+            #print(f"in dir {sgf_dir}, sgf: {sgf}")
+            current_game = sente.sgf.loads(sgf)
+            #print("properties: ", current_game.get_properties())
 
         if current_game is None:  # Condition is met if there are no more games in the dataset.
             return None
@@ -291,7 +311,10 @@ class GoGamesDataGenerator(GoDataProvider):
 
         for n_iterations in range(self.max_games):
             try:
-                self.path_to_sgf_file = self.sgf_files_directories[self.n_games][:-1]
+                if(self.aio):
+                    game = self.allgames[self.n_games]
+                else:
+                    self.path_to_sgf_file = self.sgf_files_directories[self.n_games][:-1]
             except:
                 print("Run out of games, ending loop")
                 break
@@ -306,8 +329,9 @@ class GoGamesDataGenerator(GoDataProvider):
                         self.game_to_datapoints(game, current_dataset)
                         self.n_games += 1
                         self.log_progress(n_iterations)
-                except:
-                    print("Error in game: ", self.path_to_sgf_file)
+                except Exception as error:
+                    print("Error in game: ", self.path_to_sgf_file, type(error).__name__)
+                    print("Tried to open this directory: ", os.path.normpath(os.path.join(self.anchor, self.path_to_sgf_file)))
                     self.n_games += 1
                     self.log_progress(n_iterations)
 
@@ -669,14 +693,19 @@ if __name__ == '__main__':
     # generator = GoValueTokenized(sgf_files='sgf_directories.txt',save_data_every_n_games=119,p_sample=1,max_games=103,train_eval_split=0.95,save_path_to_eval_set='tokenized_data/value/test/eval/',save_path_to_train_set='tokenized_data/value/test/train/')
     # generator.create_data()
 
-    generator = GoSubgoalGamesDataGenerator(sgf_files='sgf_directories.txt',save_data_every_n_games=119,p_sample=1,max_games=103,train_eval_split=0.95,save_path_to_eval_set='tokenized_data/subgoal/test/eval/',save_path_to_train_set='tokenized_data/subgoal/test/train/')
-    generator.create_data()
+    # generator = GoSubgoalGamesDataGenerator(sgf_files='2005-11.aio',save_data_every_n_games=119,p_sample=1,max_games=100,train_eval_split=0.95,save_path_to_eval_set='tokenized_data/subgoal/test/eval/',save_path_to_train_set='tokenized_data/subgoal/test/train/')
+    # generator = GoSubgoalGamesDataGenerator(sgf_files='sgf_directories.txt', save_data_every_n_games=119,
+    #                                         p_sample=1, max_games=10, train_eval_split=0.95,
+    #                                         save_path_to_eval_set='tokenized_data/subgoal/test/eval/',
+    #                                         save_path_to_train_set='tokenized_data/subgoal/test/train/')
+
+    # generator.create_data()
 
     #print(os.path.basename('C:\\Users\\Antek\\PycharmProjects\\subgoal_search_chess\\data_processing\\val.txt')[:-4])
 
-    # np.set_printoptions(threshold=10000)
-    # aaa = pd.read_pickle("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/data_processing/tokenized_data/value/test/eval/sgf_directories_eval_part_0.pkl")
-    # print(aaa)
+    np.set_printoptions(threshold=10000)
+    aaa = pd.read_pickle("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/data_processing/tokenized_data/subgoal/test/train/2005-11_train_part_0.pkl")
+    print(aaa.iloc[0]['labels'])
 
 
     # #print(os.path.join(dirs, sgf))
@@ -685,3 +714,8 @@ if __name__ == '__main__':
 
     # for a in os.walk("."):
     #    print(a)
+
+
+    # game = sente.sgf.loads('(;BR[]WR[]KM[]RE[];B[qd];W[dp];B[ec];W[pp];B[cn];W[cl];B[df];W[dn];B[do];W[co];B[eo];W[en];B[cp];W[bo];B[fn];W[fm];B[fo];W[cq];B[em];W[dm];B[el];W[gm];B[ho];W[cj];B[ej];W[im];B[jo];W[km];B[lo];W[cd];B[ee];W[hj];B[ci];W[bi];B[dj];W[bk];B[ch];W[bf];B[kd];W[mq];B[no];W[op];B[pn];W[pl];B[mm];W[pi];B[qg];W[oc];B[mk];W[kj];B[li];W[pf];B[qf];W[qc];B[rc];W[pd];B[qe];W[oh];B[ki];W[ji];B[jh];W[ii];B[kk];W[hg];B[pe];W[oe];B[og];W[on];B[pm];W[ql];B[om];W[md];B[of];W[qh];B[qb];W[kb];B[ic];W[jg];B[kg];W[ih];B[jf];W[kh];B[lh];W[eh];B[dh];W[kc];B[ld];W[lc];B[jh];W[jq];B[ig];W[jk];B[lj];W[ib];B[hb];W[hc];B[jj];W[ik];B[hd];W[gc];B[gk];W[gd];B[ge];W[hl];B[hn];W[gh];B[jc];W[jb];B[hf];W[ei];B[di];W[eg];B[cf];W[fb];B[rm];W[rl];B[qq];W[qp];B[rp];W[pq];B[rr];W[qr];B[rq];W[bg];B[gg];W[hh];B[jn];W[ff];B[bh];W[ah];B[gl];W[hm];B[gf];W[jm];B[fg];W[fh];B[kl];W[jl];B[ce];W[be];B[fd];W[eb];B[lq];W[lr];B[mr];W[nr];B[kr];W[ms];B[kq];W[fq];B[np];W[nq];B[pr];W[or];B[qs];W[os];B[dc];W[cc];B[eq];W[dq];B[fr];W[er];B[gq];W[ep];B[fp];W[ef];B[fe];W[dd];B[de];W[fc];B[ed];W[db];B[eq];W[ks];B[js];W[ls];B[ok];W[rj];B[jr];W[fq];B[ob];W[nb];B[pc];W[od];B[na];W[ma];B[oa];W[mc];B[rh];W[ri];B[rg];W[qm];B[rn];W[qn];B[qo];W[po];B[ro];W[ol];B[nm];W[oj];B[nk];W[pk];B[eq];W[le];B[dr];W[cr];B[fj];W[gj];B[es];W[jd];B[id];W[ke];B[je];W[cs];B[bn];W[bp];B[dl];W[cm];B[oo];W[oq])(;')
+    # game.play_default_sequence()
+    # print(game)
