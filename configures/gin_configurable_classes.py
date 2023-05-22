@@ -52,8 +52,10 @@ from jobs.job_leela_dataset import (
 )
 from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDatasetGenerator, LeelaPrepareAndSaveData
 from jobs.local_jobs_antek.go_data_generator_tokenized_policy import GoTokenizedPolicyGeneratorAlwaysBlack
-from jobs.go_convolution_data_generation import GoConvolutionDataGeneration
-from jobs.go_train_convolutions import GoTrainConvolution
+from jobs.local_jobs_antek.go_data_generator_tokenized_subgoal import GoTokenizedSubgoalGenerator
+
+# from jobs.go_convolution_data_generation import GoConvolutionDataGeneration
+# from jobs.go_train_convolutions import GoTrainConvolution
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.go_train_bert_for_sequence_model import GoTrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining, TrainConvolutionFromScratch
@@ -61,7 +63,7 @@ from jobs.train_model import TrainModelFromScratch, ResumeTraining, TrainConvolu
 # from mcts.mcts import score_function, expand_function, mock_expand_function
 
 from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack, SimpleGamesDataGenerator
-from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
+from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack, GoSubgoalGamesDataGenerator
 from jobs.run_mcts import RunMCTSJob
 from mcts.mcts import score_function, StandardExpandFunction, LeelaExpandFunction
 from mcts.node_expansion import ChessStateExpander
@@ -101,13 +103,14 @@ configure_classes(
         LeelaPrepareAndSaveData,
         RetokenizationJob,
         GoTokenizedPolicyGeneratorAlwaysBlack,
+        GoTokenizedSubgoalGenerator,
         GoTrainBertForSequenceModel,
         # RunMCTSJob,
         RunMCTSJob,
         GameBetweenEngines,
         # CompareMCTSWithStockfish,
-        GoConvolutionDataGeneration,
-        GoTrainConvolution,
+        # GoConvolutionDataGeneration,
+        # GoTrainConvolution,
         TrainConvolutionFromScratch
     ],
     "jobs",
@@ -140,6 +143,7 @@ configure_classes(
         PandasBertForSequenceDataProvider,
         CLLPPrepareAndSaveData,
         GoSimpleGamesDataGeneratorTokenizedAlwaysBlack,
+        GoSubgoalGamesDataGenerator,
         SimpleGamesDataGenerator,
         PandasIterablePolicyDataProviderGo,
         PandasStaticPolicyDataProviderGo
