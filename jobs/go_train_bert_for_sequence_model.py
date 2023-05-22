@@ -113,6 +113,6 @@ class GoTrainBertForSequenceModel(Job):
 
 
 if __name__ == '__main__':
-
-    generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=9950,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
-    generator.create_data()
+    pass
+    # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=990,p_sample=1,max_games=9950,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
+    # generator.create_data()
