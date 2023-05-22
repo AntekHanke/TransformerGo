@@ -2,9 +2,10 @@ contexts:
 
   athena_gpu:
     backend_type: slurm
+    account: plgplggllmeffi-gpu-a100
     cmd_type: sbatch
     cpu: 2
-    mem: 120G
+    mem: 20G
     gpu: 4
     nodes: 1
     ntasks: 1
@@ -17,13 +18,15 @@ contexts:
                             -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/:/data_mg
                             -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess:/data_gg
                             -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/out_models
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/lczero/:/lczero_weights
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
     slurm_url: plgmrog@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/mrunner_scratch
     time: 2880
 
   athena_cpu:
     backend_type: slurm
+    account: plgplggllmeffi-gpu-a100
     cmd_type: sbatch
     cpu: 8
     mem: 80G
@@ -34,53 +37,59 @@ contexts:
     modules_to_load:
       - CUDA/11.6.0
     singularity_container:  -H $PWD:/homeplaceholder 
-                            --bind /net:/net --env NEPTUNEPWD=$PWD 
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/data/:/sourcedata
-                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/data/:/targetdata
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/16.01.2023.sif
+                            --bind /net:/net --env NEPTUNEPWD=$PWD
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/data_to
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/:/data_mg
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess:/data_gg
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/out_models
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/lczero/:/lczero_weights
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
     slurm_url: plgmrog@athena.cyfronet.pl
     storage_dir: /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/mrunner_scratch
     time: 2880
 
   ares_quick:
-    account: plgrlresearchgpu-gpu
+    account: plgplggllmeffi-gpu
     backend_type: slurm
     cmd_type: sbatch
     partition: plgrid-bigmem
-    time: 2800
+    time: 20
     cpu: 1
     ntasks: 1
     mem: 10G
     nodes: 1
-    slurm_url: plgtodrzygozdz@ares.cyfronet.pl
-    storage_dir: /net/ascratch/people/plgtodrzygozdz
+    slurm_url: plgmrog@ares.cyfronet.pl
+    storage_dir: /net/ascratch/people/plgmrog
     singularity_container:  -H $PWD:/homeplaceholder 
-                            --bind /net:/net --env NEPTUNEPWD=$PWD 
-                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/leela_data/:/save_data
-                            -B /net/ascratch/people/plgtodrzygozdz/leela_all_trees/:/leela_data
-                            -B $TMPDIR:/tmp /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
+                            --bind /net:/net --env NEPTUNEPWD=$PWD
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/data_to
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/:/data_mg
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess:/data_gg
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/out_models
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/lczero/:/lczero_weights
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
 
   ares_gpu:
-    account: plgrlresearchgpu-gpu
+    account: plgplggllmeffi-gpu
     backend_type: slurm
     cmd_type: sbatch
     partition: plgrid-gpu-v100
-    time: 2880
+    time: 2800
     cpu: 5
     mem: 60G
     gpu: 1
     ntasks: 1
     nodes: 1
-    slurm_url: plgtodrzygozdz@ares.cyfronet.pl
-    storage_dir: /net/ascratch/people/plgtodrzygozdz
+    slurm_url: plgmrog@ares.cyfronet.pl
+    storage_dir: /net/ascratch/people/plgmrog
     singularity_container:  -H $PWD:/homeplaceholder 
-                            --bind /net:/net --env NEPTUNEPWD=$PWD 
-                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/leela_models/:/leela_models
-                            -B /net/ascratch/people/plgtodrzygozdz/subgoal_chess_data/small_train_leela_data/:/save_data
-                            -B /net/ascratch/people/plgtodrzygozdz/leela_all_trees/:/leela_data
-                            -B /net/ascratch/people/plggracjangoral/chess_data/subgoals_data_train:/leela_generator_data_train
-                            -B /net/ascratch/people/plggracjangoral/chess_data/subgoals_data_eval:/leela_generator_data_eval
-                            -B $TMPDIR:/tmp --nv /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
+                            --bind /net:/net --env NEPTUNEPWD=$PWD
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/subgoal_chess_data/:/data_to
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/:/data_mg
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/chess:/data_gg
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/malgorzatarog/subgoal_chess_data/models/:/out_models
+                            -B /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/lczero/:/lczero_weights
+                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/tomaszo/singularity/10.03.2023.sif
 
   eagle_quick_go2:
     account: plgrlresearch
@@ -300,5 +309,4 @@ contexts:
       -B /net/ascratch/people/plggracjangoral/chess_data:/chess_data
       -B /net/ascratch/people/plggracjangoral/chess_data/leela_models/:/leela_models
       -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /net/people/plgrid/plgtodrzygozdz/singularity/transformers_09.10.2022.sif
-
 

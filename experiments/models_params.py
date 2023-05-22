@@ -76,11 +76,33 @@ go_ultra_small_model = {
     "TrainingArguments.learning_rate": 3e-5,
 }
 
+go_ultra_small_model_value = {
+    "BartConfig.vocab_size": 16,
+    "BartConfig.max_position_embeddings": 512,
+    "BartConfig.encoder_layers": 2,
+    "BartConfig.decoder_layers": 2,
+    "BartConfig.encoder_attention_heads": 2,
+    "BartConfig.decoder_attention_heads": 2,
+    "BartConfig.decoder_ffn_dim": 64,
+    "BartConfig.encoder_ffn_dim": 64,
+    "BartConfig.d_model": 32,
+    "BartConfig.dropout": 0.1,
+    "TrainingArguments.max_steps": 5000,
+    "TrainingArguments.per_device_train_batch_size": 4,
+    "TrainingArguments.per_device_eval_batch_size": 4,
+    "TrainingArguments.warmup_steps": 10,
+    "TrainingArguments.weight_decay": 0.01,
+    "TrainingArguments.logging_steps": 1,
+    "TrainingArguments.evaluation_strategy": "steps",
+    "TrainingArguments.eval_steps": 2,
+    "TrainingArguments.learning_rate": 3e-5,
+}
+
 small_model = {
     "BartConfig.vocab_size": 4600,
     "BartConfig.max_position_embeddings": 128,
-    "BartConfig.encoder_layers": 4,
-    "BartConfig.decoder_layers": 4,
+    "BartConfig.encoder_layers": 6,
+    "BartConfig.decoder_layers": 6,
     "BartConfig.encoder_attention_heads": 4,
     "BartConfig.decoder_attention_heads": 4,
     "BartConfig.decoder_ffn_dim": 1024,
@@ -95,7 +117,7 @@ small_model = {
     "TrainingArguments.logging_steps": 100,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 500,
-    "TrainingArguments.learning_rate": 2e-4,
+    "TrainingArguments.learning_rate": 1e-4,
 }
 
 medium_model = {
@@ -160,3 +182,26 @@ go_medium_model = {
     "TrainingArguments.eval_steps": 500,
     "TrainingArguments.learning_rate": 2e-4,
 }
+
+go_medium_model_value = {
+    "BartConfig.vocab_size": 16,
+    "BartConfig.max_position_embeddings": 512,
+    "BartConfig.encoder_layers": 8,
+    "BartConfig.decoder_layers": 8,
+    "BartConfig.encoder_attention_heads": 8,
+    "BartConfig.decoder_attention_heads": 8,
+    "BartConfig.decoder_ffn_dim": 2048,
+    "BartConfig.encoder_ffn_dim": 2048,
+    "BartConfig.d_model": 512,
+    "BartConfig.dropout": 0.1,
+    "TrainingArguments.max_steps": 500000,
+    "TrainingArguments.per_device_train_batch_size": 1700,
+    "TrainingArguments.per_device_eval_batch_size": 1700,
+    "TrainingArguments.warmup_steps": 2500,
+    "TrainingArguments.weight_decay": 0.01,
+    "TrainingArguments.logging_steps": 100,
+    "TrainingArguments.evaluation_strategy": "steps",
+    "TrainingArguments.eval_steps": 500,
+    "TrainingArguments.learning_rate": 2e-4,
+}
+

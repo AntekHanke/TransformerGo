@@ -222,12 +222,15 @@ class GoGamesDataGenerator(GoDataProvider):
         sgf = sente.sgf.dumps(current_game)
         sgf = re.sub("([a-z])\];AB\[", '\\1];W[];AB[', sgf)
         sgf = re.sub("AB\[", 'B[', sgf)
+        #print(f"in dir {sgf_dir}, sgf: {sgf}")
         current_game = sente.sgf.loads(sgf)
+        #print("properties: ", current_game.get_properties())
 
         if current_game is None:  # Condition is met if there are no more games in the dataset.
             return None
 
         go_metadata: GoMetadata = GoMetadata(**current_game.get_properties())
+        #print("go_metadata.RE: ", go_metadata.RE)
         transitions: List[GoTransition] = []
 
         if self.go_filter.use_game(go_metadata):
@@ -469,6 +472,149 @@ class GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(GoGamesDataGenerator):
         return 0
 
 
+class GoValueTokenized(GoGamesDataGenerator):
+    '''3 - White win; 4 - Black win'''
+    def game_to_datapoints(self, one_game_data: GoOneGameData, current_dataset: Dict):
+        if one_game_data.metadata.RE[0] == 'B':
+            result = [4]
+        elif one_game_data.metadata.RE[0] == 'W':
+            result = [3]
+        else:
+            print("Score not clear: ", one_game_data.metadata.RE)
+            return
+
+        for num, transition in enumerate(one_game_data.transitions):
+            if random.random() <= self.p_sample and self.go_filter.use_transition(transition, one_game_data):
+                #print(f"Metadata: {[one_game_data.metadata[k] for k in one_game_data.metadata] }")
+
+                #print(f"Saving as result: {result}")
+                current_dataset[len(current_dataset)] = {
+                    "input_ids": GoTokenizer.encode_immutable_board(transition.immutable_board)
+                    #+ [ChessTokenizer.vocab_to_tokens["<SEP>"]]
+                    ,
+                    "labels": result,
+                }
+                sample = {"input_board": transition.immutable_board, "move": transition.move, "num": num}
+                self.log_sample(sample, one_game_data.metadata)
+
+    def sample_to_log_object(self, sample: Any, metadata: GoMetadata):
+        # Not implemented yet - this is to log some samples for debugging - in chess it was creating example board states as pictures
+        # return immutable_boards_to_img(
+        #     [sample["input_board"]],
+        #     [f"{sample['num']} : {sample['move']}, result: {metadata.Result}"],
+        # )
+        return 0
+
+import copy
+class GoSubgoalGamesDataGenerator(GoGamesDataGenerator):
+    def __init__(
+            self,
+            number_of_datapoint_from_one_game: int = 1,
+            range_of_k: [List[int]] = [3],
+            take_all_datapoints: bool = True,
+            *args,
+            **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.range_of_k = range_of_k
+        self.number_of_datapoint_from_one_game = number_of_datapoint_from_one_game
+        #self.prob_selector: Dict[int, np.ndarray] = prob_table_for_diff_n((1, 800))
+        self.take_all_datapoints = take_all_datapoints
+
+        if self.take_all_datapoints:
+            print("Will be taken all datapoints from one game")
+            print("Number of datapoints from one game will be ignored")
+
+        # assert (
+        #         self.range_of_k is not None and self.number_of_datapoint_from_one_game is not None
+        # ), "Set range_of_k and number_of_datapoint_from_one_game must be set"
+
+        self.save_path_to_train_set: str = os.path.join(self.save_path_to_train_set)
+        self.save_path_to_eval_set: str = os.path.join(self.save_path_to_eval_set)
+
+        try:
+            os.makedirs(self.save_path_to_train_set)
+            os.makedirs(self.save_path_to_eval_set)
+            print(f"Directory {self.save_path_to_train_set} created successfully")
+            print(f"Directory {self.save_path_to_eval_set} created successfully")
+        except OSError as error:
+            print(
+                f"Directory {self.save_path_to_eval_set} or {self.save_path_to_train_set} can not be created. "
+                f"Probably exists."
+                f"Error {error}"
+            )
+
+    def game_to_datapoints(
+            self, one_game_data: GoOneGameData, current_dataset: Dict[int, Dict[str, Union[List[int], str, int]]]
+    ) -> None:
+        game_length: int = len(one_game_data.transitions)
+        if game_length > 0:
+            selected_input_datapoints_all_k: Dict[int, List[int]] = {}
+            temporary_dict_datapoints_for_k: Dict[str, Union[List[int], str, int]] = {}
+            #pdf: np.ndarray = self.prob_selector[game_length]
+
+            for k in self.range_of_k:
+                if self.take_all_datapoints:
+                    selected_datapoints = np.array([position for position in range(game_length-self.range_of_k[0])])
+                # else:
+                #     selected_datapoints = np.random.choice(
+                #         list(range(game_length)), size=self.number_of_datapoint_from_one_game, p=pdf, replace=False
+                #     )
+                selected_input_datapoints_all_k[k] = selected_datapoints
+
+            for games_positions in zip(*selected_input_datapoints_all_k.values()):
+                for k, position in zip(self.range_of_k, games_positions):
+                    input_board: GoImmutableBoard = one_game_data.transitions[position].immutable_board
+                    target_board_num = min(game_length - 1, position + k)
+                    target_board: GoImmutableBoard = one_game_data.transitions[target_board_num].immutable_board
+
+                    temporary_dict_datapoints_for_k.update(
+                        {
+                            # f"input_ids_{k}": GoTokenizer.encode_immutable_board(input_board)
+                            #                   + [ChessTokenizer.vocab_to_tokens["<SEP>"]],
+                            # f"labels_{k}": GoTokenizer.encode_immutable_board(target_board),
+                            f"input_ids": GoTokenizer.encode_immutable_board(input_board),
+                            f"labels": GoTokenizer.encode_immutable_board(target_board),
+                        }
+                    )
+                    # temporary_dict_datapoints_for_k.update(
+                    #     {
+                    #         f"all_moves_from_start_{k}": [
+                    #             ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
+                    #             for i in range(position)
+                    #         ]
+                    #     }
+                    # )
+                    # temporary_dict_datapoints_for_k.update(
+                    #     {
+                    #         f"moves_between_input_and_target_{k}": [
+                    #             ChessTokenizer.encode_move(one_game_data.transitions[i].move)[0]
+                    #             for i in range(position, target_board_num)
+                    #         ]
+                    #     }
+                    # )
+                    # temporary_dict_datapoints_for_k.update({f"move_number_form_start_{k}": position})
+
+                # boards_stats: Dict[str, str] = {"Result": "", "WhiteElo": "", "BlackElo": "", "Opening": ""}
+                #
+                # for stat in one_game_data.metadata.__dict__:
+                #     if stat in boards_stats:
+                #         boards_stats[stat] = one_game_data.metadata.__dict__[stat]
+                #
+                # temporary_dict_datapoints_for_k.update(boards_stats)
+                # temporary_dict_datapoints_for_k.update({"game_length": game_length})
+
+                current_dataset[len(current_dataset)] = copy.deepcopy(temporary_dict_datapoints_for_k)
+                temporary_dict_datapoints_for_k.clear()
+
+    def sample_to_log_object(self, sample: Dict, metadata: GoMetadata):
+        return 0
+        # return immutable_boards_to_img(
+        #     [sample["input_board"], sample["target_board"]],
+        #     [f"{sample['num']} : {sample['move']}, res: {metadata.Result}", ""],
+        # )
+
+
 
 
 import re
@@ -484,11 +630,17 @@ if __name__ == '__main__':
     # generator = GoSimpleGamesDataGeneratorTokenizedAlwaysBlack(sgf_files='val.txt',save_data_every_n_games=101,p_sample=1,max_games=103,train_eval_split=0.95,save_path_to_eval_set='tokenized_data\\eval',save_path_to_train_set='tokenized_data\\train')
     # generator.create_data()
 
+    # generator = GoValueTokenized(sgf_files='sgf_directories.txt',save_data_every_n_games=119,p_sample=1,max_games=103,train_eval_split=0.95,save_path_to_eval_set='tokenized_data/value/test/eval/',save_path_to_train_set='tokenized_data/value/test/train/')
+    # generator.create_data()
+
+    generator = GoSubgoalGamesDataGenerator(sgf_files='sgf_directories.txt',save_data_every_n_games=119,p_sample=1,max_games=103,train_eval_split=0.95,save_path_to_eval_set='tokenized_data/subgoal/test/eval/',save_path_to_train_set='tokenized_data/subgoal/test/train/')
+    generator.create_data()
+
     #print(os.path.basename('C:\\Users\\Antek\\PycharmProjects\\subgoal_search_chess\\data_processing\\val.txt')[:-4])
 
     # np.set_printoptions(threshold=10000)
-    aaa = pd.read_pickle("trainsgf_directories.txt_train_part_0.pkl")
-    print(aaa)
+    # aaa = pd.read_pickle("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/data_processing/tokenized_data/value/test/eval/sgf_directories_eval_part_0.pkl")
+    # print(aaa)
 
 
     # #print(os.path.join(dirs, sgf))

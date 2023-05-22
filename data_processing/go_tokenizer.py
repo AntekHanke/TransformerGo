@@ -19,6 +19,7 @@ class GoTokenizer:
 
     TOKENIZED_BOARD_LENGTH = (19*19) + 1 #Whos move
     token_to_boardstate_subarray = {0: [1, 0, 0, 0], 1: [0, 1, 0, 0], 2: [0, 0, 1, 0], 3: [0, 0, 1, 1]}
+    special_vocab_to_tokens = {"<SEP>": 5}
 
     @classmethod
     def encode_immutable_board(cls, immutable_board: GoImmutableBoard) -> List[int]:

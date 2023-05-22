@@ -5,7 +5,7 @@ import sys
 sys.path.append("/home/gracjan/subgoal/subgoal_search_chess-uci_engines")
 os.environ["SUBGOAL_PROJECT_ROOT"] = "/home/gracjan/subgoal/subgoal_search_chess-uci_engines"
 
-from chess_engines.banksia_gui_uci.gracjan.banksia_gui_core import main_uci_loop
+from chess_engines.banksia_gui_uci.banksia_gui_core import main_uci_loop
 from chess_engines.bots.basic_chess_engines import SubgoalWithCLLPStockfish
 
 path_to_generator: str = "/home/gracjan/subgoal/subgoal_chess_data/generator/final_model"

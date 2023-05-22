@@ -44,6 +44,7 @@ def print_summary(input_immutable_board, generation_kwargs, k, raw_subgoals):
         cllp_num_return_sequences=2,
         generator_num_beams=32,
         generator_num_subgoals=6,
+        subgoal_distance_k=3,
         sort_subgoals_by="policy",
         **generation_kwargs,
     )

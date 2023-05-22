@@ -29,7 +29,6 @@ def local_run(experiment_path: str, use_neptune: bool, local_path_bindings: Opti
             corrected_bindings = gin_bindings
 
     corrected_bindings = list(corrected_bindings)
-    print(f"specification: {specification}")
     print(f"gin_bindings: {corrected_bindings}")
 
     if use_neptune:

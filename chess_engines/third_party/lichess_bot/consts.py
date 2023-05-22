@@ -1,0 +1,5 @@
+CONST_BOT_NAME = "bot_name"
+CONST_LIST_OF_BOT_NAMES_TO_CHALLENGE = "list_of_bots_names_to_challenge"
+CONST_TOKEN = "token"
+CONST_MAX_TRIAL_NUMBER = "max_trial_number"
+CONST_STOP_AFTER_WHITELIST_EMPTY = "stop_after_whitelist_empty"

@@ -26,7 +26,7 @@ ENTROPY_HOME = ""
 EAGLE_HOME = ""
 
 TRAIN_TEST_SPLIT_SEED = 11
-VALUE_FOR_MATE = 100000
+VALUE_FOR_MATE = 10000
 
 MAX_JOBLIB_N_JOBS = 28
 MAX_NEW_TOKENS_FOR_POLICY = 2
@@ -42,6 +42,17 @@ RANDOM_TOKENIZATION_ORDER = False # True or False
 
 N_MOVES_HISTORY_FOR_MODEL_INPUT = 10
 
-LCZERO_CLUSTER = "prometheus"  # "prometheus" or "athena"
+LCZERO_CLUSTER = "athena"  # "prometheus" or "athena"
 
 NUMBER_OF_PRINT_SEPARATORS: int = 150
+
+STOCKFISH_PATH = None if is_local_machine() else "/data_mg/stockfish/stockfish_15_linux_x64/stockfish_15_x64"
+
+TREE_DISPLAY_SCORE_FACTOR = 1000
+TREE_DISPLAY_LEVEL_DISTANCE_FACTOR = 1.2
+
+LICHESS_ACCOUNTS_TO_TOKENS = {
+    "subgoalsearchchess2": "lip_JwrHpEw7bVXS8WYpYeNJ",
+    "subgoalchess_dev": "lip_kX19O4xorWT0WBtzmMmW",
+    "martynawck": "lip_z5euZzVe9wzLgA5IWnnA"
+}
