@@ -423,10 +423,10 @@ if __name__ == '__main__':
     background = pygame.image.load(BACKGROUND).convert()
     board = Board()
     #playAgainstModel(model = t192k)
-    playAgainstModel(model = t192k, sgf="my game.sgf")
+    playAgainstModel(model = t192k, youPlayAs= sente.stone.BLACK, sgf="ladder_wtm_discont.sgf")
 
     """For games between 2 bots"""
-    # play_bots_match(t67k, t192k, v127k)
+    #play_bots_match(t192k, t192k)#, v127k)
 
 
 
