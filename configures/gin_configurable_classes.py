@@ -60,7 +60,7 @@ from jobs.train_model import TrainModelFromScratch, ResumeTraining, TrainConvolu
 # from jobs.run_mcts import RunMCTSJob
 # from mcts.mcts import score_function, expand_function, mock_expand_function
 
-from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack, SimpleGamesDataGenerator
+from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack, SimpleGamesDataGenerator, SimpleGamesDataGeneratorWithHistory
 from data_processing.go_data_generator import GoSimpleGamesDataGeneratorTokenizedAlwaysBlack
 from jobs.run_mcts import RunMCTSJob
 from mcts.mcts import score_function, StandardExpandFunction, LeelaExpandFunction
@@ -141,6 +141,7 @@ configure_classes(
         CLLPPrepareAndSaveData,
         GoSimpleGamesDataGeneratorTokenizedAlwaysBlack,
         SimpleGamesDataGenerator,
+        SimpleGamesDataGeneratorWithHistory,
         PandasIterablePolicyDataProviderGo,
         PandasStaticPolicyDataProviderGo
     ],

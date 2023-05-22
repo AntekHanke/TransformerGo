@@ -14,16 +14,18 @@ __version__ = "0.1"
 import matplotlib.pyplot as plt
 import pygame
 from transformers import BartForConditionalGeneration
-
-import go
+from data_processing.goGraphics import plot_go_game
+from data_processing.goPlay import go
+from data_processing.go_tokenizer import GoTokenizer
 from sys import exit
-#from load_essentials import *
 import torch
 import numpy as np
 from typing import Dict, Any, Optional, List, Type, Union, Tuple
+from sys import path
 from data_structures.go_data_structures import GoImmutableBoard
 import sente
-
+from go_policy.policy_model import AlphaZeroPolicyModel
+import os
 
 BACKGROUND = 'images/ramin.jpg'
 BOARD_SIZE = (820, 820)
@@ -33,34 +35,36 @@ BLACK = (0, 0, 0)
 
 
 class Stone(go.Stone):
-    def __init__(self, board, point, color):
+    def __init__(self, board, point, color, screen, background):
         """Create, initialize and draw a stone."""
         super(Stone, self).__init__(board, point, color)
         self.coords = (5 + self.point[0] * 40, 5 + self.point[1] * 40)
+        self.screen = screen
+        self.background = background
         self.draw()
 
     def draw(self):
         """Draw the stone as a circle."""
-        pygame.draw.circle(screen, self.color, self.coords, 20, 0)
+        pygame.draw.circle(self.screen, self.color, self.coords, 20, 0)
         pygame.display.update()
 
     def remove(self):
         """Remove the stone from board."""
         blit_coords = (self.coords[0] - 20, self.coords[1] - 20)
         area_rect = pygame.Rect(blit_coords, (40, 40))
-        screen.blit(background, blit_coords, area_rect)
+        self.screen.blit(self.background, blit_coords, area_rect)
         pygame.display.update()
         super(Stone, self).remove()
 
 
 class Board(go.Board):
-    def __init__(self):
+    def __init__(self, background, screen):
         """Create, initialize and draw an empty board."""
         super(Board, self).__init__()
         self.outline = pygame.Rect(45, 45, 720, 720)
-        self.draw()
+        self.draw(background, screen)
 
-    def draw(self):
+    def draw(self, background = None, screen = None):
         """Draw the board to the background and blit it to the screen.
 
         The board is drawn by first drawing the outline, then the 19x19
@@ -114,20 +118,17 @@ def main():
                     stone = board.search(point=(x, y))
 
                     if stone:
-                        stone.remove()
+                        stone.remove(screen)
                     else:
                         added_stone = Stone(board, (x, y), board.turn())
                     board.update_liberties(added_stone)
 
-# def loadModel(directory: str):
-#     model =
 
-from data_processing.go_tokenizer import GoTokenizer
 
 class playingGoModel:
     """Model which can play the game."""
 
-    def play_move(self, position: GoImmutableBoard) -> (int, int):
+    def play_move(self, position: GoImmutableBoard) -> Tuple[int, int]:
         """Returns x,y coordinates of move played (20,20 is pass)."""
         raise NotImplementedError
 
@@ -265,7 +266,7 @@ class TransformerPolicy(playingGoModel):
         #converted_moves = [chess960_to_standard(move, board) for move in moves]
 
         return moves, probs
-    def play_move(self, position: GoImmutableBoard) -> (int, int):
+    def play_move(self, position: GoImmutableBoard) -> Tuple[int, int]:
         moves = self.get_best_moves(position)
         print(f"My moves are: {moves}")
         whichChoice = 0
@@ -283,10 +284,82 @@ class TransformerPolicy(playingGoModel):
         print(f"My moves are: {realmoves}")
         return realmoves, probs.tolist()
 
+class ConvolutionPolicy(playingGoModel):
+    def __init__(self, checkpoint_path_or_model):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Device used for policy:", device)
+
+        if isinstance(checkpoint_path_or_model, str):
+            self.model = AlphaZeroPolicyModel.from_pretrained(checkpoint_path_or_model)
+
+        else:
+            self.model = checkpoint_path_or_model
+
+        self.model.to(device)
+        self.model.eval()
+        self.softmax = torch.nn.Softmax()
+
+    def get_best_moves(
+        self,
+        immutable_board: GoImmutableBoard,
+        top_k_moves = 8
+    ):                     
+
+        board = immutable_board.boards
+        active_player = immutable_board.active_player
+        active_player = 1 if active_player == sente.BLACK else 0
+        print(active_player)
+        input_tensor = torch.Tensor(np.append(board , np.full((board.shape[0], board.shape[1], 1) 
+                                            , active_player), axis = -1))
+
+        outputs= self.model(input_tensor.view(1, 19, 19 ,5).to(self.model.device))
+
+        scores = outputs["logits"].flatten()
+        scores = self.softmax(scores)
+        topk = torch.topk(scores, top_k_moves)
+        probs = topk.values.flatten()
+        outputs = topk.indices.flatten()
+        print(probs, outputs)
+        moves = []
+        for move in outputs.tolist():
+            position = (int(move/19), move % 19) if int(move/19) != 20 else (19,19)
+            moves.append(position) 
+
+        print(f"Moves = {[str(move) for move in moves]}")
+
+
+        return moves, probs
+
+    def play_move(self, position: GoImmutableBoard) -> Tuple[int, int]:
+        moves = self.get_best_moves(position)
+        print(f"My moves are: {moves}")
+        whichChoice = 0
+        bestmove = moves[whichChoice]
+        x = bestmove[0] + 1 
+        y = bestmove[1] + 1 
+        return(x,y)
+
+    def play_moves(self, position: GoImmutableBoard) -> List[Tuple[int, int]]:
+        if(position.active_player == sente.stone.WHITE):
+            position = GoImmutableBoard.from_all_data(position.boards[:,:,[1,0,2,3]], position.legal_moves, position.active_player, position.metadata)
+
+        moves, probs = self.get_best_moves(position)
+        realmoves = [(x + 1, y + 1) for (x,y) in moves]
+        print(f"My moves are: {realmoves}")
+        return realmoves, probs.tolist()
 
 
 
-def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, sgf = None):
+def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, 
+                     sgf = None, 
+                     Board = None, 
+                     Screen = None, 
+                     background = None,
+                     save_plot_path = None):
+    if Board is not None:
+        board = Board  
+    if Screen is not None:
+        screen = Screen
     curr_game = sente.Game()
     if sgf:
         curr_game = sente.sgf.load(sgf)
@@ -295,7 +368,7 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, sg
             curr_game.play(mov)
             x = mov.get_x() + 1
             y = mov.get_y() + 1
-            added_stone = Stone(board, (x, y), board.turn())
+            added_stone = Stone(board, (x, y), board.turn(), screen, background)
             board.update_liberties(added_stone)
     while True:
         pygame.time.wait(250)
@@ -316,7 +389,7 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, sg
                             pass
                         else:
                             curr_game.play(x,y)
-                            added_stone = Stone(board, (x, y), board.turn())
+                            added_stone = Stone(board, (x, y), board.turn(), screen, background)
                         board.update_liberties(added_stone)
         else:
             goImmut = GoImmutableBoard.from_game(curr_game)
@@ -324,8 +397,9 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, sg
             moves, probs = model.play_moves(goImmut)
             whichChoice = 0
             bestmove = moves[whichChoice]
-            x = bestmove[0]
-            y = bestmove[1]
+
+            x = bestmove[0] 
+            y = bestmove[1] 
             print("Playing ", x, y)
 
             if(x==20 and y==20):
@@ -344,18 +418,21 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, sg
                 stone = board.search(point=(x, y))
 
             else:
-                added_stone = Stone(board, (x, y), board.turn())
+                added_stone = Stone(board, (x, y), board.turn(), screen, background)
                 board.update_liberties(added_stone)
                 curr_game.play(x,y)
                 fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs))
                 fig.show()
+                plt.savefig(os.path.join(save_plot_path, "move.png"))
                 plt.clf()
 
             print(curr_game)
 
-from data_processing.goGraphics import plot_go_game
 
-def play_bots_match(black_player: playingGoModel = None, white_player: playingGoModel = None, value_model: valueGoModel = None):
+def play_bots_match(black_player: playingGoModel = None,
+                     white_player: playingGoModel = None, 
+                    value_model: valueGoModel = None,
+                    save_plot_path = None):
     curr_game = sente.Game()
     move_num = 0
     model_dict = {
@@ -379,7 +456,7 @@ def play_bots_match(black_player: playingGoModel = None, white_player: playingGo
         try:
             fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs), black_winning_prob=value)
             #fig.show()
-            plt.savefig(f'plots/{move_num}.png')
+            plt.savefig(os.path.join(save_plot_path, str(move_num) + ".png"))
             #plt.close()
             #plt.clf()
         except Exception as e:
@@ -400,7 +477,7 @@ def play_bots_match(black_player: playingGoModel = None, white_player: playingGo
                 whichChoice+=1
         move_num+=1
 
-    sente.sgf.dump(curr_game, "bot game.sgf")
+    sente.sgf.dump(curr_game, "data_processing/goPlay/sgfs/convolution_black_transformer_white/C_B_T_W.sgf")
     print(curr_game)
 
 
@@ -410,23 +487,20 @@ def play_bots_match(black_player: playingGoModel = None, white_player: playingGo
 
 if __name__ == '__main__':
 
-    import sente
 
-    t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
+    #t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
     # t67k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-67000")
     # v127k = TransformerValue("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/value_models/checkpoint-127000")
-
-    """ For playing against a model: """
-    pygame.init()
-    pygame.display.set_caption('Goban')
-    screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
-    background = pygame.image.load(BACKGROUND).convert()
-    board = Board()
-    #playAgainstModel(model = t192k)
-    playAgainstModel(model = t192k, sgf="my game.sgf")
-
+    model = ConvolutionPolicy("../../conv-checkpoints/conv-checkpoint-365500") #""" For playing against a model: """
+    #pygame.init()
+    #pygame.display.set_caption('Goban')
+    #screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
+    #background = pygame.image.load(BACKGROUND).convert()
+    #board = Board()
+    ##playAgainstModel(model = t192k)
+    #playAgainstModel(model = model, sgf="my game.sgf")
     """For games between 2 bots"""
-    # play_bots_match(t67k, t192k, v127k)
+    play_bots_match(model, model)
 
 
 

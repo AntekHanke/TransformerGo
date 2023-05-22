@@ -272,8 +272,7 @@ class GoGamesDataGenerator(GoDataProvider):
     #     board = pgn_final_board.to_board()
     #     while len(lc_zero_transitions) < MAX_GAME_LENGTH:
     #         if self.do_sample_finish:
-    #             move = self.lc_zero_policy.sample_move(ImmutableBoard.from_board(board))
-    #         else:
+    #             move = self.lc_zero_policy.sample_move(ImmutableBoard.from_board(board)) #         else:
     #             move = self.lc_zero_policy.get_best_moves(ImmutableBoard.from_board(board), 1)[0]
     #         lc_zero_transitions.append(
     #             Transition(ImmutableBoard.from_board(board), move, move_num + len(lc_zero_transitions))
@@ -419,6 +418,43 @@ class SimpleGamesDataGenerator(GoGamesDataGenerator):
         # Not implemented yet - this is to log some samples for debugging - in chess it was creating example board states as pictures
         return 0
 
+class SimpleGamesDataGeneratorWithHistory(GoGamesDataGenerator):
+    '''
+    Function generates data suitable for training convolutional networks for Go. It returns a dataframe, 
+    with the current state of board
+    (19x19x17 - Black/White binary feature for 8 subsequent moves, Colour of the next player to move) 
+    in the first column, and the next move in the game (x: 0-18, y: 0-18, Black:True/False) 
+    in the second column
+    '''
+    def game_to_datapoints(self, one_game_data: GoOneGameData, current_dataset: Dict):
+        
+        num_transitions = len(one_game_data.transitions)
+        reversed_transitions = list(reversed(one_game_data.transitions))
+        for num, transition in enumerate(reversed_transitions):
+            if random.random() <= self.p_sample and self.go_filter.use_transition(transition, one_game_data):
+
+                #If more than 8 moves left concatenate them else pad with zeros
+                if num + 7 < num_transitions: 
+                    board = np.concatenate([reversed_transitions[num + i].immutable_board.boards[:,:,:2] \
+                                            for i in range(8)], axis = -1)
+                else:
+                    num_pad = 8 - (num_transitions - num) # Pad moves before first move
+                    board = np.concatenate([reversed_transitions[num + i].immutable_board.boards[:, :, :2] 
+                                            for i in range(num_transitions - num)] + 
+                                            [np.zeros((19,19, num_pad*2))], axis = -1)
+
+                move = transition.move
+                current_dataset[len(current_dataset)] = {
+                    "input_ids": np.concatenate((board, np.full((board.shape[0], board.shape[1], 1) 
+                                            , transition.move[-1])), axis = -1),
+                    "labels": (move[0], move[1]) 
+                }
+                sample = {"input_board": transition.immutable_board, "move": transition.move, "num": num}
+                self.log_sample(sample, one_game_data.metadata)
+
+    def sample_to_log_object(self, sample: Any, metadata: GoMetadata):
+        # Not implemented yet - this is to log some samples for debugging - in chess it was creating example board states as pictures
+        return 0
 
 class GoSimpleGamesDataGeneratorTokenized(GoGamesDataGenerator):
     def game_to_datapoints(self, one_game_data: GoOneGameData, current_dataset: Dict):
@@ -510,7 +546,7 @@ class GoSubgoalGamesDataGenerator(GoGamesDataGenerator):
     def __init__(
             self,
             number_of_datapoint_from_one_game: int = 1,
-            range_of_k: [List[int]] = [3],
+            range_of_k: List[int] = [3],
             take_all_datapoints: bool = True,
             *args,
             **kwargs,

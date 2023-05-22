@@ -186,8 +186,9 @@ class TrainConvolutionFromScratch(TrainModelFromScratch):
     def compute_metrics(eval_preds):
         predictions, labels = eval_preds
         predictions, _ = predictions
+        labels[:, 0] *= 19
         return{
-            "accuracy": (predictions == np.prod(labels, axis = -1)).astype(np.float32).mean().item(),
+            "accuracy": (predictions == np.sum(labels, axis = -1)).astype(np.float32).mean().item(),
         }
     @staticmethod
     def preprocess_logits_for_metrics(logits, labels):

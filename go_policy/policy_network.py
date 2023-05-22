@@ -4,8 +4,8 @@ from typing import Tuple
 
 class AlphaZeroPolicyNetwork(nn.Module):
     "AlphaZero dual-res policy network architecture, a convolutional block followed by a tower of blocks with resuidual connections"
-    "As input it expects a batch of boards of shape (B, 4, BOARD_SIZEH, BOARD_SIZEW)"
-    "outputs logits of move probability of shape (B, BOARD_SIZEH*BOARD_SIZEW + 1)"
+    "As input it expects a batch of boards of shape (B, NUM_IN_CHANNLES, BOARD_SIZEH, BOARD_SIZEW)"
+    "outputs logits of move probability of shape (B, 19*19+20)"
 
     def __init__(
         self, 
@@ -45,7 +45,9 @@ class AlphaZeroPolicyNetwork(nn.Module):
                                           nn.BatchNorm2d(2),
                                           nn.ReLU())
 
-        self.policy_head = nn.Linear(self.board_size[0]* self.board_size[1] * 2, self.board_size[0] * self.board_size[1] + 1)
+        self.policy_head = nn.Linear(self.board_size[0]* self.board_size[1] * 2\
+                                     , self.board_size[0] * self.board_size[1] + 20) 
+                                    # output shape (B, 19*19 + 20 = 381) to contain pass case i.e (19,19) = 19*19 + 19 = 380
 
         
     def forward(self, x : torch.Tensor):

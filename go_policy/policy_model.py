@@ -1,6 +1,6 @@
 from go_policy.policy_network import AlphaZeroPolicyNetwork
 from go_policy.policy_config  import AlphaZeroPolicyConfig
-from transformers   import PreTrainedModel
+from transformers import PreTrainedModel
 import torch
 
 class   AlphaZeroPolicyModel(PreTrainedModel):
@@ -22,8 +22,9 @@ class   AlphaZeroPolicyModel(PreTrainedModel):
     def forward(self, input_ids : torch.Tensor, labels : torch.Tensor = None):
         logits = self.model(input_ids.permute(0,3,1,2).float()) # batch, channels, board_size, board_size 
         if labels is not None:
-            labels = torch.prod(labels, dim = -1).flatten()
+            labels[:, 0] *= 19
+            labels = torch.sum(labels, dim = -1).flatten()
             loss = torch.nn.functional.cross_entropy(logits, torch.nn.functional.one_hot(
-                                                labels, num_classes = logits.shape[-1]).float())
+                                                labels, num_classes = 19*19 + 20).float())
             return {"loss" : loss, "logits" : logits}
-        return {"logits" : logits}
+        return {"logits" : logits   }

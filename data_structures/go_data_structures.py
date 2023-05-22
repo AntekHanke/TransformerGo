@@ -154,6 +154,8 @@ if __name__ == '__main__':
     sequence = game3.get_default_sequence()
     game3.play_sequence(sequence[0:120])
     goBoard = GoImmutableBoard.from_game(game3)
+
+
     print(goBoard.metadata['RE'][0] == 'B')
     #fig, ax = plot_go_game(goBoard.boards)
     #fig.show()

@@ -1,0 +1,77 @@
+contexts:
+  eagle_cpu_mg:
+    account: 619
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: standard
+    time: 200
+    cpu:  20 
+    ntasks: 1
+    mem: 30G
+    nodes: 1
+    slurm_url: mgrotkowski@eagle.man.poznan.pl
+    storage_dir: /home/users/mgrotkowski/grant_619/scratch/MG/
+    singularity_container: 
+      -H $PWD:/homeplaceholder
+      -B /home/users/mgrotkowski/grant_619/scratch/MG:/godata
+      -B /home/users/mgrotkowski/grant_619/scratch:/scratch
+      -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /home/users/mgrotkowski/grant_619/scratch/ggoral/singularities/14.03.2023.sif
+  eagle_quick_tesla_mg:
+    account: 619
+    backend_type: slurm
+    cmd_type: sbatch
+    partition: tesla
+    time: 59
+    cpu: 4
+    gpu: 1
+    ntasks: 1
+    mem: 10G
+    nodes: 1
+    slurm_url: mgrotkowski@eagle.man.poznan.pl
+    storage_dir: /home/users/mgrotkowski/grant_619/scratch/MG/
+    singularity_container: 
+      -H $PWD:/homeplaceholder
+      -B /home/users/mgrotkowski/grant_619/scratch/MG:/godata
+      -B /home/users/mgrotkowski/grant_619/scratch:/scratch
+      -B $TMPDIR:/tmp --env NEPTUNEPWD=$PWD --nv /home/users/mgrotkowski/grant_619/scratch/ggoral/singularities/14.03.2023.sif
+
+  athena_cpu:
+    backend_type: slurm
+    cmd_type: sbatch
+    cpu: 8
+    mem: 80G
+    gpu: 0
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-gpu-a100
+    singularity_container:  -H $PWD:/homeplaceholder 
+                            --bind /net:/net --env NEPTUNEPWD=$PWD 
+                            -B /net/tscratch/people/plgantekhanke/raw_data/sgfs:/people
+                            -B /net/tscratch/people/plgmgrotkowski/training_data:/godata 
+                            -B $TMPDIR:/tmp --nv /net/tscratch/people/plggracjangoral/singularity/14.03.2023.sif
+
+    slurm_url: plgmgrotkowski@athena.cyfronet.pl
+    storage_dir: /net/tscratch/people/plgmgrotkowski/training_data
+    time: 2880 
+
+  athena_gpu:
+    backend_type: slurm
+    cmd_type: sbatch
+    cpu: 2
+    mem: 150G
+    gpu: 4
+    nodes: 1
+    ntasks: 1
+    partition: plgrid-gpu-a100
+    modules_to_load:
+      - CUDA/11.6.0
+    singularity_container:  -H $PWD:/homeplaceholder 
+                            --bind /net:/net --env NEPTUNEPWD=$PWD 
+                            -B /net/tscratch/people/plgmgrotkowski/training_data:/godata 
+                            -B $TMPDIR:/tmp --nv /net/tscratch/people/plggracjangoral/singularity/14.03.2023.sif
+
+    slurm_url: plgmgrotkowski@athena.cyfronet.pl
+    storage_dir: /net/tscratch/people/plgmgrotkowski/training_data
+    time: 2880 
+
+
