@@ -25,6 +25,7 @@ from sys import path
 from data_structures.go_data_structures import GoImmutableBoard
 import sente
 from go_policy.policy_model import AlphaZeroPolicyModel
+from collections import deque
 import os
 
 BACKGROUND = 'images/ramin.jpg'
@@ -275,7 +276,8 @@ class TransformerPolicy(playingGoModel):
         y = bestmove[1] + 1
         return(x,y)
 
-    def play_moves(self, position: GoImmutableBoard) -> List[Tuple[int, int]]:
+    def play_moves(self, curr_game: sente.Game) -> List[Tuple[int, int]]:
+        position = GoImmutableBoard.from_game(curr_game)
         if(position.active_player == sente.stone.WHITE):
             position = GoImmutableBoard.from_all_data(position.boards[:,:,[1,0,2,3]], position.legal_moves, position.active_player, position.metadata)
 
@@ -285,7 +287,7 @@ class TransformerPolicy(playingGoModel):
         return realmoves, probs.tolist()
 
 class ConvolutionPolicy(playingGoModel):
-    def __init__(self, checkpoint_path_or_model):
+    def __init__(self, checkpoint_path_or_model, history = False):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Device used for policy:", device)
 
@@ -298,6 +300,9 @@ class ConvolutionPolicy(playingGoModel):
         self.model.to(device)
         self.model.eval()
         self.softmax = torch.nn.Softmax()
+        self.history = history
+        if self.history:
+            self.moves = deque(maxlen = 8)
 
     def get_best_moves(
         self,
@@ -309,10 +314,15 @@ class ConvolutionPolicy(playingGoModel):
         active_player = immutable_board.active_player
         active_player = 1 if active_player == sente.BLACK else 0
         print(active_player)
-        input_tensor = torch.Tensor(np.append(board , np.full((board.shape[0], board.shape[1], 1) 
+        if not self.history:
+            input_tensor = torch.Tensor(np.append(board , np.full((board.shape[0], board.shape[1], 1) 
                                             , active_player), axis = -1))
+            outputs= self.model(input_tensor.view(1, 19, 19 ,5).to(self.model.device))
 
-        outputs= self.model(input_tensor.view(1, 19, 19 ,5).to(self.model.device))
+        else:
+            input_tensor = torch.Tensor(np.concatenate(list(reversed([np.full((board.shape[0], board.shape[1], 1), active_player)]
+                                                                +list(self.moves))), axis = -1))  
+            outputs = self.model(input_tensor.view(-1, 19, 19, 17).to(self.model.device))
 
         scores = outputs["logits"].flatten()
         scores = self.softmax(scores)
@@ -330,7 +340,8 @@ class ConvolutionPolicy(playingGoModel):
 
         return moves, probs
 
-    def play_move(self, position: GoImmutableBoard) -> Tuple[int, int]:
+    def play_move(self, curr_game: sente.Game) -> Tuple[int, int]:
+        position = GoImmutableBoard.from_game(curr_game)
         moves = self.get_best_moves(position)
         print(f"My moves are: {moves}")
         whichChoice = 0
@@ -339,10 +350,21 @@ class ConvolutionPolicy(playingGoModel):
         y = bestmove[1] + 1 
         return(x,y)
 
-    def play_moves(self, position: GoImmutableBoard) -> List[Tuple[int, int]]:
+    def play_moves(self, curr_game: sente.Game) -> List[Tuple[int, int]]:
+        position = GoImmutableBoard.from_game(curr_game)
         if(position.active_player == sente.stone.WHITE):
             position = GoImmutableBoard.from_all_data(position.boards[:,:,[1,0,2,3]], position.legal_moves, position.active_player, position.metadata)
-
+        if self.history:
+            if len(self.moves) == 0:
+                seq = curr_game.get_default_sequence()
+                for move in seq:
+                    curr_game.play_move(move)
+                    self.moves.append(curr_game.numpy()[:,:,:2])
+                if len(self.moves) != self.moves.maxlen: #not enough moves in history pad with zeros
+                   for i in range(self.moves.maxlen - len(self.moves)):
+                      self.moves.appendleft(np.zeros((19,19,2)))
+            else:
+                self.moves.append(curr_game.numpy()[:,:,:2])    
         moves, probs = self.get_best_moves(position)
         realmoves = [(x + 1, y + 1) for (x,y) in moves]
         print(f"My moves are: {realmoves}")
@@ -392,9 +414,8 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE,
                             added_stone = Stone(board, (x, y), board.turn(), screen, background)
                         board.update_liberties(added_stone)
         else:
-            goImmut = GoImmutableBoard.from_game(curr_game)
 
-            moves, probs = model.play_moves(goImmut)
+            moves, probs = model.play_moves(curr_game)
             whichChoice = 0
             bestmove = moves[whichChoice]
 
@@ -432,7 +453,8 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE,
 def play_bots_match(black_player: playingGoModel = None,
                      white_player: playingGoModel = None, 
                     value_model: valueGoModel = None,
-                    save_plot_path = None):
+                    save_plot_path = None,
+                    save_sgf_path = None):
     curr_game = sente.Game()
     move_num = 0
     model_dict = {
@@ -446,8 +468,8 @@ def play_bots_match(black_player: playingGoModel = None,
 
 
         next = curr_game.get_active_player()
+        moves, probs = model_dict[next].play_moves(curr_game)
         goImmut = GoImmutableBoard.from_game(curr_game)
-        moves, probs = model_dict[next].play_moves(goImmut)
         if(value_model):
             value = value_model.value(goImmut)
         else:
@@ -477,7 +499,7 @@ def play_bots_match(black_player: playingGoModel = None,
                 whichChoice+=1
         move_num+=1
 
-    sente.sgf.dump(curr_game, "data_processing/goPlay/sgfs/convolution_black_transformer_white/C_B_T_W.sgf")
+    sente.sgf.dump(curr_game, save_sgf_path)
     print(curr_game)
 
 
