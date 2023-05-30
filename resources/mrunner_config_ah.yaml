@@ -33,7 +33,7 @@ contexts:
     singularity_container:  -H $PWD:/homeplaceholder 
                             --bind /net:/net --env NEPTUNEPWD=$PWD 
                             -B /net/tscratch/people/plgantekhanke/:/plgantekhanke
-                            -B $TMPDIR:/tmp --nv /net/pr2/projects/plgrid/plgggmum_crl/gracjangoral/singularity/22.04.23.sif
+                            -B $TMPDIR:/tmp /net/tscratch/people/plggracjangoral/22.04.2023.sif
     slurm_url: plgantekhanke@athena.cyfronet.pl
     storage_dir: /net/tscratch/people/plgantekhanke/storage_dir
     time: 2880
