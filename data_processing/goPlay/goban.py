@@ -432,18 +432,32 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE,
 def play_bots_match(black_player: playingGoModel = None,
                      white_player: playingGoModel = None, 
                     value_model: valueGoModel = None,
-                    save_plot_path = None):
-    curr_game = sente.Game()
+                    save_plot_path = None,
+                    save_sgf_path = None,
+                    sgf_to_load = None):
+
+    if sgf_to_load is None:
+        curr_game = sente.Game()
+    else:
+        curr_game = sente.sgf.load(sgf_to_load)
+        curr_game.play_default_sequence()
+
     move_num = 0
     model_dict = {
         sente.stone.WHITE: white_player,
         sente.stone.BLACK: black_player
     }
+    my_set = set()
 
     while not curr_game.is_over():
 
-        print(curr_game)
-
+        #print(curr_game)
+        array_tuple = curr_game.numpy().tobytes()
+        # print(curr_game.numpy())
+        # print(array_tuple)
+        if array_tuple in my_set:
+            break
+        my_set.add(array_tuple)
 
         next = curr_game.get_active_player()
         goImmut = GoImmutableBoard.from_game(curr_game)
@@ -455,10 +469,11 @@ def play_bots_match(black_player: playingGoModel = None,
 
         try:
             fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs), black_winning_prob=value)
-            #fig.show()
+            fig.show()
             plt.savefig(os.path.join(save_plot_path, str(move_num) + ".png"))
-            #plt.close()
-            #plt.clf()
+            plt.close()
+            plt.clf()
+            pass
         except Exception as e:
             print(e)
 
@@ -477,7 +492,11 @@ def play_bots_match(black_player: playingGoModel = None,
                 whichChoice+=1
         move_num+=1
 
-    sente.sgf.dump(curr_game, "data_processing/goPlay/sgfs/convolution_black_transformer_white/C_B_T_W.sgf")
+    if(save_sgf_path is None):
+        sente.sgf.dump(curr_game, "bot game.sgf")
+    else:
+        sente.sgf.dump(curr_game, save_sgf_path)
+
     print(curr_game)
 
 
@@ -488,31 +507,65 @@ def play_bots_match(black_player: playingGoModel = None,
 if __name__ == '__main__':
 
 
-    #t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
+    t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
+    c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
+
     # t67k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-67000")
     # v127k = TransformerValue("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/value_models/checkpoint-127000")
-    model = ConvolutionPolicy("../../conv-checkpoints/conv-checkpoint-365500") #""" For playing against a model: """
-    #pygame.init()
-    #pygame.display.set_caption('Goban')
-    #screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
-    #background = pygame.image.load(BACKGROUND).convert()
-    #board = Board()
+    #model = ConvolutionPolicy("../../conv-checkpoints/conv-checkpoint-365500") #""" For playing against a model: """
+    # pygame.init()
+    # pygame.display.set_caption('Goban')
+    # screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
+    # background = pygame.image.load(BACKGROUND).convert()
+    # board = Board()
     ##playAgainstModel(model = t192k)
-    #playAgainstModel(model = model, sgf="my game.sgf")
+    # playAgainstModel(model = t192k, sgf="problems/LD_Elementary/prob0001.sgf")
     """For games between 2 bots"""
-    play_bots_match(model, model)
+    play_bots_match(t192k, t192k, sgf_to_load="problems/LD_Elementary/prob0001.sgf",
+                    save_plot_path = "problems/LD_Elementary/sol/prob0001/",
+                    save_sgf_path="problems/LD_Elementary/sol/prob0001.sgf")
+
+
+    """For playing multiple games from different beginnings and saving their result"""
+    for i in range(0,108):
+        print("PLAYING GAMES ", i)
+        play_bots_match(c365k, t192k, sgf_to_load="game_starts/"+str(i)+".sgf", save_sgf_path="game_starts_results/"+str(i)+"_BConv_WTransf.sgf")
+        play_bots_match(t192k, c365k, sgf_to_load="game_starts/"+str(i)+".sgf", save_sgf_path="game_starts_results/"+str(i)+"_BTransf_WConv.sgf")
 
 
 
-    # """testing"""
-    # game = sente.sgf.loads("(;GM[1]FF[4]SZ[19];B[pp];W[dd];B[dq];W[pd];B[cn];W[qn];B[qo];W[pn];B[mq];W[pj];B[gq];W[jd];B[dk];W[jj];B[cc];W[dc];B[cd];W[ce];B[be];W[cf];B[db];W[eb];B[bb];W[da];B[cb];W[fc];B[hc];W[ic];B[hd];W[bf];B[bd];W[if];B[hf];W[hg];B[gf];W[gg];B[ef];W[fg];B[ff];W[df];B[eg];W[ci];B[ei];W[dj];B[fh];W[ih];B[ej];W[ck];B[ie];W[je];B[jf];W[ig];B[kf];W[ld];B[mf];W[of];B[lh];W[lj];B[nh];W[nj];B[ph];W[qi];B[qh];W[qf];B[rf];W[rg];B[ji];W[ii];B[ij];W[ki];B[jh];W[hj];B[ik];W[hk];B[jk];W[kj];B[hl];W[gl];B[hm];W[fk];B[gm];W[fm];B[gj];W[gi];B[fj];W[gk];B[fn];W[dl];B[ek];W[el];B[cl];W[cm];B[bl];W[bm];B[bk];W[cj];B[bj];W[bi];B[em];W[dm];B[fl];W[jg];B[kh];W[fm];B[mi];W[en];B[mj];W[mk];B[nk];W[ok];B[nl];W[nn];B[ml];W[rh];B[ee];W[de];B[ed];W[ec];B[kc];W[lc];B[ib];W[id];B[jb];W[he];B[ge];W[gb];B[ie];W[kd];B[hb];W[lb];B[qc];W[pc];B[qd];W[re];B[qe];W[pe];B[rd];W[sf];B[pb];W[rb];B[qb];W[ob];B[ra];W[sb];B[pa];W[sd];B[sc];W[rc];B[ne];W[nc];B[fo];W[ol];B[mn];W[no];B[mo];W[np];B[nq];W[mp];B[lp];W[oq];B[op];W[lq];B[lr];W[lo];B[kp];W[mm];B[ln];W[lm];B[kn];W[lk])")
-    # sequence = game.get_default_sequence()
-    # print(sequence)
-    # black_win_probs = []
-    # for move in sequence:
-    #     goImmut = GoImmutableBoard.from_game(game)
-    #     black_win_probs.append(v127k.value(goImmut))
-    #     game.play(move)
+
+    """generate multiple game starts (4,4) or (3,4) in empty corners 2 first moves"""
+    # corners_left = [0, 1, 2, 3]
+    # corners = {0: (4, 4), 1: (4, 16), 2:(16, 4), 3: (16, 16)}
+    # corner_x = {0: -1, 1: -1, 2: 1, 3: 1}
+    # corner_y = {0: -1, 1: 1, 2: -1, 3: 1}
+    # games = []
+    # counter = 0
+    # for cor1 in [0,1,2,3]:
+    #     corners_left = [0, 1, 2, 3]
+    #     corners_left.remove(cor1)
+    #     for var1 in [0,1,2]:
+    #         for resp in [0,1,2]:
+    #             next_cor = corners_left[resp]
+    #             for var2 in [0,1,2]:
+    #                 curr_game = sente.Game()
+    #                 x = corners[cor1][0]
+    #                 y = corners[cor1][1]
+    #                 if(var1==1):
+    #                     x+= corner_x[cor1]
+    #                 if(var1==2):
+    #                     y+= corner_y[cor1]
+    #                 curr_game.play(x, y)
+    #                 x = corners[next_cor][0]
+    #                 y = corners[next_cor][1]
+    #                 if(var2==1):
+    #                     x+= corner_x[next_cor]
+    #                 if(var2==2):
+    #                     y+= corner_y[next_cor]
+    #                 curr_game.play(x, y)
+    #                 print(curr_game)
+    #                 sente.sgf.dump(curr_game, "game_starts/"+str(counter)+".sgf")
+    #                 counter+=1
 
 
-    #plt.plot(black_win_probs)
