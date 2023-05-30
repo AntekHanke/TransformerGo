@@ -64,10 +64,10 @@ ultra_small_data = {
         "TrainModelFromScratch.files_batch_size": 5,
     },
     "from_scratch_go_policy" : {
-        "TrainConvolutionFromScratch.eval_n_batches" : 10,
-        "TrainConvolutionFromScratch.path_to_training_data" : "/godata/train",
-        "TrainConvolutionFromScratch.path_to_eval_data" : "/godata/test",
-        "TrainConvolutionFromScratch.files_batch_size" : 10
+        "TrainConvolutionFromScratch.eval_n_batches" : 5,
+        "TrainConvolutionFromScratch.path_to_training_data" : "/godata/train_with_history",
+        "TrainConvolutionFromScratch.path_to_eval_data" : "/godata/test_with_history",
+        "TrainConvolutionFromScratch.files_batch_size" : 5
     },
     "from_scratch_with_all_subgoals": {
         "TrainModelFromScratch.eval_n_batches": 4,

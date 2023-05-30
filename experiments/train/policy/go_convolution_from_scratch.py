@@ -25,14 +25,14 @@ params_grid = {
 }
 
 experiments_list = create_experiments_helper(
-    experiment_name=f"go_conv_policy_train",
+    experiment_name=f"go_conv_policy_train_with_history",
     project_name="pmtest/subgoal-chess",
     base_config=experiment_config,
     params_grid=params_grid,
     script="python3 -m runner --mrunner",
-    exclude=["conv-checkpoint-356000", "data", ".pytest_cache", "out", ".git", "exclude", "lib", "lib64"],
+    exclude=["model_checkpoints", "data", ".pytest_cache", "out", ".git", "exclude", "lib", "lib64"],
     python_path="",
-    tags=["train", "policy", "go", "convolution", "from_scratch"],
+    tags=["train", "policy", "go", "convolution", "from_scratch", "with_history"],
     with_neptune=True,
     env={},
 )

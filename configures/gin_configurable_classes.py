@@ -54,8 +54,8 @@ from jobs.job_leela_dataset import LeelaCCLPDataProcessing, LeelaParallelDataset
 from jobs.local_jobs_antek.go_data_generator_tokenized_policy import GoTokenizedPolicyGeneratorAlwaysBlack
 from jobs.local_jobs_antek.go_data_generator_tokenized_subgoal import GoTokenizedSubgoalGenerator
 
-# from jobs.go_convolution_data_generation import GoConvolutionDataGeneration
-# from jobs.go_train_convolutions import GoTrainConvolution
+from jobs.go_convolution_data_generation import GoConvolutionDataGeneration
+from jobs.go_train_convolutions import GoTrainConvolution
 from jobs.train_bert_for_sequence_model import TrainBertForSequenceModel
 from jobs.go_train_bert_for_sequence_model import GoTrainBertForSequenceModel
 from jobs.train_model import TrainModelFromScratch, ResumeTraining, TrainConvolutionFromScratch
@@ -109,8 +109,8 @@ configure_classes(
         RunMCTSJob,
         GameBetweenEngines,
         # CompareMCTSWithStockfish,
-        # GoConvolutionDataGeneration,
-        # GoTrainConvolution,
+        GoConvolutionDataGeneration,
+        GoTrainConvolution,
         TrainConvolutionFromScratch
     ],
     "jobs",

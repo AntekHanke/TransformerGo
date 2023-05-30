@@ -144,7 +144,7 @@ medium_model = {
 
 AlphaZeroModel = {
     "AlphaZeroPolicyConfig.num_residual_blocks" : 40,
-    "AlphaZeroPolicyConfig.num_in_channels" : 5,
+    "AlphaZeroPolicyConfig.num_in_channels" : 17,
     "AlphaZeroPolicyConfig.num_out_channels" : 256,
     "AlphaZeroPolicyConfig.kernel_size" : 3,
     "AlphaZeroPolicyConfig.stride" : 1,
@@ -157,7 +157,7 @@ AlphaZeroModel = {
     "TrainingArguments.logging_steps": 100,
     "TrainingArguments.evaluation_strategy": "steps",
     "TrainingArguments.eval_steps": 500,
-    "TrainingArguments.learning_rate": 0.0002,
+    "TrainingArguments.learning_rate": 0.0002
 }
 
  
