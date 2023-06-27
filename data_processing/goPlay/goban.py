@@ -133,7 +133,9 @@ class playingGoModel:
         """Returns x,y coordinates of move played (20,20 is pass)."""
         raise NotImplementedError
 
-    def play_moves(self, position: GoImmutableBoard) -> Tuple[List[Tuple[int, int]], List[float]]:
+    def play_moves(
+        self, position: sente.Game
+    ) -> Tuple[List[Tuple[int, int]], List[float]]:
         """Returns x,y coordinates of mulitple moves it would play (20,20 is pass).
         Used so that in a case of illegal move, the next one can be chosen.
         Also returns the probabilities of each of the returned moves"""
