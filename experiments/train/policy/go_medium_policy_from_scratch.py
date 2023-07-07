@@ -19,14 +19,23 @@ experiment_config = dict(
     **go_medium_model,
 
 )
-experiment_config["TrainModelFromScratch.out_dir"] = OUT_DIR
+#experiment_config["TrainModelFromScratch.out_dir"] = OUT_DIR
 
 experiment_config["TrainModelFromScratch.path_to_training_data"] = "/plgantekhanke/tokenized_data/train/"
 experiment_config["TrainModelFromScratch.path_to_eval_data"] = "/plgantekhanke/tokenized_data/test/"
 
-params_grid = {
+# params_grid = {
+#     "idx": [0],
+# }
+
+params_grid = [{
     "idx": [0],
+    "TrainingArguments.seed":[seed],
+    "TrainModelFromScratch.out_dir": [OUT_DIR + str(seed)],
 }
+    for seed in range(10)
+]
+
 
 experiments_list = create_experiments_helper(
     experiment_name=f"medium_policy_train",
