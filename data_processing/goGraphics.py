@@ -126,9 +126,18 @@ def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None,
             print("no last move")
 
     if (explore_move_possibs):
-        for move, prob in zip(explore_move_possibs[0], explore_move_possibs[1]):
-            x, y = move
-            s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='red', fontsize=11+5*prob, ha="center", va="center")
+        try:
+            for move, prob in zip(explore_move_possibs[0], explore_move_possibs[1]):
+                x, y = move
+                x+=1
+                y+=1
+                s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='red', fontsize=11+5*prob, ha="center", va="center")
+        except:
+            for move, prob in zip(explore_move_possibs[0], explore_move_possibs[1]):
+                x, y, _ = move
+                x+=1
+                y+=1
+                s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='red', fontsize=11+5*prob, ha="center", va="center")
 
     if (black_winning_prob):
         ax.text(0, -1, f"Black winning probability: "+"{:.0%}".format(black_winning_prob), color='black', fontsize=12)
