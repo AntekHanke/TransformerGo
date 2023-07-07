@@ -234,9 +234,11 @@ class TransformerPolicy(playingGoModel):
         num_return_sequences: int = 8,
         num_beams: int = 16
     ):
+        # c1 = time.time()
         input_tensor: torch.Tensor = torch.IntTensor(
             [self.tokenizer.encode_immutable_board(immutable_board)]
         ).to(self.model.device)
+        # c2 = time.time()
         outputs = self.model.generate(
             inputs=input_tensor,
             num_beams=num_beams,
@@ -245,7 +247,7 @@ class TransformerPolicy(playingGoModel):
             output_scores=True,
             return_dict_in_generate=True
         )
-
+        # c3 = time.time()
         sequence = outputs.sequences.tolist()
 
         scores = outputs.sequences_scores
@@ -260,9 +262,10 @@ class TransformerPolicy(playingGoModel):
             moves.append(self.tokenizer.decode_move(real_move))
             moves_ids.append(output)
 
+        # c4 = time.time()
 
         print(f"Moves = {[str(move) for move in moves]}")
-
+        # print(f"Tokenization: {c2-c1}, Pass: {c3-c2}, Rest: {c4-c3}")
         #board = immutable_board.to_board()
         #converted_moves = [chess960_to_standard(move, board) for move in moves]
 
@@ -276,7 +279,7 @@ class TransformerPolicy(playingGoModel):
         y = bestmove[1] + 1
         return(x,y)
 
-    def play_moves(self, curr_game: sente.Game) -> List[Tuple[int, int]]:
+    def play_moves(self, curr_game: sente.Game):
         position = GoImmutableBoard.from_game(curr_game)
         if(position.active_player == sente.stone.WHITE):
             position = GoImmutableBoard.from_all_data(position.boards[:,:,[1,0,2,3]], position.legal_moves, position.active_player, position.metadata)
@@ -287,7 +290,7 @@ class TransformerPolicy(playingGoModel):
         return realmoves, probs.tolist()
 
 class ConvolutionPolicy(playingGoModel):
-    def __init__(self, checkpoint_path_or_model, history = False):
+    def __init__(self, checkpoint_path_or_model, history = False, ignore_history = False):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Device used for policy:", device)
 
@@ -301,6 +304,7 @@ class ConvolutionPolicy(playingGoModel):
         self.model.eval()
         self.softmax = torch.nn.Softmax()
         self.history = history
+        self.ignore_history = ignore_history
         if self.history:
             self.moves = deque(maxlen = 8)
 
@@ -308,8 +312,8 @@ class ConvolutionPolicy(playingGoModel):
         self,
         immutable_board: GoImmutableBoard,
         top_k_moves = 8
-    ):                     
-
+    ):
+        #c1 = time.time()
         board = immutable_board.boards
         active_player = immutable_board.active_player
         active_player = 1 if active_player == sente.BLACK else 0
@@ -317,13 +321,20 @@ class ConvolutionPolicy(playingGoModel):
         if not self.history:
             input_tensor = torch.Tensor(np.append(board , np.full((board.shape[0], board.shape[1], 1)
                                             , active_player), axis = -1))
+            #c2 = time.time()
             outputs= self.model(input_tensor.view(1, 19, 19 ,5).to(self.model.device))
-
         else:
-            input_tensor = torch.Tensor(np.concatenate(list(reversed([np.full((board.shape[0], board.shape[1], 1), active_player)]
-                                                                +list(self.moves))), axis = -1))
+            if not self.ignore_history:
+                input_tensor = torch.Tensor(np.concatenate(list(reversed([np.full((board.shape[0], board.shape[1], 1), active_player)]
+                                                                    +list(self.moves))), axis = -1))
+            #c2 = time.time()
+            else:
+                board = torch.from_numpy(board)
+                input_tensor = torch.zeros(1, 19, 19, 17)
+                input_tensor[:, :, :, :2] = board[:, :, :2]
+                input_tensor[:, :, :, -1] = active_player
             outputs = self.model(input_tensor.view(-1, 19, 19, 17).to(self.model.device))
-
+        #c3 = time.time()
         scores = outputs["logits"].flatten()
         scores = self.softmax(scores)
         topk = torch.topk(scores, top_k_moves)
@@ -334,10 +345,9 @@ class ConvolutionPolicy(playingGoModel):
         for move in outputs.tolist():
             position = (int(move/19), move % 19) if int(move/19) != 20 else (19,19)
             moves.append(position) 
-
+        #c4 = time.time()
         print(f"Moves = {[str(move) for move in moves]}")
-
-
+        #print(f"Obrobka: {c2 - c1}, Pass: {c3 - c2}, Rest: {c4 - c3}")
         return moves, probs
 
     def play_move(self, curr_game: sente.Game) -> Tuple[int, int]:
@@ -352,8 +362,9 @@ class ConvolutionPolicy(playingGoModel):
 
     def play_moves(self, curr_game: sente.Game) -> List[Tuple[int, int]]:
         position = GoImmutableBoard.from_game(curr_game)
-        if(position.active_player == sente.stone.WHITE):
-            position = GoImmutableBoard.from_all_data(position.boards[:,:,[1,0,2,3]], position.legal_moves, position.active_player, position.metadata)
+        if (position.active_player == sente.stone.WHITE and not self.history):
+            position = GoImmutableBoard.from_all_data(position.boards[:, :, [1, 0, 2, 3]], position.legal_moves,
+                                                      position.active_player, position.metadata)
         if self.history:
             if len(self.moves) == 0:
                 seq = curr_game.get_default_sequence()
@@ -449,7 +460,7 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE,
 
             print(curr_game)
 
-
+import time
 def play_bots_match(black_player: playingGoModel = None,
                      white_player: playingGoModel = None, 
                     value_model: valueGoModel = None,
@@ -470,6 +481,9 @@ def play_bots_match(black_player: playingGoModel = None,
     }
     my_set = set()
 
+    timesblack = []
+    timeswhite = []
+
     while not curr_game.is_over():
 
         #print(curr_game)
@@ -481,9 +495,19 @@ def play_bots_match(black_player: playingGoModel = None,
         my_set.add(array_tuple)
 
         next = curr_game.get_active_player()
-        moves, probs = model_dict[next].play_moves(curr_game)
+
+
         goImmut = GoImmutableBoard.from_game(curr_game)
-        moves, probs = model_dict[next].play_moves(goImmut)
+        tstart = time.time()
+        moves, probs = model_dict[next].play_moves(curr_game)
+        # moves, probs = model_dict[next].play_moves(goImmut)
+        tend = time.time()
+        time_took = tend-tstart
+        if next == sente.stone.BLACK:
+            timesblack.append(time_took)
+        else:
+            timeswhite.append(time_took)
+
         if(value_model):
             value = value_model.value(goImmut)
         else:
@@ -501,7 +525,15 @@ def play_bots_match(black_player: playingGoModel = None,
 
         whichChoice = 0
         while True:
-            x,y = moves[whichChoice]
+            try:
+                x,y = moves[whichChoice]
+            except:
+                print("No more legal moves! Dumping game")
+                if (save_sgf_path is None):
+                    sente.sgf.dump(curr_game, "bot game.sgf")
+                else:
+                    sente.sgf.dump(curr_game, save_sgf_path)
+                return
             if(x==20 and y==20):
                 curr_game.pss()
                 print("I PASSED!!!!")
@@ -513,6 +545,11 @@ def play_bots_match(black_player: playingGoModel = None,
                 print(f"Oops illegal!{x},{y}")
                 whichChoice+=1
         move_num+=1
+
+    a = np.asarray(timesblack)
+    np.savetxt("timesblack.csv", a, delimiter=",")
+    b = np.asarray(timeswhite)
+    np.savetxt("timeswhite.csv", b, delimiter=",")
 
     if(save_sgf_path is None):
         sente.sgf.dump(curr_game, "bot game.sgf")
@@ -530,7 +567,12 @@ if __name__ == '__main__':
 
 
     t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
-    c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
+    #c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
+    ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
+
+    for zagadka, klucz_rozwiazan in drabinki:
+        curr_game = zagadka
+        potencjalne = t192k.play_moves(curr_game)
 
     # t67k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-67000")
     # v127k = TransformerValue("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/value_models/checkpoint-127000")
@@ -542,17 +584,18 @@ if __name__ == '__main__':
     # board = Board()
     ##playAgainstModel(model = t192k)
     # playAgainstModel(model = t192k, sgf="problems/LD_Elementary/prob0001.sgf")
+    play_bots_match(ch351k, c365k)
     """For games between 2 bots"""
-    play_bots_match(t192k, t192k, sgf_to_load="problems/LD_Elementary/prob0001.sgf",
-                    save_plot_path = "problems/LD_Elementary/sol/prob0001/",
-                    save_sgf_path="problems/LD_Elementary/sol/prob0001.sgf")
+    # play_bots_match(t192k, t192k, sgf_to_load="problems/LD_Elementary/prob0001.sgf",
+    #                 save_plot_path = "problems/LD_Elementary/sol/prob0001/",
+    #                 save_sgf_path="problems/LD_Elementary/sol/prob0001.sgf")
 
 
     """For playing multiple games from different beginnings and saving their result"""
-    for i in range(0,108):
-        print("PLAYING GAMES ", i)
-        play_bots_match(c365k, t192k, sgf_to_load="game_starts/"+str(i)+".sgf", save_sgf_path="game_starts_results/"+str(i)+"_BConv_WTransf.sgf")
-        play_bots_match(t192k, c365k, sgf_to_load="game_starts/"+str(i)+".sgf", save_sgf_path="game_starts_results/"+str(i)+"_BTransf_WConv.sgf")
+    # for i in range(0,108):
+    #     print("PLAYING GAMES ", i)
+    #     play_bots_match(c365k, t192k, sgf_to_load="game_starts/"+str(i)+".sgf", save_sgf_path="game_starts_results/"+str(i)+"_BConv_WTransf.sgf")
+    #     play_bots_match(t192k, c365k, sgf_to_load="game_starts/"+str(i)+".sgf", save_sgf_path="game_starts_results/"+str(i)+"_BTransf_WConv.sgf")
 
 
 
