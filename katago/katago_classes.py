@@ -11,7 +11,7 @@ from load_model import load_model
 from features import Features
 
 BOARD_SIZE = 19
-DEFAULT_WEIGHTS_PATH = ""
+DEFAULT_WEIGHTS_PATH = "/home/malgorzatarog/ProjectData/subgoal_chess_data/model.ckpt"
 
 RULES = {
     "koRule": "KO_POSITIONAL",
@@ -168,17 +168,17 @@ class KataGoBackend:
 
     def katago_to_sente_move(
         self, move: int, player: int
-    ) -> Optional[Tuple[int, int, sente.stone]]:
+    ) -> Tuple[Optional[int], Optional[int], sente.stone]:
         if player == Board.BLACK:
-            player = sente.stone.BLACK
+            player = sente.BLACK
         elif player == Board.WHITE:
-            player = sente.stone.WHITE
+            player = sente.WHITE
         else:
             raise ValueError(f"Unknown player {player}")
-        x_coordinate = (move % (self.board_size + 1)) - 1
-        y_coordinate = (move // (self.board_size + 1)) - 1
-        if x_coordinate == -1 and y_coordinate == -1:
-            return None, player
+        x_coordinate = (move % (self.board_size + 1))
+        y_coordinate = (move // (self.board_size + 1))
+        if x_coordinate == 0 and y_coordinate == 0:
+            return None, None, player
         else:
             return x_coordinate, y_coordinate, player
 
