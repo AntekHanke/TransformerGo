@@ -14,11 +14,11 @@ def rate_tsumego(tsumego_df: pd.DataFrame) -> pd.DataFrame:
         player = game.get_active_player()
         good = 0
         bad = 0
-        if puzzle["Coordinates_good"] == []:
+        if not puzzle["Coordinates_good"]:
             for move in puzzle["Coordinates_bad"]:
                 bad += move_distribution[(move[0], move[1], player)]
             good = 1-bad
-        elif puzzle["Coordinates_bad"] == []:
+        elif not puzzle["Coordinates_bad"]:
             for move in puzzle["Coordinates_good"]:
                 good += move_distribution[(move[0], move[1], player)]
             bad = 1-good
