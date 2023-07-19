@@ -30,7 +30,9 @@ def sente_game_to_numpy(game: Game):
     return array_board
 
 
-def background_generator(game_paths: str, game_paths_file: str) -> Generator[pd.DataFrame, None, None]:
+def background_generator(
+    game_paths: str, game_paths_file: str
+) -> Generator[pd.DataFrame, None, None]:
     with open(os.path.join(game_paths, game_paths_file), "r") as f:
         file_paths = f.readlines()
     random.shuffle(file_paths)
