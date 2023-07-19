@@ -180,140 +180,140 @@ import pandas as pd
 import os
 
 save_plot_path = "./our_tsumego/"
-# if __name__ == '__main__':
-# game = numpy_to_sente_game(ex_right_outside_black_free)
-# print(game)
+if __name__ == '__main__':
+    # game = numpy_to_sente_game(ex_right_outside_black_free)
+    # print(game)
 
-tsumego = {
-    "Game": [],
-    "Coordinates_good": [],
-    "Coordinates_bad": [],
-    "Type": [],
-    "Subtype": [],
-    "Role": [],
-    "Exact": [],
-    "Locality": [],
-}
+    tsumego = {
+        "Game": [],
+        "Coordinates_good": [],
+        "Coordinates_bad": [],
+        "Type": [],
+        "Subtype": [],
+        "Role": [],
+        "Exact": [],
+        "Locality": [],
+    }
 
-tsumego_df = pd.DataFrame(tsumego)
+    tsumego_df = pd.DataFrame(tsumego)
 
-# t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
-# c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
-# ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
+    # t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
+    # c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
+    # ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
 
-for start_x in range(3, 10):
-    for start_y in range(5, 10):
-        for half_eye_direction in range(4):
-            for distance in range(2, 13 - start_x):
-                if distance == 3 and half_eye_direction == 1:
-                    continue
-                for who_inside in [-1]:
-                    # print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
-                    nex_right_outside_black_free = ex_right_outside_black_free.copy()
-                    (
-                        np_array,
-                        coordinates_good,
-                        coordinates_bad,
-                        type,
-                        subtype,
-                        exact,
-                        locality,
-                    ) = one_and_half_eyes(
-                        nex_right_outside_black_free,
-                        start=(start_y, start_x),
-                        distance=distance,
-                        who_inside=who_inside,
-                        half_eye_direction=half_eye_direction,
-                    )
-                    game = numpy_to_sente_game(np_array, who_to_move=1)
+    for start_x in range(3, 10):
+        for start_y in range(5, 10):
+            for half_eye_direction in range(4):
+                for distance in range(2, 13 - start_x):
+                    if distance == 3 and half_eye_direction == 1:
+                        continue
+                    for who_inside in [-1]:
+                        # print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
+                        nex_right_outside_black_free = ex_right_outside_black_free.copy()
+                        (
+                            np_array,
+                            coordinates_good,
+                            coordinates_bad,
+                            type,
+                            subtype,
+                            exact,
+                            locality,
+                        ) = one_and_half_eyes(
+                            nex_right_outside_black_free,
+                            start=(start_y, start_x),
+                            distance=distance,
+                            who_inside=who_inside,
+                            half_eye_direction=half_eye_direction,
+                        )
+                        game = numpy_to_sente_game(np_array, who_to_move=1)
 
-                    # sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_Attack_'+exact+'_'+str(half_eye_direction)+'_'+str(locality)+'.sgf'))
+                        # sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_Attack_'+exact+'_'+str(half_eye_direction)+'_'+str(locality)+'.sgf'))
 
-                    # a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
-                    # b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
-                    # fig, ax = plot_go_game(game, explore_move_possibs=b)
-                    # plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_Attack_'+exact+'_'+str(half_eye_direction)+'_'+str(locality) + "_Transformer.png"))
-                    # plt.close()
-                    # plt.clf()
+                        # a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+                        # b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+                        # fig, ax = plot_go_game(game, explore_move_possibs=b)
+                        # plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_Attack_'+exact+'_'+str(half_eye_direction)+'_'+str(locality) + "_Transformer.png"))
+                        # plt.close()
+                        # plt.clf()
 
-                    # fig, ax = plot_go_game(game, explore_move_possibs=a)
-                    # plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_Attack_'+exact+'_'+str(half_eye_direction)+'_'+str(locality) + "_Conv.png"))
-                    # plt.close()
-                    # plt.clf()
+                        # fig, ax = plot_go_game(game, explore_move_possibs=a)
+                        # plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_Attack_'+exact+'_'+str(half_eye_direction)+'_'+str(locality) + "_Conv.png"))
+                        # plt.close()
+                        # plt.clf()
 
-                    new_row = {
-                        "Game": game,
-                        "Coordinates_good": coordinates_good,
-                        "Coordinates_bad": coordinates_bad,
-                        "Type": type,
-                        "Subtype": subtype,
-                        "Role": "Attack",
-                        "Exact": exact,
-                        "Locality": locality,
-                    }
-                    tsumego_df = tsumego_df.append(new_row, ignore_index=True)
-                    game = numpy_to_sente_game(np_array, who_to_move=-1)
-                    new_row = {
-                        "Game": game,
-                        "Coordinates_good": coordinates_good,
-                        "Coordinates_bad": coordinates_bad,
-                        "Type": type,
-                        "Subtype": subtype,
-                        "Role": "Defend",
-                        "Exact": exact,
-                        "Locality": locality,
-                    }
-                    # print(game)
-                    tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+                        new_row = {
+                            "Game": game,
+                            "Coordinates_good": coordinates_good,
+                            "Coordinates_bad": coordinates_bad,
+                            "Type": type,
+                            "Subtype": subtype,
+                            "Role": "Attack",
+                            "Exact": exact,
+                            "Locality": locality,
+                        }
+                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+                        game = numpy_to_sente_game(np_array, who_to_move=-1)
+                        new_row = {
+                            "Game": game,
+                            "Coordinates_good": coordinates_good,
+                            "Coordinates_bad": coordinates_bad,
+                            "Type": type,
+                            "Subtype": subtype,
+                            "Role": "Defend",
+                            "Exact": exact,
+                            "Locality": locality,
+                        }
+                        # print(game)
+                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
 
-for start_x in range(3, 10):
-    for start_y in range(5, 10):
-        for half_eye_direction in range(4):
-            for distance in range(3, 13 - start_x):
-                if distance <= 3 and half_eye_direction % 2 == 1:
-                    continue
-                for who_inside in [-1]:
-                    # print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
-                    nex_right_outside_black_free = ex_right_outside_black_free.copy()
-                    (
-                        np_array,
-                        coordinates_good,
-                        coordinates_bad,
-                        type,
-                        subtype,
-                        exact,
-                        locality,
-                    ) = half_and_half_eyes(
-                        nex_right_outside_black_free,
-                        start=(start_y, start_x),
-                        distance=distance,
-                        who_inside=who_inside,
-                        half_eye_direction=half_eye_direction,
-                    )
-                    game = numpy_to_sente_game(np_array, who_to_move=1)
-                    new_row = {
-                        "Game": game,
-                        "Coordinates_good": coordinates_good,
-                        "Coordinates_bad": coordinates_bad,
-                        "Type": type,
-                        "Subtype": subtype,
-                        "Role": "Attack",
-                        "Exact": exact,
-                        "Locality": locality,
-                    }
-                    tsumego_df = tsumego_df.append(new_row, ignore_index=True)
-                    game = numpy_to_sente_game(np_array, who_to_move=-1)
-                    new_row = {
-                        "Game": game,
-                        "Coordinates_good": coordinates_good,
-                        "Coordinates_bad": coordinates_bad,
-                        "Type": type,
-                        "Subtype": subtype,
-                        "Role": "Defend",
-                        "Exact": exact,
-                        "Locality": locality,
-                    }
-                    # print(game)
-                    tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+    for start_x in range(3, 10):
+        for start_y in range(5, 10):
+            for half_eye_direction in range(4):
+                for distance in range(3, 13 - start_x):
+                    if distance <= 3 and half_eye_direction % 2 == 1:
+                        continue
+                    for who_inside in [-1]:
+                        # print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
+                        nex_right_outside_black_free = ex_right_outside_black_free.copy()
+                        (
+                            np_array,
+                            coordinates_good,
+                            coordinates_bad,
+                            type,
+                            subtype,
+                            exact,
+                            locality,
+                        ) = half_and_half_eyes(
+                            nex_right_outside_black_free,
+                            start=(start_y, start_x),
+                            distance=distance,
+                            who_inside=who_inside,
+                            half_eye_direction=half_eye_direction,
+                        )
+                        game = numpy_to_sente_game(np_array, who_to_move=1)
+                        new_row = {
+                            "Game": game,
+                            "Coordinates_good": coordinates_good,
+                            "Coordinates_bad": coordinates_bad,
+                            "Type": type,
+                            "Subtype": subtype,
+                            "Role": "Attack",
+                            "Exact": exact,
+                            "Locality": locality,
+                        }
+                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+                        game = numpy_to_sente_game(np_array, who_to_move=-1)
+                        new_row = {
+                            "Game": game,
+                            "Coordinates_good": coordinates_good,
+                            "Coordinates_bad": coordinates_bad,
+                            "Type": type,
+                            "Subtype": subtype,
+                            "Role": "Defend",
+                            "Exact": exact,
+                            "Locality": locality,
+                        }
+                        # print(game)
+                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
 
-# print(tsumego_df[['Coordinates_bad']])
+    # print(tsumego_df[['Coordinates_bad']])
