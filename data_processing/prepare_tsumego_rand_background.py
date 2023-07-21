@@ -5,8 +5,9 @@ from typing import Generator, Callable, Optional
 import numpy as np
 import pandas as pd
 import sente
+import re
 
-from sente import sgf, Game
+from sente import Game
 from sente.exceptions import IllegalMoveException
 
 from data_processing.prepare_tsumego import (
@@ -35,13 +36,24 @@ def background_generator(
 ) -> Generator[pd.DataFrame, None, None]:
     with open(os.path.join(game_paths, game_paths_file), "r") as f:
         file_paths = f.readlines()
+    file_paths = [path[:-1] for path in file_paths]
     random.shuffle(file_paths)
     for path in file_paths:
-        game = sgf.load(os.path.join(game_paths, path[:-1]))
+        sgf_dir = os.path.normpath(os.path.join(game_paths, path))
+        if (sgf_dir[-3:] != "sgf"):
+            sgf_dir += ".sgf"
+        game = sente.sgf.load(sgf_dir, disable_warnings=True)
+        sgf = sente.sgf.dumps(game)
+        sgf = re.sub("([a-z])\];AB\[", '\\1];W[];AB[', sgf)
+        sgf = re.sub("AB\[", 'B[', sgf)
+        game = sente.sgf.loads(sgf)
         move_sequence = game.get_default_sequence()[:10]
-        game.play_sequence(move_sequence)
-        array_board = sente_game_to_numpy(game)
-        yield array_board
+        try:
+            game.play_sequence(move_sequence)
+            array_board = sente_game_to_numpy(game)
+            yield array_board
+        except IllegalMoveException:
+            continue
     return None
 
 
@@ -170,5 +182,5 @@ def generate_tsumego(game_paths: str, game_paths_file: str) -> pd.DataFrame:
                                 pass
     tsumego_df = pd.DataFrame(tsumego_list)
     tsumego_df = rate_tsumego(tsumego_df)
-    tsumego_df.drop(tsumego_df["KataGo"] < 0.9, inplace=True)
+    tsumego_df = tsumego_df[tsumego_df["KataGo"] > 0.9]
     return tsumego_df
