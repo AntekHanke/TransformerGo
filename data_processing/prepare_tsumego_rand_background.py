@@ -54,21 +54,21 @@ def random_numpy_transformation(
     for i in range(rotate_rand):
         if coordinates_good is not None:
             coordinates_good = [
-                (18 - coordinate[0], coordinate[1]) for coordinate in coordinates_good
-            ]
-        if coordinates_bad is not None:
-            coordinates_bad = [
-                (18 - coordinate[0], coordinate[1]) for coordinate in coordinates_bad
-            ]
-    if flip_rand:
-        array = np.flip(array, axis=0)
-        if coordinates_good is not None:
-            coordinates_good = [
                 (18 - coordinate[1], coordinate[0]) for coordinate in coordinates_good
             ]
         if coordinates_bad is not None:
             coordinates_bad = [
                 (18 - coordinate[1], coordinate[0]) for coordinate in coordinates_bad
+            ]
+    if flip_rand:
+        array = np.flip(array, axis=0)
+        if coordinates_good is not None:
+            coordinates_good = [
+                (18 - coordinate[0], coordinate[1]) for coordinate in coordinates_good
+            ]
+        if coordinates_bad is not None:
+            coordinates_bad = [
+                (18 - coordinate[0], coordinate[1]) for coordinate in coordinates_bad
             ]
     return array, coordinates_good, coordinates_bad
 
