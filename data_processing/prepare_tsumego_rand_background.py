@@ -1,5 +1,6 @@
 import os
 import random
+from itertools import cycle
 from typing import Generator, Callable, Optional
 
 import numpy as np
@@ -18,7 +19,7 @@ from data_processing.prepare_tsumego import (
 from data_processing.rate_tsumego import rate_tsumego
 
 
-def sente_game_to_numpy(game: Game):
+def sente_game_to_numpy(game: Game) -> pd.ndarray:
     moves = game.get_default_sequence()
     array_board = np.zeros((19, 19))
 
@@ -33,33 +34,39 @@ def sente_game_to_numpy(game: Game):
 
 def background_generator(
     game_paths: str, game_paths_file: str
-) -> Generator[pd.DataFrame, None, None]:
+) -> Generator[pd.ndarray, bool, None]:
     with open(os.path.join(game_paths, game_paths_file), "r") as f:
         file_paths = f.readlines()
     file_paths = [path[:-1] for path in file_paths]
     random.shuffle(file_paths)
-    for path in file_paths:
-        sgf_dir = os.path.normpath(os.path.join(game_paths, path))
-        if (sgf_dir[-3:] != "sgf"):
-            sgf_dir += ".sgf"
-        game = sente.sgf.load(sgf_dir, disable_warnings=True)
-        sgf = sente.sgf.dumps(game)
-        sgf = re.sub("([a-z])\];AB\[", '\\1];W[];AB[', sgf)
-        sgf = re.sub("AB\[", 'B[', sgf)
-        game = sente.sgf.loads(sgf)
-        move_sequence = game.get_default_sequence()[:10]
-        try:
-            game.play_sequence(move_sequence)
-            array_board = sente_game_to_numpy(game)
-            yield array_board
-        except IllegalMoveException:
-            continue
-    return None
+    while True:
+        board_accepted = False
+        for path in file_paths:
+            sgf_dir = os.path.normpath(os.path.join(game_paths, path))
+            if sgf_dir[-3:] != "sgf":
+                sgf_dir += ".sgf"
+            game = sente.sgf.load(sgf_dir, disable_warnings=True)
+            sgf = sente.sgf.dumps(game)
+            sgf = re.sub("([a-z])\];AB\[", '\\1];W[];AB[', sgf)
+            sgf = re.sub("AB\[", 'B[', sgf)
+            game = sente.sgf.loads(sgf)
+            move_sequence = game.get_default_sequence()[:20]
+            try:
+                game.play_sequence(move_sequence)
+                array_board = sente_game_to_numpy(game)
+                board_accepted = yield array_board
+                if board_accepted:
+                    file_paths.remove(path)
+                    break
+            except IllegalMoveException:
+                continue
+        if not board_accepted:
+            yield None
 
 
 def random_numpy_transformation(
-    array: np.array, coordinates_good: list = None, coordinates_bad: list = None
-) -> (np.array, Optional[list], Optional[list]):
+    array: np.ndarray, coordinates_good: list = None, coordinates_bad: list = None
+) -> (np.ndarray, Optional[list], Optional[list]):
     rotate_rand = random.randint(0, 3)
     flip_rand = random.randint(0, 1)
     array = np.rot90(array, rotate_rand)
@@ -87,7 +94,7 @@ def random_numpy_transformation(
 
 def make_tsumego(
     tsumego: Callable,
-    background: pd.DataFrame,
+    background: pd.ndarray,
     start_x: int,
     start_y: int,
     half_eye_direction: int,
@@ -129,8 +136,10 @@ def make_tsumego(
     return tsumego_dict
 
 
-def generate_tsumego(game_paths: str, game_paths_file: str) -> pd.DataFrame:
+def generate_tsumego(game_paths: str, game_paths_file: str, minimum_katago_rating: float = 0.9) -> pd.DataFrame:
     generator = background_generator(game_paths, game_paths_file)
+    next(generator)
+    remove_last_background = False
     tsumego_list = []
 
     for start_x in range(3, 10):
@@ -141,10 +150,13 @@ def generate_tsumego(game_paths: str, game_paths_file: str) -> pd.DataFrame:
                         continue
                     for who_to_move in [-1, 1]:
                         while True:
+                            board = generator.send(remove_last_background)
+                            if board is None:
+                                continue
                             try:
                                 new_row = make_tsumego(
                                     one_and_half_eyes,
-                                    next(generator),
+                                    board,
                                     start_x,
                                     start_y,
                                     half_eye_direction,
@@ -152,9 +164,15 @@ def generate_tsumego(game_paths: str, game_paths_file: str) -> pd.DataFrame:
                                     -1,
                                     who_to_move,
                                 )
-                                tsumego_list.append(new_row)
-                                break
+                                new_row = rate_tsumego(pd.DataFrame([new_row])).iloc[0].to_dict()
+                                if new_row["KataGo"] >= minimum_katago_rating:
+                                    tsumego_list.append(new_row)
+                                    remove_last_background = True
+                                    break
+                                else:
+                                    remove_last_background = False
                             except IllegalMoveException:
+                                remove_last_background = False
                                 pass
 
     for start_x in range(3, 10):
@@ -166,9 +184,10 @@ def generate_tsumego(game_paths: str, game_paths_file: str) -> pd.DataFrame:
                     for who_to_move in [-1, 1]:
                         while True:
                             try:
+                                board = generator.send(remove_last_background)
                                 new_row = make_tsumego(
                                     half_and_half_eyes,
-                                    next(generator),
+                                    board,
                                     start_x,
                                     start_y,
                                     half_eye_direction,
@@ -176,11 +195,17 @@ def generate_tsumego(game_paths: str, game_paths_file: str) -> pd.DataFrame:
                                     -1,
                                     who_to_move,
                                 )
-                                tsumego_list.append(new_row)
-                                break
+                                new_row = rate_tsumego(pd.DataFrame([new_row])).iloc[0].to_dict()
+                                if new_row["KataGo"] >= minimum_katago_rating:
+                                    tsumego_list.append(new_row)
+                                    remove_last_background = True
+                                    break
+                                else:
+                                    remove_last_background = False
                             except IllegalMoveException:
+                                remove_last_background = False
                                 pass
+
     tsumego_df = pd.DataFrame(tsumego_list)
     tsumego_df = rate_tsumego(tsumego_df)
-    tsumego_df = tsumego_df[tsumego_df["KataGo"] > 0.9]
     return tsumego_df
