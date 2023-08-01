@@ -13,7 +13,7 @@ from data_processing.goPlay.goban import (
     TransformerPolicy,
     ConvolutionPolicy,
 )
-from data_processing.prepare_tsumego import tsumego_df
+#from data_processing.prepare_tsumego import tsumego_df
 
 #example of definition of models
 transformer_192k = TransformerPolicy(

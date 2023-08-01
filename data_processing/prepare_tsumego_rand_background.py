@@ -146,7 +146,7 @@ def generate_tsumego(minimum_katago_rating: float = 0.9) -> pd.DataFrame:
                     if distance == 3 and half_eye_direction == 1:
                         continue
                     for who_to_move in [-1, 1]:
-                        while True:
+                        for _ in range(10):
                             try:
                                 new_row = make_tsumego(
                                     one_and_half_eyes,
@@ -172,7 +172,7 @@ def generate_tsumego(minimum_katago_rating: float = 0.9) -> pd.DataFrame:
                     if distance <= 3 and half_eye_direction % 2 == 1:
                         continue
                     for who_to_move in [-1, 1]:
-                        while True:
+                        for _ in range(10):
                             try:
                                 new_row = make_tsumego(
                                     half_and_half_eyes,
@@ -192,5 +192,4 @@ def generate_tsumego(minimum_katago_rating: float = 0.9) -> pd.DataFrame:
                                 pass
 
     tsumego_df = pd.DataFrame(tsumego_list)
-    tsumego_df = rate_tsumego(tsumego_df)
     return tsumego_df

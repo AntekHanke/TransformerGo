@@ -16,17 +16,21 @@ def rate_tsumego(tsumego_df: pd.DataFrame) -> pd.DataFrame:
         bad = 0
         if not puzzle["Coordinates_good"]:
             for move in puzzle["Coordinates_bad"]:
-                bad += move_distribution[(move[0], move[1], player)]
+                if (move[0], move[1], player) in move_distribution:
+                    bad += move_distribution[(move[0], move[1], player)]
             good = 1-bad
         elif not puzzle["Coordinates_bad"]:
             for move in puzzle["Coordinates_good"]:
-                good += move_distribution[(move[0], move[1], player)]
+                if (move[0], move[1], player) in move_distribution:
+                    good += move_distribution[(move[0], move[1], player)]
             bad = 1-good
         else:
             for move in puzzle["Coordinates_good"]:
-                good += move_distribution[(move[0], move[1], player)]
+                if (move[0], move[1], player) in move_distribution:
+                    good += move_distribution[(move[0], move[1], player)]
             for move in puzzle["Coordinates_bad"]:
-                bad += move_distribution[(move[0], move[1], player)]
+                if (move[0], move[1], player) in move_distribution:
+                    bad += move_distribution[(move[0], move[1], player)]
         results.append(good/(bad+good))
 
     tsumego_df["KataGo"] = results
