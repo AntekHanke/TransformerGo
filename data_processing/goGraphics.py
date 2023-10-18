@@ -121,7 +121,6 @@ def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None,
                         probchange = explore_mask_possibs[1][explore_mask_possibs[0].index((x, y))]
                     except:
                         probchange=absol
-                    probchange = explore_mask_possibs[1][explore_mask_possibs[0].index((x, y))]
                     s1, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(0, 0, 0), markerfacecolor='w',
                                   markeredgewidth=2, alpha=(abs(probchange)+0.001)/(absol+0.001))
         pass
