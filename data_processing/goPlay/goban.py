@@ -11,6 +11,8 @@ pygame-related activities. Together they form a fully working goban.
 __author__ = "Aku Kotkavuo <aku@hibana.net>"
 __version__ = "0.1"
 
+import copy
+
 import matplotlib.pyplot as plt
 import pygame
 from transformers import BartForConditionalGeneration
@@ -27,6 +29,7 @@ import sente
 from go_policy.policy_model import AlphaZeroPolicyModel
 from collections import deque
 import os
+os.environ['SDL_AUDIODRIVER'] = 'dsp'
 
 BACKGROUND = 'images/ramin.jpg'
 BOARD_SIZE = (820, 820)
@@ -139,6 +142,57 @@ class playingGoModel:
         Also returns the probabilities of each of the returned moves"""
         pass
 
+    def attention_heatmap(self, position: sente.Game):
+        """Provides a heatmap showing which stones masked change the most in the probabilities of hte most probable
+        move in a given position"""
+        currs = self.play_moves(position)
+        print('Current probs are: ', currs)
+        # boards = position.numpy()
+        # #print('pos: ', position.numpy())
+        # black_stones = np.argwhere(np.all(boards == [1, 0, 0, 0], axis=2))
+        # #print('indices of black stones: ', black_stones)
+        # white_stones = np.argwhere(np.all(boards == [0, 1, 0, 0], axis=2))
+        bestmove = currs[0][0]
+        bestprob = currs[1][0]
+        print(f"Best move: {bestmove}, best prob: {bestprob}")
+        moves = position.get_sequence()
+        print("Moves: ", moves)
+        movesexcl = []
+        differences = []
+        for i in range(len(moves)):
+            #newmoves = copy.deepcopy(moves)
+            #newmoves = moves
+            newmoves = []
+            for n, mov in enumerate(moves):
+                if n == i:
+                    newmoves.append(sente.Move(19, 19, moves[i].get_stone()))
+                else:
+                    newmoves.append(moves[n])
+            #newmoves[i] = sente.Move(19, 19, moves[i].get_stone())
+            #print("Newmoves: ", newmoves)
+
+            try:
+                altgame = sente.Game()
+                altgame.play_sequence(newmoves)
+                #print("Game withoug move ", i)
+                #print(altgame)
+                newprobs = self.play_moves(altgame)
+                print(f"Game probs without move {i}: {newprobs}")
+                try:
+                    newindex = newprobs[0].index(bestmove)
+                    newprob = newprobs[1][newindex]
+                except:
+                    newprob = 0
+                difference = bestprob-newprob
+                print(f"Difference in probs: {difference}")
+                movesexcl.append((moves[i].get_x(), moves[i].get_y()))
+                differences.append(difference)
+            except:
+                print("invalid possition tried in masking")
+
+
+        print("FINAL!!!!! ", (movesexcl, differences))
+        return (movesexcl, differences)
 
 class valueGoModel:
     """Model which can play the game."""
@@ -146,7 +200,6 @@ class valueGoModel:
     def value(self, position: GoImmutableBoard) -> (float):
         """Returns value of given position. (Probability of black winning)"""
         raise NotImplementedError
-
 
 class TransformerValue(valueGoModel):
     def __init__(self, checkpoint_path_or_model):
@@ -208,8 +261,6 @@ class TransformerValue(valueGoModel):
 
         print(f"Black winning chance: {prob_real}")
         return prob_real
-
-
 
 
 class TransformerPolicy(playingGoModel):
@@ -382,7 +433,6 @@ class ConvolutionPolicy(playingGoModel):
         return realmoves, probs.tolist()
 
 
-
 def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE, 
                      sgf = None, 
                      Board = None, 
@@ -427,6 +477,7 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE,
         else:
 
             moves, probs = model.play_moves(curr_game)
+            mask_possibs = model.attention_heatmap(curr_game)
             whichChoice = 0
             bestmove = moves[whichChoice]
 
@@ -453,7 +504,7 @@ def playAgainstModel(model: TransformerPolicy, youPlayAs = sente.stone.WHITE,
                 added_stone = Stone(board, (x, y), board.turn(), screen, background)
                 board.update_liberties(added_stone)
                 curr_game.play(x,y)
-                fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs))
+                fig, ax = plot_go_game(curr_game, lastmove=True, explore_move_possibs=(moves, probs), explore_mask_possibs=mask_possibs)
                 fig.show()
                 plt.savefig(os.path.join(save_plot_path, "move.png"))
                 plt.clf()
@@ -559,32 +610,32 @@ def play_bots_match(black_player: playingGoModel = None,
     print(curr_game)
 
 
-
-
-
-
 if __name__ == '__main__':
 
 
     t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
     #c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
-    ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
+    # ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
 
-    for zagadka, klucz_rozwiazan in drabinki:
-        curr_game = zagadka
-        potencjalne = t192k.play_moves(curr_game)
+    # for zagadka, klucz_rozwiazan in drabinki:
+    #     curr_game = zagadka
+    #     potencjalne = t192k.play_moves(curr_game)
 
     # t67k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-67000")
     # v127k = TransformerValue("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/value_models/checkpoint-127000")
     #model = ConvolutionPolicy("../../conv-checkpoints/conv-checkpoint-365500") #""" For playing against a model: """
-    # pygame.init()
-    # pygame.display.set_caption('Goban')
-    # screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
-    # background = pygame.image.load(BACKGROUND).convert()
-    # board = Board()
-    ##playAgainstModel(model = t192k)
+    pygame.init()
+    pygame.display.set_caption('Goban')
+    screen = pygame.display.set_mode(BOARD_SIZE, 0, 32)
+    background = pygame.image.load(BACKGROUND).convert()
+    board = Board(background, screen)
+    playAgainstModel(model = t192k,
+                        Board = board,
+                        Screen = screen,
+                        background = background,
+                     save_plot_path = "plots/game_against_bot/")
     # playAgainstModel(model = t192k, sgf="problems/LD_Elementary/prob0001.sgf")
-    play_bots_match(ch351k, c365k)
+    # play_bots_match(ch351k, c365k)
     """For games between 2 bots"""
     # play_bots_match(t192k, t192k, sgf_to_load="problems/LD_Elementary/prob0001.sgf",
     #                 save_plot_path = "problems/LD_Elementary/sol/prob0001/",

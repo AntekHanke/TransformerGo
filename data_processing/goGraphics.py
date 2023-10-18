@@ -72,7 +72,7 @@ def plot_go_boards(boards, expmov=None, predmov=None, predmovs=None):
     return fig, ax
 
 import sente
-def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None, black_winning_prob = None):
+def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None, black_winning_prob = None, explore_mask_possibs = None):
     '''Accepts boards same as boards dumped by sente library (numpy 19x19x4 array)'''
     # create a 8" x 8" board
     fig = plt.figure(figsize=[8, 8])
@@ -97,16 +97,45 @@ def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None,
     # draw Go stones at (10,10) and (13,16)
     boards = game.numpy()
 
-    for x, row in enumerate(boards):
-        # print("row: ",row)
-        for y, val in enumerate(row):
-            # print("val: ",val)
-            if (val[0] == 1):
-                s2, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(.5, .5, .5), markerfacecolor='k',
-                              markeredgewidth=2)
-            elif (val[1] == 1):
-                s1, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(0, 0, 0), markerfacecolor='w',
-                              markeredgewidth=2)
+    if (explore_mask_possibs):
+        try:
+            ma, mi = max(explore_mask_possibs[1]), min(explore_mask_possibs[1])
+            absol = max(abs(ma), abs(mi))
+        except:
+            absol=1
+        for x, row in enumerate(boards):
+            # print("row: ",row)
+            for y, val in enumerate(row):
+                # print("val: ",val)
+                if (val[0] == 1):
+                    print(f"Finding: ({x}, {y}) in {explore_mask_possibs[0]}")
+                    try:
+                        probchange = explore_mask_possibs[1][explore_mask_possibs[0].index((x, y))]
+                    except:
+                        probchange=absol
+                    s2, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(.5, .5, .5), markerfacecolor='k',
+                                  markeredgewidth=2, alpha=(abs(probchange)+0.001)/(absol+0.001))
+                elif (val[1] == 1):
+                    print(f"Finding: ({x}, {y}) in {explore_mask_possibs[0]}")
+                    try:
+                        probchange = explore_mask_possibs[1][explore_mask_possibs[0].index((x, y))]
+                    except:
+                        probchange=absol
+                    probchange = explore_mask_possibs[1][explore_mask_possibs[0].index((x, y))]
+                    s1, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(0, 0, 0), markerfacecolor='w',
+                                  markeredgewidth=2, alpha=(abs(probchange)+0.001)/(absol+0.001))
+        pass
+    else:
+        for x, row in enumerate(boards):
+            # print("row: ",row)
+            for y, val in enumerate(row):
+                # print("val: ",val)
+                if (val[0] == 1):
+                    s2, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(.5, .5, .5), markerfacecolor='k',
+                                  markeredgewidth=2)
+                elif (val[1] == 1):
+                    s1, = ax.plot(x, 18-y, 'o', markersize=30, markeredgecolor=(0, 0, 0), markerfacecolor='w',
+                                  markeredgewidth=2)
 
     if (lastmove):
         try:
@@ -129,15 +158,29 @@ def plot_go_game(game: sente.Game, lastmove = True, explore_move_possibs = None,
         try:
             for move, prob in zip(explore_move_possibs[0], explore_move_possibs[1]):
                 x, y = move
-                x+=1
-                y+=1
+                # x+=1
+                # y+=1
                 s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='red', fontsize=11+5*prob, ha="center", va="center")
         except:
             for move, prob in zip(explore_move_possibs[0], explore_move_possibs[1]):
                 x, y, _ = move
-                x+=1
-                y+=1
+                # x+=1
+                # y+=1
                 s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='red', fontsize=11+5*prob, ha="center", va="center")
+
+    # if (explore_mask_possibs):
+    #     try:
+    #         for move, prob in zip(explore_mask_possibs[0], explore_mask_possibs[1]):
+    #             x, y = move
+    #             x+=1
+    #             y+=1
+    #             s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='blue', fontsize=11+5*abs(prob), ha="center", va="center")
+    #     except:
+    #         for move, prob in zip(explore_mask_possibs[0], explore_mask_possibs[1]):
+    #             x, y, _ = move
+    #             x+=1
+    #             y+=1
+    #             s3 = ax.text(x-1, 19-y, "{:.0%}".format(prob), color='blue', fontsize=11+5*abs(prob), ha="center", va="center")
 
     if (black_winning_prob):
         ax.text(0, -1, f"Black winning probability: "+"{:.0%}".format(black_winning_prob), color='black', fontsize=12)
