@@ -4,6 +4,11 @@ import sente
 eye = np.array([[1,1,1],[1,0,1],[1,1,1]])
 almost_eye = np.array([[1,2,1],[1,0,1],[1,1,1]])
 five_square = np.array([[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1]])
+ladder_start4 = np.array([
+    [0, 0, -1, 2, 0],
+    [0, -1, 1, 1, -1],
+    [-1, 1, 1, -1, 0],
+    [0, -1, -1, 0, 0]])
 
 ex_right_outside_black_free = np.array([
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -85,6 +90,30 @@ def half_and_half_eyes(np_array, distance = 2, direction = (0, 1), half_eye_dire
 
     return np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality
 
+def ladder_escape(np_array, distance = 2, start = (7,7), who_inside = 1, escape_working = True):
+    np_array[start[0]:start[0]+4, start[1]:start[1]+5] = ladder_start4*who_inside
+
+    np_array[start[0]-distance, start[1]+5+distance] = who_inside if escape_working else -who_inside
+
+    coordinates_good = []
+    coordinates_bad = []
+
+    if escape_working:
+        indices_good = np.where(np.abs(np_array) == 2*who_inside)
+        coordinates_good = [(index[1] + 1, index[0] + 1) for index in zip(indices_good[0], indices_good[1])]
+    else:
+        indices_bad = np.where(np.abs(np_array) == 2*who_inside)
+        coordinates_bad= [(index[1] + 1, index[0] + 1) for index in zip(indices_bad[0], indices_bad[1])]
+
+
+    type = 'ladder'
+    subtype = 'ladder'
+    exact = 'escape_working_'+str(escape_working)
+    locality = distance+5
+
+    return np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality
+
+
 def numpy_to_sente_game(np_array, who_to_move = 1):
     new_game = sente.Game()
     assert np_array.shape == (19,19), "Wrong size of numpy array representing game"
@@ -123,6 +152,8 @@ save_plot_path = './our_tsumego/'
 
 plot = True
 
+#################### Generate ladder tsumego: #########################
+
 if __name__ == '__main__':
     # game = numpy_to_sente_game(ex_right_outside_black_free)
     # print(game)
@@ -144,156 +175,250 @@ if __name__ == '__main__':
     #c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
     ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
 
-    for start_x in range(3, 10):
-        for start_y in range(5, 10):
-            for half_eye_direction in range(4):
-                for distance in range(2, 13-start_x):
-                    if distance == 3 and half_eye_direction == 1:
-                        continue
-                    for who_inside in [-1]:
-                        print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
-                        nex_right_outside_black_free = ex_right_outside_black_free.copy()
-                        np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality = one_and_half_eyes(nex_right_outside_black_free,
-                                                                                                                        start = (start_y, start_x), distance=distance,
-                                                                                                                        who_inside=who_inside, half_eye_direction=half_eye_direction)
-                        game = numpy_to_sente_game(np_array, who_to_move=1)
+    for start_x in range(5, 7):
+        for start_y in range(8, 11):
+                for distance in range(1, 4):
+                    for who_inside in [1]:
+                        for escape_working in [True, False]:
+                            print(f"X: {start_x}, Y: {start_y},  dist:{distance}, who_ins:{who_inside}")
+                            nex_right_outside_black_free = ex_right_outside_black_free.copy()
+                            np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality = ladder_escape(nex_right_outside_black_free,
+                                                                                                                            start = (start_y, start_x), distance=distance,
+                                                                                                                            who_inside=who_inside, escape_working=escape_working)
+                            game = numpy_to_sente_game(np_array, who_to_move=1)
 
-                        if plot:
-                            sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+'.sgf'))
+                            if plot:
+                                sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+'.sgf'))
 
-                            a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
-                            b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
-                            fig, ax = plot_go_game(game, explore_move_possibs=b)
-                            plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Transformer.png"))
-                            plt.close()
-                            plt.clf()
+                                a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+                                b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+                                fig, ax = plot_go_game(game, explore_move_possibs=b)
+                                plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+ "_Transformer.png"))
+                                plt.close()
+                                plt.clf()
 
 
-                            fig, ax = plot_go_game(game, explore_move_possibs=a)
-                            plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Conv.png"))
-                            plt.close()
-                            plt.clf()
+                                fig, ax = plot_go_game(game, explore_move_possibs=a)
+                                plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+ "_Conv.png"))
+                                plt.close()
+                                plt.clf()
 
-                        new_row = {
-                            'Game': game,
-                            'Coordinates_good': coordinates_good,
-                            'Coordinates_bad': coordinates_bad,
-                            'Type': type,
-                            'Subtype': subtype,
-                            'Role': 'Attack',
-                            'Exact': exact,
-                            'Locality': locality
-                        }
-                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
-                        game = numpy_to_sente_game(np_array, who_to_move=-1)
-                        new_row = {
-                            'Game': game,
-                            'Coordinates_good': coordinates_good,
-                            'Coordinates_bad': coordinates_bad,
-                            'Type': type,
-                            'Subtype': subtype,
-                            'Role': 'Defend',
-                            'Exact': exact,
-                            'Locality': locality
-                        }
+                            new_row = {
+                                'Game': game,
+                                'Coordinates_good': coordinates_good,
+                                'Coordinates_bad': coordinates_bad,
+                                'Type': type,
+                                'Subtype': subtype,
+                                'Role': 'Defend',
+                                'Exact': exact,
+                                'Locality': locality
+                            }
+                            tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+                            game = numpy_to_sente_game(np_array, who_to_move=-1)
+                            new_row = {
+                                'Game': game,
+                                'Coordinates_good': coordinates_good,
+                                'Coordinates_bad': coordinates_bad,
+                                'Type': type,
+                                'Subtype': subtype,
+                                'Role': 'Attack',
+                                'Exact': exact,
+                                'Locality': locality
+                            }
 
-                        if plot:
-                            sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+'.sgf'))
+                            if plot:
+                                sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+'.sgf'))
 
-                            a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
-                            b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
-                            fig, ax = plot_go_game(game, explore_move_possibs=b)
-                            plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Transformer.png"))
-                            plt.close()
-                            plt.clf()
-
-
-                            fig, ax = plot_go_game(game, explore_move_possibs=a)
-                            plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Conv.png"))
-                            plt.close()
-                            plt.clf()
-
-                        print(game)
-                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
-
-    for start_x in range(3, 10):
-        for start_y in range(5, 10):
-            for half_eye_direction in range(4):
-                for distance in range(3, 13-start_x):
-                    if distance <= 3 and half_eye_direction % 2 == 1:
-                        continue
-                    for who_inside in [-1]:
-                        print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
-                        nex_right_outside_black_free = ex_right_outside_black_free.copy()
-                        np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality = half_and_half_eyes(nex_right_outside_black_free,
-                                                                                                                        start = (start_y, start_x), distance=distance,
-                                                                                                                        who_inside=who_inside, half_eye_direction=half_eye_direction)
-                        game = numpy_to_sente_game(np_array, who_to_move=1)
-                        new_row = {
-                            'Game': game,
-                            'Coordinates_good': coordinates_good,
-                            'Coordinates_bad': coordinates_bad,
-                            'Type': type,
-                            'Subtype': subtype,
-                            'Role': 'Attack',
-                            'Exact': exact,
-                            'Locality': locality
-                        }
-
-                        if plot:
-                            sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+'.sgf'))
-
-                            a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
-                            b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
-                            fig, ax = plot_go_game(game, explore_move_possibs=b)
-                            plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Transformer.png"))
-                            plt.close()
-                            plt.clf()
+                                a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+                                b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+                                fig, ax = plot_go_game(game, explore_move_possibs=b)
+                                plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+ "_Transformer.png"))
+                                plt.close()
+                                plt.clf()
 
 
-                            fig, ax = plot_go_game(game, explore_move_possibs=a)
-                            plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Conv.png"))
-                            plt.close()
-                            plt.clf()
+                                fig, ax = plot_go_game(game, explore_move_possibs=a)
+                                plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+ "_Conv.png"))
+                                plt.close()
+                                plt.clf()
 
-                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
-                        game = numpy_to_sente_game(np_array, who_to_move=-1)
-                        new_row = {
-                            'Game': game,
-                            'Coordinates_good': coordinates_good,
-                            'Coordinates_bad': coordinates_bad,
-                            'Type': type,
-                            'Subtype': subtype,
-                            'Role': 'Defend',
-                            'Exact': exact,
-                            'Locality': locality
-                        }
+                            print(game)
+                            tsumego_df = tsumego_df.append(new_row, ignore_index=True)
 
-                        if plot:
-                            sente.sgf.dump(game, os.path.join(save_plot_path,
-                                                              type + '_' + subtype + '_' + exact + '_Defend_' + str(
-                                                                  locality) + "_" + str(start_x) + str(start_y) + str(
-                                                                  half_eye_direction) + '.sgf'))
 
-                            a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
-                            b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
-                            fig, ax = plot_go_game(game, explore_move_possibs=b)
-                            plt.savefig(os.path.join(save_plot_path,
-                                                     type + '_' + subtype + '_' + exact + '_Defend_' + str(
-                                                         locality) + "_" + str(start_x) + str(start_y) + str(
-                                                         half_eye_direction) + "_Transformer.png"))
-                            plt.close()
-                            plt.clf()
 
-                            fig, ax = plot_go_game(game, explore_move_possibs=a)
-                            plt.savefig(os.path.join(save_plot_path,
-                                                     type + '_' + subtype + '_' + exact + '_Defend_' + str(
-                                                         locality) + "_" + str(start_x) + str(start_y) + str(
-                                                         half_eye_direction) + "_Conv.png"))
-                            plt.close()
-                            plt.clf()
-
-                        print(game)
-                        tsumego_df = tsumego_df.append(new_row, ignore_index=True)
-
-    #print(tsumego_df[['Coordinates_bad']])
+#################### Generate 1-half eyes tsumego: #########################
+# if __name__ == '__main__':
+#     # game = numpy_to_sente_game(ex_right_outside_black_free)
+#     # print(game)
+#
+#     tsumego = ({
+#         'Game':[],
+#         'Coordinates_good':[],
+#         'Coordinates_bad':[],
+#         'Type':[],
+#         'Subtype':[],
+#         'Role':[],
+#         'Exact':[],
+#         'Locality':[]
+#     })
+#
+#     tsumego_df = pd.DataFrame(tsumego)
+#
+#     t192k = TransformerPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-192500")
+#     #c365k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-365500")
+#     ch351k = ConvolutionPolicy("/mnt/c/Users/Antek/PycharmProjects/subgoal_search_chess/exclude/checkpoint-351500", history=True, ignore_history=True)
+#
+#     for start_x in range(3, 10):
+#         for start_y in range(5, 10):
+#             for half_eye_direction in range(4):
+#                 for distance in range(2, 13-start_x):
+#                     if distance == 3 and half_eye_direction == 1:
+#                         continue
+#                     for who_inside in [-1]:
+#                         print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
+#                         nex_right_outside_black_free = ex_right_outside_black_free.copy()
+#                         np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality = one_and_half_eyes(nex_right_outside_black_free,
+#                                                                                                                         start = (start_y, start_x), distance=distance,
+#                                                                                                                         who_inside=who_inside, half_eye_direction=half_eye_direction)
+#                         game = numpy_to_sente_game(np_array, who_to_move=1)
+#
+#                         if plot:
+#                             sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+'.sgf'))
+#
+#                             a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             fig, ax = plot_go_game(game, explore_move_possibs=b)
+#                             plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Transformer.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#
+#                             fig, ax = plot_go_game(game, explore_move_possibs=a)
+#                             plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Conv.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#                         new_row = {
+#                             'Game': game,
+#                             'Coordinates_good': coordinates_good,
+#                             'Coordinates_bad': coordinates_bad,
+#                             'Type': type,
+#                             'Subtype': subtype,
+#                             'Role': 'Attack',
+#                             'Exact': exact,
+#                             'Locality': locality
+#                         }
+#                         tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+#                         game = numpy_to_sente_game(np_array, who_to_move=-1)
+#                         new_row = {
+#                             'Game': game,
+#                             'Coordinates_good': coordinates_good,
+#                             'Coordinates_bad': coordinates_bad,
+#                             'Type': type,
+#                             'Subtype': subtype,
+#                             'Role': 'Defend',
+#                             'Exact': exact,
+#                             'Locality': locality
+#                         }
+#
+#                         if plot:
+#                             sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+'.sgf'))
+#
+#                             a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             fig, ax = plot_go_game(game, explore_move_possibs=b)
+#                             plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Transformer.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#
+#                             fig, ax = plot_go_game(game, explore_move_possibs=a)
+#                             plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Defend_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Conv.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#                         print(game)
+#                         tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+#
+#     for start_x in range(3, 10):
+#         for start_y in range(5, 10):
+#             for half_eye_direction in range(4):
+#                 for distance in range(3, 13-start_x):
+#                     if distance <= 3 and half_eye_direction % 2 == 1:
+#                         continue
+#                     for who_inside in [-1]:
+#                         print(f"X: {start_x}, Y: {start_y}, half_eye_dir:{half_eye_direction}, dist:{distance}, who_ins:{who_inside}")
+#                         nex_right_outside_black_free = ex_right_outside_black_free.copy()
+#                         np_array, coordinates_good, coordinates_bad, type, subtype, exact, locality = half_and_half_eyes(nex_right_outside_black_free,
+#                                                                                                                         start = (start_y, start_x), distance=distance,
+#                                                                                                                         who_inside=who_inside, half_eye_direction=half_eye_direction)
+#                         game = numpy_to_sente_game(np_array, who_to_move=1)
+#                         new_row = {
+#                             'Game': game,
+#                             'Coordinates_good': coordinates_good,
+#                             'Coordinates_bad': coordinates_bad,
+#                             'Type': type,
+#                             'Subtype': subtype,
+#                             'Role': 'Attack',
+#                             'Exact': exact,
+#                             'Locality': locality
+#                         }
+#
+#                         if plot:
+#                             sente.sgf.dump(game, os.path.join(save_plot_path,type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+'.sgf'))
+#
+#                             a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             fig, ax = plot_go_game(game, explore_move_possibs=b)
+#                             plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Transformer.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#
+#                             fig, ax = plot_go_game(game, explore_move_possibs=a)
+#                             plt.savefig(os.path.join(save_plot_path, type+'_'+subtype+'_'+exact+'_Attack_'+str(locality)+"_"+str(start_x)+str(start_y)+str(half_eye_direction)+ "_Conv.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#                         tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+#                         game = numpy_to_sente_game(np_array, who_to_move=-1)
+#                         new_row = {
+#                             'Game': game,
+#                             'Coordinates_good': coordinates_good,
+#                             'Coordinates_bad': coordinates_bad,
+#                             'Type': type,
+#                             'Subtype': subtype,
+#                             'Role': 'Defend',
+#                             'Exact': exact,
+#                             'Locality': locality
+#                         }
+#
+#                         if plot:
+#                             sente.sgf.dump(game, os.path.join(save_plot_path,
+#                                                               type + '_' + subtype + '_' + exact + '_Defend_' + str(
+#                                                                   locality) + "_" + str(start_x) + str(start_y) + str(
+#                                                                   half_eye_direction) + '.sgf'))
+#
+#                             a = ch351k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             b = t192k.get_best_moves(GoImmutableBoard.from_game(game))
+#                             fig, ax = plot_go_game(game, explore_move_possibs=b)
+#                             plt.savefig(os.path.join(save_plot_path,
+#                                                      type + '_' + subtype + '_' + exact + '_Defend_' + str(
+#                                                          locality) + "_" + str(start_x) + str(start_y) + str(
+#                                                          half_eye_direction) + "_Transformer.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#                             fig, ax = plot_go_game(game, explore_move_possibs=a)
+#                             plt.savefig(os.path.join(save_plot_path,
+#                                                      type + '_' + subtype + '_' + exact + '_Defend_' + str(
+#                                                          locality) + "_" + str(start_x) + str(start_y) + str(
+#                                                          half_eye_direction) + "_Conv.png"))
+#                             plt.close()
+#                             plt.clf()
+#
+#                         print(game)
+#                         tsumego_df = tsumego_df.append(new_row, ignore_index=True)
+#
+#     #print(tsumego_df[['Coordinates_bad']])
